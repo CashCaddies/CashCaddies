@@ -41,7 +41,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const createdId = searchParams.get("created");
   const isCreatedContest = createdId === contest.id;
   const rowRef = useRef<HTMLTableRowElement>(null);
-  const href = `/contests/${encodeURIComponent(contest.id)}`;
+  const href = `/contest/${encodeURIComponent(contest.id)}`;
   const max = Math.max(1, contest.max_entries);
   const current = Math.min(contest.entry_count || 0, max);
   const protectedCount = Math.max(0, Math.trunc(Number(contest.protected_entries_count ?? 0)));

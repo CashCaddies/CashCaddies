@@ -1,12 +1,14 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 
-let singleton: ReturnType<typeof createSupabaseClient> | null = null;
+let singleton: SupabaseClient | null = null;
 
 /**
  * Browser-oriented Supabase client (also used where this module is imported on the server).
  * Reads `NEXT_PUBLIC_*` from this module so Next.js inlines env into the client bundle.
+ *
+ * Returns `null` when URL/key are missing so callers can degrade gracefully; does not throw.
  */
-export function createClient() {
+export function createClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const key = (
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
@@ -14,7 +16,7 @@ export function createClient() {
   )?.trim();
 
   if (!url || !key) {
-    throw new Error("Supabase env missing");
+    return null;
   }
 
   if (!singleton) {
@@ -30,4 +32,5 @@ export function createClient() {
   return singleton;
 }
 
+/** Resolved at module load; `null` if public env is not configured (safe for `if (!supabase)`). */
 export const supabase = createClient();
