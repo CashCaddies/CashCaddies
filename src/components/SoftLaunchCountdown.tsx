@@ -24,22 +24,36 @@ function computeParts(msLeft: number): { days: number; h: number; m: number; s: 
 }
 
 export default function SoftLaunchCountdown() {
-  const [time, setTime] = useState(() => Date.now());
+  const [mounted, setMounted] = useState(false);
+  /** `null` after first tick means target passed (live). Before first tick, uninitialized. */
+  const [remaining, setRemaining] = useState<ReturnType<typeof computeParts> | undefined>(undefined);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setTime(Date.now());
-    }, 1000);
+    setMounted(true);
+
+    const update = () => {
+      const now = Date.now();
+      setRemaining(computeParts(TARGET_MS - now));
+    };
+
+    update();
+    const id = window.setInterval(update, 1000);
     return () => window.clearInterval(id);
   }, []);
 
-  const remaining = computeParts(TARGET_MS - time);
+  if (!mounted) {
+    return null;
+  }
+
+  if (remaining === undefined) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-[110px] w-full flex-col items-center justify-center border-y border-amber-400/30 bg-slate-950 py-6">
       <p className="mb-4 text-center font-semibold text-amber-400">Soft Launch Target – August 1</p>
 
-      {remaining == null ? (
+      {remaining === null ? (
         <p className="text-center text-2xl font-bold text-green-400">Soft Launch Live</p>
       ) : (
         <>
