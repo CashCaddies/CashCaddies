@@ -20,6 +20,9 @@ function formatPoolUsd(value: number): string {
 
 const ROTATION_MS = 5000;
 
+/** Static coverage copy — avoid em dash / double-dash variants that diverge across SSR and client. */
+const COVERAGE_TEXT = "Covers WD, DQ, DNS";
+
 type TickerIcon = "shield" | "crown" | "lock" | "activity";
 
 const BETA_REQUEST_MAILTO =
@@ -44,6 +47,7 @@ const iconByKey: Record<TickerIcon, typeof Shield> = {
 /** Full-width rotating status strip: auto-rotate, pause on hover, manual arrows, fade + slide. */
 export function HeaderFundBar() {
   const { fullUser } = useWallet();
+  const [mounted, setMounted] = useState(false);
   const [fundBalance, setFundBalance] = useState<number | null>(null);
   const [fundLoading, setFundLoading] = useState(true);
   const [betaApproved, setBetaApproved] = useState<number | null>(null);
@@ -52,6 +56,10 @@ export function HeaderFundBar() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const hasSupabase = useMemo(() => createClient() !== null, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchFund = useCallback(async () => {
     const sb = createClient();
@@ -104,8 +112,13 @@ export function HeaderFundBar() {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [fetchFund, fetchBetaStats]);
 
-  const display =
-    !hasSupabase ? "—" : fundLoading ? "…" : formatPoolUsd(fundBalance ?? 0);
+  const display = !hasSupabase ? "" : fundLoading ? "…" : formatPoolUsd(fundBalance ?? 0);
+
+  const safetyCoverageValue = !hasSupabase
+    ? COVERAGE_TEXT
+    : fundLoading
+      ? `… ${COVERAGE_TEXT}`
+      : `${display} ${COVERAGE_TEXT}`;
 
   const foundingBetaValue =
     betaStatsLoading || betaApproved == null || betaMax == null
@@ -116,7 +129,7 @@ export function HeaderFundBar() {
     const base: TickerMessage[] = [
       {
         label: "Safety Coverage Fund",
-        value: `${display} — Covers WD, DQ, DNS`,
+        value: safetyCoverageValue,
         href: "/faq#safety-coverage",
         icon: "shield",
       },
@@ -142,7 +155,7 @@ export function HeaderFundBar() {
       });
     }
     return base;
-  }, [display, foundingBetaValue, fullUser?.role]);
+  }, [safetyCoverageValue, foundingBetaValue, fullUser?.role]);
 
   useEffect(() => {
     setIndex((i) => Math.min(i, Math.max(0, messages.length - 1)));
@@ -173,6 +186,10 @@ export function HeaderFundBar() {
 
   const valueClassName =
     "text-emerald-400 opacity-90 tracking-wide drop-shadow-[0_0_6px_rgba(52,211,153,0.20)] transition-colors duration-200 group-hover:text-emerald-300";
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div
