@@ -1,0 +1,2 @@
+# Git hooks must use LF so they run correctly on Windows + Unix
+githooks/pre-commit text eol=lf

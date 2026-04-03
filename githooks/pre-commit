@@ -1,0 +1,15 @@
+#!/bin/sh
+# Refuse commits that include large or sensitive paths.
+set -e
+STAGED=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+# Block: node_modules, .next, or a file named exactly .env (not .env.example)
+FORBIDDEN=$(echo "$STAGED" | grep -E '(^|/)node_modules(/|$)|(^|/)\.next(/|$)|(^|/)\.env$' || true)
+if [ -n "$FORBIDDEN" ]; then
+  echo "pre-commit: blocked — do not commit node_modules, .next, or .env:" >&2
+  echo "$FORBIDDEN" >&2
+  exit 1
+fi
+exit 0

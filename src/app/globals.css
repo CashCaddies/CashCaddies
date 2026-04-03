@@ -1,0 +1,1514 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-muted-foreground: #94a3b8;
+}
+
+:root {
+  --cc-gold: #d4af37;
+  --cc-gold-bright: #ffd700;
+  --cc-green: #10b981;
+  --cc-bg: #020617;
+  --cc-card: #0b1220;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* CashCaddies brand — gold accent + glow language */
+.goldText {
+  color: var(--cc-gold-bright);
+  text-shadow:
+    0 0 6px rgba(255, 215, 0, 0.35),
+    0 0 12px rgba(255, 215, 0, 0.15);
+}
+
+.goldBorder {
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.15);
+}
+
+.goldCard {
+  background: var(--cc-card);
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.08);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.goldCard:hover {
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.18);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goldCard:hover {
+    transform: none;
+  }
+}
+
+/* Wide scroll surfaces: brand shell without hover lift */
+.goldCard.goldCardStatic:hover {
+  transform: none;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.12);
+}
+
+.ccButton {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none;
+  cursor: pointer;
+  color: #f8fafc;
+}
+
+.ccButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.25);
+}
+
+.ccButton:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.6);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ccButton:hover {
+    transform: none;
+  }
+}
+
+.ccLink {
+  color: #facc15;
+  font-weight: 600;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.ccLink:hover {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+/* Header — DFS bar: LEFT brand | CENTER nav (flex) | RIGHT fund + wallet + account */
+.headerContainer {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+.headerLeft {
+  position: relative;
+  z-index: 2;
+}
+
+.ccMainNav {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ccMainNav a {
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 6px;
+  transition: color 0.25s ease;
+}
+
+.ccMainNav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0%;
+  background: #10b981;
+  transition: width 0.25s ease;
+}
+
+.ccMainNav a:hover::after {
+  width: 100%;
+}
+
+.headerRight {
+  position: relative;
+  z-index: 2;
+}
+
+/* Header — logo | mainNav | headerStats | account */
+.headerRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.mainNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-left: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  justify-content: center;
+}
+
+@media (max-width: 1023px) {
+  .mainNav {
+    margin-left: 0;
+  }
+}
+
+.mainNav a {
+  color: #34d399;
+  transition:
+    color 0.2s ease,
+    text-shadow 0.2s ease;
+}
+
+.mainNav a:hover {
+  color: #10b981;
+  text-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
+}
+
+.mainNav a[aria-current="page"] {
+  color: #10b981;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+}
+
+.headerStats {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 0;
+}
+
+.walletStat {
+  display: inline-flex;
+  align-items: center;
+  background: #0b1220;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  font-size: 12px;
+  color: #cbd5e1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transform-origin: center;
+  box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+  filter: brightness(1);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    filter 0.25s ease;
+}
+
+.walletStat:hover {
+  transform: scale(1.07);
+  color: #e2e8f0;
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+  filter: brightness(1.12);
+}
+
+.walletStat:active {
+  transform: scale(0.98);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.08s ease;
+}
+
+.walletStat:hover:active {
+  transform: scale(1.0486);
+  filter: brightness(1.08);
+}
+
+.walletStat:focus-visible {
+  outline: 2px solid rgba(255, 215, 0, 0.45);
+  outline-offset: 2px;
+}
+
+/* Header wallet: label stays slate; amount only — brand gold + soft luxury glow */
+.walletStat b {
+  margin-left: 6px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cc-gold-bright);
+  text-shadow:
+    0 0 6px rgba(255, 215, 0, 0.45),
+    0 0 14px rgba(255, 215, 0, 0.22),
+    0 0 22px rgba(212, 175, 55, 0.12);
+  transition: text-shadow 0.25s ease;
+}
+
+.walletStat:hover b {
+  text-shadow:
+    0 0 8px rgba(255, 215, 0, 0.58),
+    0 0 18px rgba(255, 215, 0, 0.32),
+    0 0 28px rgba(212, 175, 55, 0.18);
+}
+
+@keyframes walletStatAmountDeduct {
+  0% {
+    color: var(--cc-gold-bright);
+    text-shadow:
+      0 0 6px rgba(255, 215, 0, 0.45),
+      0 0 14px rgba(255, 215, 0, 0.22),
+      0 0 22px rgba(212, 175, 55, 0.12);
+  }
+  38% {
+    color: #f87171;
+    text-shadow:
+      0 0 10px rgba(248, 113, 113, 0.5),
+      0 0 18px rgba(248, 113, 113, 0.28);
+  }
+  100% {
+    color: var(--cc-gold-bright);
+    text-shadow:
+      0 0 6px rgba(255, 215, 0, 0.45),
+      0 0 14px rgba(255, 215, 0, 0.22),
+      0 0 22px rgba(212, 175, 55, 0.12);
+  }
+}
+
+.walletStat b.walletStatAmountDeduct {
+  animation: walletStatAmountDeduct 0.68s ease-out;
+}
+
+@keyframes walletStatAmountWin {
+  0% {
+    color: var(--cc-gold-bright);
+    text-shadow:
+      0 0 6px rgba(255, 215, 0, 0.45),
+      0 0 14px rgba(255, 215, 0, 0.22);
+  }
+  35% {
+    color: #fff6bf;
+    text-shadow:
+      0 0 14px rgba(255, 230, 120, 0.75),
+      0 0 28px rgba(255, 215, 0, 0.45),
+      0 0 42px rgba(212, 175, 55, 0.25);
+  }
+  100% {
+    color: var(--cc-gold-bright);
+    text-shadow:
+      0 0 6px rgba(255, 215, 0, 0.45),
+      0 0 14px rgba(255, 215, 0, 0.22),
+      0 0 22px rgba(212, 175, 55, 0.12);
+  }
+}
+
+.walletStat b.walletStatAmountWin {
+  animation: walletStatAmountWin 0.85s ease-out;
+}
+
+/* Wallet page — hero balance */
+.walletPageBalance {
+  color: var(--cc-gold-bright);
+  text-shadow:
+    0 0 10px rgba(255, 215, 0, 0.42),
+    0 0 24px rgba(255, 215, 0, 0.22),
+    0 0 40px rgba(212, 175, 55, 0.12);
+}
+
+.walletPageBalance.walletPageBalanceWin {
+  animation: walletStatAmountWin 0.85s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walletStat {
+    transition:
+      box-shadow 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      filter 0.2s ease;
+  }
+
+  .walletStat:hover {
+    transform: none;
+  }
+
+  .walletStat:active,
+  .walletStat:hover:active {
+    transform: none;
+  }
+
+  .walletStat b {
+    transition: text-shadow 0.2s ease;
+    text-shadow:
+      0 0 4px rgba(255, 215, 0, 0.28),
+      0 0 10px rgba(255, 215, 0, 0.12);
+  }
+
+  .walletStat:hover b {
+    text-shadow:
+      0 0 5px rgba(255, 215, 0, 0.36),
+      0 0 12px rgba(255, 215, 0, 0.18);
+  }
+
+  .walletStat b.walletStatAmountDeduct {
+    animation: none;
+    transition: color 0.35s ease, text-shadow 0.35s ease;
+    color: #f87171;
+    text-shadow: 0 0 8px rgba(248, 113, 113, 0.35);
+  }
+
+  .walletStat b.walletStatAmountWin {
+    animation: none;
+    transition: color 0.35s ease, text-shadow 0.35s ease;
+    color: #fff6bf;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+  }
+
+  .walletPageBalance.walletPageBalanceWin {
+    animation: none;
+    transition: color 0.35s ease, text-shadow 0.35s ease;
+    color: #fff6bf;
+  }
+}
+
+/* Header — rotating status ticker (opacity + slide, arrows, pause on hover) */
+@keyframes statusTickerIn {
+  0% {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Pro ticker: fade + slide when message changes (see header-fund-bar.tsx) */
+.animate-fade {
+  animation: statusTickerIn 0.5s ease-out forwards;
+}
+
+.statusBar {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), rgba(2, 6, 23, 0.9));
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.statusContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: min(400px, calc(100% - 5rem));
+  max-width: min(90vw, 40rem);
+  justify-content: center;
+  line-height: 1.4;
+}
+
+.statusText {
+  color: #ffd700;
+  font-weight: 600;
+  font-size: 14px;
+  text-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
+  text-align: center;
+}
+
+.statusArrow {
+  background: none;
+  border: none;
+  color: #ffd700;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 4px 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade {
+    animation: none;
+  }
+
+  .statusContent {
+    transition: none;
+  }
+}
+
+.pageWrap {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+}
+
+.patchButton {
+  background: #D4AF37;
+  color: black;
+  min-width: 120px;
+  height: 30px;
+  font-size: 13px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+}
+
+.patchButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.55);
+}
+
+.newBadge {
+  background: #10B981;
+  color: white;
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+.passwordSection {
+  margin-top: 24px;
+  padding: 18px;
+  background: #0b1220;
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+}
+
+.passwordSection input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: white;
+}
+
+.passwordSection button {
+  background: #d4af37;
+  color: black;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-top: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.passwordSection button:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.passwordSection button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.faqQuestionGold {
+  color: #d4af37;
+  text-shadow:
+    0 0 8px rgba(212, 175, 55, 0.45),
+    0 0 16px rgba(212, 175, 55, 0.22);
+}
+
+.forgotLink {
+  display: block;
+  width: fit-content;
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: #d4af37;
+  cursor: pointer;
+  text-align: left;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.resetBox {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+}
+
+.resetBox h3 {
+  margin-bottom: 10px;
+}
+
+.resetBox input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  background: #020617;
+  color: white;
+}
+
+.resetBox button {
+  margin-top: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #10b981;
+  color: #020617;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.resetBox button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.updatePasswordCard {
+  max-width: 28rem;
+}
+
+/* display from Tailwind: hidden md:flex on the element */
+.headerLinks {
+  gap: 32px;
+  margin-top: 6px;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.headerCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.headerCol a {
+  color: #ffd700;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    text-shadow 0.2s ease;
+}
+
+.headerCol a:hover {
+  color: #10b981;
+  text-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+/* Logo column + wordmark column (header) */
+.logoColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+/* Header — wordmark: title + subtitle + utility links */
+.brandBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 16px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.brandTitle {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: 0.3px;
+  line-height: 1.15;
+}
+
+.brandTitle--compact {
+  font-size: 22px;
+}
+
+@media (min-width: 1024px) {
+  .brandTitle--compact {
+    font-size: 26px;
+  }
+}
+
+.brandSubtitle {
+  margin: 0;
+  margin-top: 2px;
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.35;
+}
+
+.betaBadge {
+  margin-top: 8px;
+  background: #020617;
+  border: 1px solid #d4af37;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fde68a;
+  line-height: 1.2;
+}
+
+.brandText {
+  min-width: 0;
+}
+
+.brandText h1 {
+  margin: 0;
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profileStack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.profileStack button {
+  margin-bottom: 2px;
+}
+
+.walletProfileStack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.walletCard {
+  margin: 0;
+  min-width: 140px;
+  text-align: center;
+}
+
+.founderBadge {
+  background: linear-gradient(135deg, #ffd700, #d4af37);
+  color: black;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-left: 6px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
+.founderMessage {
+  border: 1px solid #D4AF37;
+  background: #0B1426;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.safetyFundCard {
+  margin: 0;
+  width: 100%;
+}
+
+.navLink {
+  position: relative;
+  color: #10B981;
+  font-weight: 500;
+  padding-bottom: 6px;
+  transition: 0.25s;
+  text-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
+}
+
+.navLink:hover {
+  color: #34D399;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.7);
+}
+
+.navLink::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+  transition: 0.25s;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+.navLinkActive {
+  color: #34D399;
+  text-shadow: 0 0 14px rgba(16, 185, 129, 0.9);
+}
+
+.navLinkActive::after {
+  width: 100%;
+}
+
+.navBar {
+  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.statusOpen {
+  color: #10B981;
+}
+
+.statusFull {
+  color: #EF4444;
+}
+
+.statusLive {
+  color: #D4AF37;
+}
+
+@keyframes livePulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(83, 215, 105, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 10px 2px rgba(83, 215, 105, 0.45);
+  }
+}
+
+.livePulseBadge {
+  animation: livePulseGlow 1.8s ease-in-out infinite;
+}
+
+.highlightContest {
+  border: 1px solid #D4AF37;
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.5);
+  animation: fadeHighlight 2s ease;
+}
+
+.deleteContestButton {
+  background: #7F1D1D;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.deleteContestButton:hover {
+  background: #991B1B;
+}
+
+@keyframes fadeHighlight {
+  0% {
+    box-shadow: 0 0 28px rgba(212, 175, 55, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+  }
+}
+
+/* Header logo: subtle micro-shake after hover delay (premium, not arcade) */
+@keyframes header-logo-micro-shake {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(1px, -1px);
+  }
+  50% {
+    transform: translate(-1px, 1px);
+  }
+  75% {
+    transform: translate(1px, 1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.header-logo-link:hover .header-logo-shake {
+  animation: header-logo-micro-shake 1.6s ease-in-out 0.4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-logo-link:hover .header-logo-shake {
+    animation: none;
+  }
+}
+
+/* Header logo: premium shimmer + breathing glow + subtle scale pulse */
+@keyframes shineMove {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 160%;
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow:
+      0 0 10px rgba(212, 175, 55, 0.15),
+      0 0 18px rgba(212, 175, 55, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgba(212, 175, 55, 0.35),
+      0 0 36px rgba(212, 175, 55, 0.18);
+  }
+  100% {
+    box-shadow:
+      0 0 10px rgba(212, 175, 55, 0.15),
+      0 0 18px rgba(212, 175, 55, 0.08);
+  }
+}
+
+@keyframes logoFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.header-logo-link .logoWrapper {
+  position: relative;
+  isolation: isolate;
+  width: 95px;
+  border-radius: 14px;
+  background: #020617;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.25),
+    0 0 18px rgba(212, 175, 55, 0.25),
+    0 0 40px rgba(212, 175, 55, 0.12),
+    0 10px 30px rgba(0, 0, 0, 0.6);
+  animation: logoFloat 5s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.header-logo-link .logoWrapper::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.6),
+    rgba(212, 175, 55, 0.2),
+    rgba(255, 215, 0, 0.6)
+  );
+  opacity: 0.35;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.header-logo-link .logoWrapper::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 20px;
+  background: radial-gradient(rgba(212, 175, 55, 0.25), transparent 70%);
+  z-index: -1;
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.header-logo-link .logoWrapper--full {
+  width: 119px;
+}
+
+@media (min-width: 768px) {
+  .header-logo-link .logoWrapper--full {
+    width: 143px;
+  }
+}
+
+.header-logo-link .logoClip {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.header-logo-link .logoWrapper .logo {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+}
+
+.header-logo-link .logoShine {
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 70%;
+  height: 100%;
+  z-index: 3;
+  opacity: 0.9;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 215, 0, 0.08) 20%,
+    rgba(255, 215, 0, 0.45) 45%,
+    rgba(255, 215, 0, 0.08) 70%,
+    transparent 100%
+  );
+  transform: skewX(-25deg);
+  animation: shineMove 3.5s linear infinite;
+}
+
+.header-logo-link .logoGlow {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  z-index: 1;
+  box-shadow:
+    0 0 14px rgba(212, 175, 55, 0.25),
+    0 0 28px rgba(212, 175, 55, 0.12);
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-logo-link .logoWrapper {
+    animation: none;
+  }
+
+  .header-logo-link .logoShine,
+  .header-logo-link .logoGlow {
+    animation: none;
+  }
+
+  .header-logo-link .logoGlow {
+    box-shadow:
+      0 0 14px rgba(212, 175, 55, 0.2),
+      0 0 24px rgba(212, 175, 55, 0.1);
+  }
+}
+
+.accountSettings {
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+
+.settingsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.settingsCard {
+  flex: 1;
+  min-width: min(100%, 260px);
+  padding: 18px;
+}
+
+.settingsCard h3 {
+  color: #d4af37;
+  margin-bottom: 10px;
+}
+
+/* Profile: email change policy — security-style callout */
+.profileEmailSecurityNotice {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.08) 0%, rgba(2, 6, 23, 0.65) 100%);
+  box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.12);
+}
+
+.profileEmailSecurityNotice p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d4af37;
+}
+
+.profileEmailSecurityNotice a {
+  color: #e8c547;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.profileEmailSecurityNotice a:hover {
+  color: #f5e6a3;
+}
+
+/* Beta approval queue — dashboard/admin/beta-queue */
+.betaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #0b1220;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.betaRowFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.betaRowLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.betaRowNotes {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .betaRowNotes {
+    grid-column: span 2;
+  }
+}
+
+.betaRowActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* Beta management — admin cards & actions */
+.adminUserCard {
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.adminButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.approveBtn {
+  background: #10b981;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.approveBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.rejectBtn {
+  background: #dc2626;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.rejectBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.adminBtn {
+  background: #d4af37;
+  color: black;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.adminBtn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.approveBtn:disabled,
+.rejectBtn:disabled,
+.adminBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Header user menu — avatar + dropdown */
+.userMenu {
+  position: relative;
+  z-index: 50;
+  flex-shrink: 0;
+  min-width: 0;
+  align-self: center;
+}
+
+.userTrigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+  z-index: 50;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  margin-left: 8px;
+}
+
+.userTrigger .username {
+  color: #34d399;
+  font-weight: 600;
+  font-size: 14px;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Gold FOUNDER pill — header menu, profile, admin tables */
+.founderBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd700, #d4af37);
+  color: #1a1625;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+  vertical-align: middle;
+}
+
+.userTrigger .founderBadge {
+  flex-shrink: 0;
+}
+
+.userTrigger .adminBadge {
+  font-size: 10px;
+  background: #334155;
+  color: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #ffd700;
+  cursor: pointer;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.userTrigger:hover .avatar {
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar {
+    transition: box-shadow 0.2s ease;
+  }
+
+  .userTrigger:hover .avatar {
+    transform: none;
+  }
+}
+
+.userDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  z-index: 100;
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 200px;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 2rem));
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.userDropdownHr {
+  margin: 10px 0;
+  border: none;
+  border-top: 1px solid #1e293b;
+}
+
+.userDropdownLabel {
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1e293b;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
+.userDropdownLink {
+  display: block;
+  margin-bottom: 8px;
+  color: #cbd5f5;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.userDropdownLink:hover {
+  color: white;
+}
+
+.userDropdownNote {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.userDropdownDivider {
+  margin: 8px 0;
+  border-top: 1px solid #1e293b;
+}
+
+.userDropdownLogout {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 6px 0 0;
+  border: none;
+  border-top: 1px solid #1e293b;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: #cbd5f5;
+  cursor: pointer;
+}
+
+.userDropdownLogout:hover {
+  color: white;
+}
+
+.userDropdownLogoutFlat {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 4px 0 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: #cbd5f5;
+  cursor: pointer;
+}
+
+.userDropdownLogoutFlat:hover {
+  color: white;
+}
+
+/* Profile page — avatar upload preview */
+.profileAvatarRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.profileAvatarPreview {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid #d4af37;
+  object-fit: cover;
+  background: #020617;
+}
+
+/* Dashboard overview — Safety Fund + Beta Wallet (scoped so navbar .walletCard is unchanged) */
+.dashboardTopBar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 0;
+}
+
+.dashboardTopBar .fundCard.goldCard {
+  padding: 14px;
+  width: 240px;
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.12);
+}
+
+.dashboardTopBar .walletCard.goldCard {
+  padding: 14px;
+  width: 170px;
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.06);
+}
+
+.dashboardTopBar .walletCard.goldCard:hover {
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.14);
+}
+
+.dashboardTopBar h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.dashboardTopBar .fundAmount,
+.dashboardTopBar .walletAmount {
+  color: #34d399;
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboardTopBar .fundNote,
+.dashboardTopBar .walletNote {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+/* Admin Command Center — dashboard/admin */
+.adminGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.adminCard {
+  background: #0b1220;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.adminActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.adminActions a {
+  text-decoration: none;
+}
+
+.adminActions button {
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(5, 150, 105, 0.25));
+  color: #ecfdf5;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 10px 18px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.adminActions button:hover {
+  border-color: rgba(16, 185, 129, 0.7);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+.adminActions button:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.55);
+  outline-offset: 2px;
+}

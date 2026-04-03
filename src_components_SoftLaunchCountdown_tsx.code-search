@@ -1,0 +1,7 @@
+# Query: src/components/SoftLaunchCountdown.tsx
+# ContextLines: 1
+
+1 result - 1 file
+import SoftLaunchCountdown from "@/components/SoftLaunchCountdown";
+tsconfig.tsbuildinfo:
+  1: ⟪ 55017 characters skipped ⟫sx","./src/components/header-auth-section.tsx","./src/components/header-fund-bar.tsx","./src/components/header-logo-link.tsx","./src/components/header-stats.tsx","./src/components/site-header.tsx","./src/components/softlaunchcountdown.tsx","./src/lib/supabase-provider.tsx","./src/app/layout.tsx","./src/app/page.tsx","./src/app/admin/admin-users-table.tsx","./src/components/admin-trigger-settlement.tsx","./src/app/admin/page.tsx","./src/app/admin/beta/page.tsx","./src/app/admin/beta-queue/page.tsx","./src/app/admin/contests/page.tsx","./src/app/admin/create-contest/page.tsx","./src/app/admin/feedback/feedback-admin-quick-actions.tsx","./src/app/admin/feedback/feedback-admin-table.tsx","./src/components/admin-hub-nav.tsx","./src/app/admin/feedback/page.tsx","./src/components/admin-scoring-form.tsx","./src/app/admin/scoring/page.tsx","./src/components/admin-insurance-form.tsx","./src/components/admin-protection-engine-form.tsx","./src/components/admin-settlement-form.tsx","./src/app/admin/settlement/page.tsx","./src/app/admin/stats/page.tsx","./src/app/admin/users/page.tsx","./src/app/beta-pending/page.tsx","./src/components/closed-beta-stats.tsx","./src/app/closed-beta/page.tsx","./s
