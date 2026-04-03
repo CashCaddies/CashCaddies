@@ -1487,6 +1487,7 @@ body {
   text-decoration: none;
 }
 
+.adminActions .adminAction,
 .adminActions button {
   cursor: pointer;
   border-radius: 10px;
@@ -1502,12 +1503,14 @@ body {
     transform 0.2s ease;
 }
 
+.adminActions .adminAction:hover,
 .adminActions button:hover {
   border-color: rgba(16, 185, 129, 0.7);
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
   transform: translateY(-1px);
 }
 
+.adminActions .adminAction:focus-visible,
 .adminActions button:focus-visible {
   outline: 2px solid rgba(16, 185, 129, 0.55);
   outline-offset: 2px;

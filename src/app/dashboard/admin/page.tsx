@@ -243,14 +243,14 @@ export default function DashboardAdminCommandCenterPage() {
       </div>
 
       <div className="adminActions">
-        <Link href="/admin/contests">
-          <button type="button">Create Contest</button>
+        <Link href="/admin/contests" className="adminAction">
+          Create Contest
         </Link>
-        <Link href="/dashboard/admin/beta-queue">
-          <button type="button">View Beta Queue</button>
+        <Link href="/dashboard/admin/beta-queue" className="adminAction">
+          View Beta Queue
         </Link>
-        <Link href="/dashboard/feedback">
-          <button type="button">Feedback Inbox</button>
+        <Link href="/dashboard/feedback" className="adminAction">
+          Feedback Inbox
         </Link>
       </div>
 
