@@ -1,11 +1,9 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { parsePublicSupabaseEnv } from "./env-public";
 
 /**
- * TEMP STABILIZATION MODE:
- * SSR auth disabled to stabilize development.
- * Browser auth only.
- * Will re-enable server auth after beta stability.
+ * Server Supabase client (@supabase/ssr) — uses Next.js cookies for auth session.
  */
 export async function createClient() {
   const env = parsePublicSupabaseEnv(
@@ -18,27 +16,22 @@ export async function createClient() {
     );
   }
 
-  const supabaseUrl = env.url;
-  const supabaseAnonKey = env.key;
-  const client = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
+  const cookieStore = await cookies();
+
+  return createServerClient(env.url, env.key, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch {
+          /* Server Component — cookies may be read-only; middleware may refresh session */
+        }
+      },
     },
   });
-
-  // Disable server auth fetches during stabilization to prevent retry loops / ENOTFOUND noise.
-  const authAny = client.auth as unknown as {
-    getUser: () => Promise<unknown>;
-    getSession: () => Promise<unknown>;
-    refreshSession: () => Promise<unknown>;
-    signOut: () => Promise<unknown>;
-  };
-  authAny.getUser = async () => ({ data: { user: null }, error: null });
-  authAny.getSession = async () => ({ data: { session: null }, error: null });
-  authAny.refreshSession = async () => ({ data: { session: null, user: null }, error: null });
-  authAny.signOut = async () => ({ error: null });
-
-  return client;
 }

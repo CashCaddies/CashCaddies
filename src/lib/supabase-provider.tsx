@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import { supabase } from "./supabase"
+import { supabase } from "./supabase/client"
 
 const SupabaseContext = createContext(supabase)
 
