@@ -7,7 +7,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { APP_CONFIG_DEFAULT_MAX_BETA_USERS } from "@/lib/config";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
 import { isAdmin } from "@/lib/permissions";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 function formatPoolUsd(value: number): string {
   return new Intl.NumberFormat(undefined, {
@@ -55,14 +55,14 @@ export function HeaderFundBar() {
   const [betaStatsLoading, setBetaStatsLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const hasSupabase = useMemo(() => createClient() !== null, []);
+  const hasSupabase = useMemo(() => !!supabase, []);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const fetchFund = useCallback(async () => {
-    const sb = createClient();
+    const sb = supabase;
     if (!sb) {
       setFundBalance(null);
       setFundLoading(false);

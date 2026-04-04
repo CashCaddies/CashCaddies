@@ -3,7 +3,7 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { useEffect } from "react";
 import { requestWelcomeEmail } from "@/app/auth/welcome-email-action";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 const WELCOME_TRIGGER_EVENTS: AuthChangeEvent[] = [
   "INITIAL_SESSION",
@@ -19,9 +19,6 @@ const WELCOME_TRIGGER_EVENTS: AuthChangeEvent[] = [
  */
 export function WelcomeEmailSubscriber() {
   useEffect(() => {
-    const supabase = createClient();
-    if (!supabase) return;
-
     function maybeSend(session: { access_token: string; user: { email_confirmed_at?: string | null } } | null) {
       if (!session?.access_token || !session.user?.email_confirmed_at) return;
       void requestWelcomeEmail(session.access_token);

@@ -16,7 +16,7 @@ import {
 import { totalContestEntryChargeUsd, roundMoney2 } from "@/lib/wallet-contest-cost";
 import { newEntryFeeTransaction } from "@/lib/wallet-transaction";
 import { formatMoney } from "@/lib/wallet";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 type Props = {
   contestId: string;
@@ -105,7 +105,7 @@ export function LobbyEnterButton({
       setEntryCountReady(true);
       return;
     }
-    const sb = createClient();
+    const sb = supabase;
     if (!sb) {
       setUserEntryCount(null);
       setEntryCountReady(true);
@@ -154,7 +154,7 @@ export function LobbyEnterButton({
     setSuccess(null);
     setLoading(true);
     try {
-      const sb = createClient();
+      const sb = supabase;
       if (!sb) {
         setError("Missing Supabase configuration.");
         return;
@@ -257,7 +257,7 @@ export function LobbyEnterButton({
         setSuccess(result.message);
         await refreshWallet();
         dispatchWalletBankrollFlash();
-        const sb = createClient();
+        const sb = supabase;
         if (sb && authUser) {
           const { count, error: cErr } = await sb
             .from("contest_entries")

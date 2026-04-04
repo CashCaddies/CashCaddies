@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 const SAFETY_FUND_TOOLTIP =
   "Safety Coverage Fund balance. Provides entry fee protection when golfers WD, DQ, or DNS.";
@@ -21,10 +21,10 @@ export function HeaderSafetyFundChip() {
   const [balance, setBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [poolTableMissing, setPoolTableMissing] = useState(false);
-  const hasSupabase = useMemo(() => createClient() !== null, []);
+  const hasSupabase = useMemo(() => !!supabase, []);
 
   const fetchBalance = useCallback(async () => {
-    const sb = createClient();
+    const sb = supabase;
     if (!sb) {
       setBalance(null);
       setPoolTableMissing(true);
@@ -52,7 +52,7 @@ export function HeaderSafetyFundChip() {
   }, [fetchBalance]);
 
   useEffect(() => {
-    const sb = createClient();
+    const sb = supabase;
     if (!sb || loading || poolTableMissing) {
       return;
     }

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
@@ -25,7 +25,7 @@ export async function getContestEntries(
   const id = contestId.trim();
   if (!id) return [];
 
-  const sb = opts?.client ?? createClient();
+  const sb = opts?.client ?? supabase;
   if (!sb) return [];
 
   const selectWithProfiles =

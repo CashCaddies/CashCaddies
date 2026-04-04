@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import { isDevSimulateScoringAllowed } from "@/lib/dev-simulate-scoring";
 
@@ -22,7 +22,7 @@ export async function simulateContestLineupScoresFromBrowser(
     return notAllowed();
   }
 
-  const sb = createClient();
+  const sb = supabase;
   if (!sb) {
     return {
       ok: false,
@@ -65,7 +65,7 @@ export async function simulateAllLineupScoresFromBrowser(): Promise<
     return notAllowed();
   }
 
-  const sb = createClient();
+  const sb = supabase;
   if (!sb) {
     return {
       ok: false,

@@ -2,7 +2,7 @@
 
 import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 export type AuthContextValue = {
   session: Session | null;
@@ -22,13 +22,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
-    if (!supabase) {
-      setSession(null);
-      setIsReady(true);
-      return;
-    }
-
     let cancelled = false;
 
     void supabase.auth
