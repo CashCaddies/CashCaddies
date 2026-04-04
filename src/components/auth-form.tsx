@@ -2,8 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { supabase as supabaseSingleton } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
 
 type Props = {
@@ -61,7 +60,6 @@ export function AuthForm({ mode }: Props) {
 
   const title = useMemo(() => (mode === "login" ? "Login" : "Create account"), [mode]);
   const submitLabel = useMemo(() => (mode === "login" ? "Log in" : title), [mode, title]);
-  const supabase = useMemo(() => createClient(), []);
 
   function resetPasswordRedirectUrl(): string {
     const envBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
@@ -71,9 +69,8 @@ export function AuthForm({ mode }: Props) {
   }
 
   async function sendReset() {
-    const client = supabaseSingleton ?? supabase;
     setResetMsg("");
-    if (!client) {
+    if (!supabase) {
       setResetMsg("Unable to connect. Try again.");
       return;
     }
@@ -84,7 +81,7 @@ export function AuthForm({ mode }: Props) {
     }
     setResetSending(true);
     try {
-      const { error } = await client.auth.resetPasswordForEmail(trimmed, {
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
         redirectTo: resetPasswordRedirectUrl(),
       });
       if (error) {
@@ -98,9 +95,8 @@ export function AuthForm({ mode }: Props) {
   }
 
   async function resendConfirmation() {
-    const client = supabaseSingleton ?? supabase;
     setResendMsg("");
-    if (!client) {
+    if (!supabase) {
       setResendMsg("Error: Unable to connect. Try again.");
       return;
     }
@@ -111,7 +107,7 @@ export function AuthForm({ mode }: Props) {
     }
     setResendSending(true);
     try {
-      const { error } = await client.auth.resend({ type: "signup", email: trimmed });
+      const { error } = await supabase.auth.resend({ type: "signup", email: trimmed });
       if (error) {
         setResendMsg(`Error: ${error.message}`);
       } else {
@@ -142,12 +138,34 @@ export function AuthForm({ mode }: Props) {
       return;
     }
 
-    const authCall =
-      mode === "login"
-        ? supabase.auth.signInWithPassword({ email: email.trim(), password })
-        : supabase.auth.signUp({ email: email.trim(), password });
+    let authData: Awaited<ReturnType<typeof supabase.auth.signUp>>["data"];
+    let authError: Awaited<ReturnType<typeof supabase.auth.signUp>>["error"];
 
-    const { data: authData, error: authError } = await authCall;
+    if (mode === "login") {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        console.log("AUTH RESULT:", data, error);
+        authData = data;
+        authError = error;
+      } catch (e) {
+        console.error("AUTH ERROR:", e);
+        setStatusIsError(true);
+        setStatus(
+          e instanceof Error
+            ? e.message
+            : "Network error while signing in. Check Supabase URL and your connection.",
+        );
+        setLoading(false);
+        return;
+      }
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+      authData = data;
+      authError = error;
+    }
 
     if (authError) {
       setStatusIsError(true);
