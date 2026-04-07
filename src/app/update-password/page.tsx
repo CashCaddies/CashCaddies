@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export default function UpdatePassword() {
   const [pw, setPw] = useState("");
@@ -64,7 +64,7 @@ export default function UpdatePassword() {
         </p>
         {!sessionReady && (
           <p className="mt-3 text-sm text-amber-200/90" role="status">
-            Waiting for your session… If you opened this page directly, use the link from your reset email.
+            Waiting for your sessionâ€¦ If you opened this page directly, use the link from your reset email.
           </p>
         )}
         <label className="mt-4 block space-y-2">
@@ -85,7 +85,7 @@ export default function UpdatePassword() {
           className="mt-4 w-full rounded-md bg-emerald-500 px-4 py-2 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={() => void update()}
         >
-          {loading ? "Updating…" : "Update"}
+          {loading ? "Updatingâ€¦" : "Update"}
         </button>
         {msg ? (
           <p

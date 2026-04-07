@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { fetchMyEnteredContests, type MyEnteredContestRow } from "@/lib/my-contests-fetch";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export function useMyContestEntries() {
   const { user, isReady } = useAuth();

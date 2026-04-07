@@ -8,7 +8,7 @@ import { FounderBadge } from "@/components/founder-badge";
 import { TierProgressBar } from "@/components/tier-progress-bar";
 import { formatMoney, tierBadgeClass } from "@/lib/wallet";
 import { hasClosedBetaAppAccess } from "@/lib/closed-beta-access";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 const QUICK_AMOUNTS = [50, 100, 250, 500] as const;
 const RESET_BALANCE = 5000;
@@ -111,7 +111,7 @@ export function NavbarWallet() {
           className="navbarWalletTrigger flex w-full cursor-not-allowed items-center gap-1.5 text-left text-sm font-semibold text-slate-400 opacity-60"
         >
           <span className="text-slate-300">Beta Wallet</span>
-          <span className="walletAmount">—</span>
+          <span className="walletAmount">â€”</span>
         </button>
       </div>
     );
@@ -132,10 +132,10 @@ export function NavbarWallet() {
         <span className="text-slate-200">Beta Wallet</span>
         <span className="walletAmount tabular-nums">
           {loading
-            ? "…"
+            ? "â€¦"
             : wallet
               ? formatMoney(wallet.wallet_balance ?? wallet.account_balance)
-              : "—"}
+              : "â€”"}
         </span>
       </button>
 
@@ -146,7 +146,7 @@ export function NavbarWallet() {
           aria-label="Beta wallet summary"
         >
           {error && <p className="text-xs text-amber-300">{error}</p>}
-          {loading && !error && <p className="text-sm text-slate-400">Loading wallet…</p>}
+          {loading && !error && <p className="text-sm text-slate-400">Loading walletâ€¦</p>}
           {!loading && wallet && (
             <>
               <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-4 text-center">

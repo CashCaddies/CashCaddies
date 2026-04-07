@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/permissions";
 
 type BetaRow = {
@@ -16,9 +16,9 @@ type BetaRow = {
 };
 
 function formatJoined(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "â€”";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "â€”";
   return d.toLocaleString();
 }
 
@@ -112,7 +112,7 @@ export default function AdminBetaApprovalPage() {
   };
 
   if (!isReady || walletLoading) {
-    return <p className="p-6 text-slate-400">Loading…</p>;
+    return <p className="p-6 text-slate-400">Loadingâ€¦</p>;
   }
 
   if (!user) {
@@ -142,7 +142,7 @@ export default function AdminBetaApprovalPage() {
       ) : null}
 
       {loading ? (
-        <p className="mt-6 text-slate-400">Loading table…</p>
+        <p className="mt-6 text-slate-400">Loading tableâ€¦</p>
       ) : rows.length === 0 ? (
         <p className="mt-6 text-sm text-slate-500">No pending beta users</p>
       ) : (
@@ -165,13 +165,13 @@ export default function AdminBetaApprovalPage() {
                 const pending = String(row.beta_status ?? "").toLowerCase() === "pending";
                 return (
                   <tr key={row.id} className="border-b border-slate-800/80 last:border-0">
-                    <td className="px-4 py-3 align-middle">{row.email ?? "—"}</td>
+                    <td className="px-4 py-3 align-middle">{row.email ?? "â€”"}</td>
                     <td className="px-4 py-3 align-middle text-slate-300">{formatJoined(row.created_at)}</td>
                     <td className="px-4 py-3 align-middle">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${statusBadgeClass(row.beta_status)}`}
                       >
-                        {row.beta_status ?? "—"}
+                        {row.beta_status ?? "â€”"}
                       </span>
                     </td>
                     <td className="px-4 py-3 align-middle text-right">
@@ -195,7 +195,7 @@ export default function AdminBetaApprovalPage() {
                           </button>
                         </div>
                       ) : (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-slate-600">â€”</span>
                       )}
                     </td>
                   </tr>

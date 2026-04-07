@@ -18,7 +18,7 @@ import { getProfileByUserId } from "@/lib/getProfile";
 import { APP_CONFIG_DEFAULT_MAX_BETA_USERS, APP_CONFIG_KEY_MAX_BETA_USERS, parseConfigNumber } from "@/lib/config";
 import { INVITE_SOURCES, type InviteSource, parseInviteSource } from "@/lib/invite-source";
 import { hasPermission, isSeniorAdmin } from "@/lib/permissions";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { BetaUserProfileModal } from "./beta-user-profile-modal";
 
 type BetaFilter = "pending" | "approved" | "rejected" | "waitlist";
@@ -67,9 +67,9 @@ function queueRowMatchesSearch(row: QueueRow, queryLower: string): boolean {
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "â€”";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "â€”";
   return d.toLocaleString();
 }
 
@@ -628,7 +628,7 @@ export default function BetaQueuePage() {
   );
 
   if (!isReady || roleLoading) {
-    return <p className="text-slate-400">Loading…</p>;
+    return <p className="text-slate-400">Loadingâ€¦</p>;
   }
 
   if (!user) {
@@ -698,7 +698,7 @@ export default function BetaQueuePage() {
               disabled={notesSaving}
               rows={5}
               className="mt-3 w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
-              placeholder="Internal notes for this beta user…"
+              placeholder="Internal notes for this beta userâ€¦"
             />
             <div className="mt-4 flex flex-wrap justify-end gap-2">
               <button
@@ -718,7 +718,7 @@ export default function BetaQueuePage() {
                 {notesSaving ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                    Saving…
+                    Savingâ€¦
                   </>
                 ) : (
                   "Save"
@@ -802,7 +802,7 @@ export default function BetaQueuePage() {
       </div>
 
       <p className="mb-2 text-sm text-slate-400">
-        Showing <span className="font-semibold text-slate-200">{filter}</span> only — click a card above to switch.
+        Showing <span className="font-semibold text-slate-200">{filter}</span> only â€” click a card above to switch.
       </p>
 
       {betaAtCapacity ? (
@@ -812,7 +812,7 @@ export default function BetaQueuePage() {
         >
           <p className="text-sm font-bold uppercase tracking-wide text-amber-100">Beta full</p>
           <p className="mt-1 text-sm text-amber-100/90">
-            {counts.approved} / {maxBetaCap} approved — Approve, Approve + Founder, and bulk approve are off. Use{" "}
+            {counts.approved} / {maxBetaCap} approved â€” Approve, Approve + Founder, and bulk approve are off. Use{" "}
             <span className="font-semibold text-amber-50">Waitlist</span> on pending users to flag them for when slots open.
           </p>
         </div>
@@ -826,7 +826,7 @@ export default function BetaQueuePage() {
             type="search"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search email, username, notes, invite source…"
+            placeholder="Search email, username, notes, invite sourceâ€¦"
             autoComplete="off"
             className="w-full rounded-lg border border-slate-700 bg-slate-950 py-2 pl-9 pr-9 text-sm text-slate-200 placeholder:text-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
           />
@@ -859,7 +859,7 @@ export default function BetaQueuePage() {
               disabled={bulkApproveDisabled}
               title={
                 betaAtCapacity
-                  ? "Beta full — approvals disabled"
+                  ? "Beta full â€” approvals disabled"
                   : selectedOnPageCount > availableApproveSlots
                     ? `Only ${availableApproveSlots} approval slot(s) left`
                     : undefined
@@ -917,7 +917,7 @@ export default function BetaQueuePage() {
             {loading ? (
               <tr>
                 <td colSpan={9} className="px-4 py-8 text-center text-slate-500">
-                  Loading…
+                  Loadingâ€¦
                 </td>
               </tr>
             ) : rows.length === 0 ? (
@@ -962,7 +962,7 @@ export default function BetaQueuePage() {
                     </td>
                     <td className="px-4 py-3 text-slate-200">
                       <span className="inline-flex flex-wrap items-center gap-2">
-                        <span>{row.username?.trim() ? `@${row.username}` : "—"}</span>
+                        <span>{row.username?.trim() ? `@${row.username}` : "â€”"}</span>
                         {row.founding_tester ? <FounderBadge /> : null}
                       </span>
                     </td>
@@ -971,7 +971,7 @@ export default function BetaQueuePage() {
                       <span
                         className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusBadgeClass(row.beta_status)}`}
                       >
-                        {row.beta_status ?? "—"}
+                        {row.beta_status ?? "â€”"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate-300">
@@ -980,7 +980,7 @@ export default function BetaQueuePage() {
                           Yes
                         </span>
                       ) : (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-slate-600">â€”</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -1003,7 +1003,7 @@ export default function BetaQueuePage() {
                     <td className="max-w-[14rem] px-4 py-3">
                       <div className="flex items-start gap-2">
                         <span className="min-w-0 flex-1 whitespace-pre-wrap break-words text-slate-400 line-clamp-2">
-                          {row.beta_notes?.trim() ? row.beta_notes : <span className="text-slate-600 select-none">—</span>}
+                          {row.beta_notes?.trim() ? row.beta_notes : <span className="text-slate-600 select-none">â€”</span>}
                         </span>
                         <button
                           type="button"
@@ -1023,7 +1023,7 @@ export default function BetaQueuePage() {
                             <button
                               type="button"
                               disabled={tableBusy || betaAtCapacity}
-                              title={betaAtCapacity ? "Beta full — cannot approve" : undefined}
+                              title={betaAtCapacity ? "Beta full â€” cannot approve" : undefined}
                               onClick={() => runApprove(row.id)}
                               className="approveBtn inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wide disabled:pointer-events-none disabled:opacity-50"
                             >
@@ -1042,7 +1042,7 @@ export default function BetaQueuePage() {
                                 disabled={tableBusy || betaAtCapacity}
                                 title={
                                   betaAtCapacity
-                                    ? "Beta full — cannot approve"
+                                    ? "Beta full â€” cannot approve"
                                     : "Senior admin: approve with founding tester + founder priority"
                                 }
                                 onClick={() => runApproveFounder(row.id)}
@@ -1074,7 +1074,7 @@ export default function BetaQueuePage() {
                                 {waitlistLoading ? (
                                   <>
                                     <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-                                    Saving…
+                                    Savingâ€¦
                                   </>
                                 ) : row.beta_waitlist ? (
                                   "Remove waitlist"
@@ -1129,7 +1129,7 @@ export default function BetaQueuePage() {
               {auditLoading ? (
                 <tr>
                   <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                    Loading…
+                    Loadingâ€¦
                   </td>
                 </tr>
               ) : auditRows.length === 0 ? (

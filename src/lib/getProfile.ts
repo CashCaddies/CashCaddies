@@ -1,6 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
-/** Current session profile slice (auth user → `profiles` by id). */
+/** Current session profile slice (auth user â†’ `profiles` by id). */
 export type CurrentProfile = {
   role: string | null;
   beta_status: string | null;

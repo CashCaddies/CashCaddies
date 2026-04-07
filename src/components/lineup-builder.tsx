@@ -11,21 +11,21 @@ import type { GolferRow } from "@/lib/golfers";
 import { LATE_SWAP_HEADER_NOTICE, playerSlotLockCountdownLabel } from "@/lib/late-swap";
 import { computeProtectionFeeUsd, tierFromPoints, TIER_BENEFITS } from "@/lib/loyalty";
 import type { DraftLineupEditorData } from "@/lib/lineup-draft-load";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { LineupPlayerCard } from "@/components/player-card";
 
 const SALARY_CAP = 50_000;
 const ROSTER_MAX = 6;
 
 type Props = {
-  /** When set, loaded from My Lineups — save updates this draft instead of creating a new row. */
+  /** When set, loaded from My Lineups â€” save updates this draft instead of creating a new row. */
   editMode: DraftLineupEditorData | null;
   contestId: string;
   contestName: string;
   entryFeeLabel: string;
   entryFeeUsd: number;
   protectionFeeUsd: number;
-  /** Contest `starts_at` has passed — roster and entry actions are disabled (server also enforces). */
+  /** Contest `starts_at` has passed â€” roster and entry actions are disabled (server also enforces). */
   contestLineupLocked?: boolean;
   /** When set, user cannot add another paid entry (e.g. per-user max); disables pay & shows banner. */
   payEntryBlockedBanner?: string | null;
@@ -71,7 +71,7 @@ export function LineupBuilder({
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [entryStatus, setEntryStatus] = useState("");
-  /** Set when paid entry succeeds — for confirmation + deep links. */
+  /** Set when paid entry succeeds â€” for confirmation + deep links. */
   const [confirmedLineupId, setConfirmedLineupId] = useState<string | null>(null);
   const [safetyPoolContributionUsd, setSafetyPoolContributionUsd] = useState<number | null>(null);
   const [savePending, startSaveTransition] = useTransition();
@@ -156,7 +156,7 @@ export function LineupBuilder({
     const pool = new Set(golfers.map((g) => g.id));
     const ok = editMode.golferIds.length === ROSTER_MAX && editMode.golferIds.every((id) => pool.has(id));
     if (!ok) {
-      setLoadError("Could not restore saved golfers — try again or rebuild your lineup.");
+      setLoadError("Could not restore saved golfers â€” try again or rebuild your lineup.");
       hydratedEditRef.current = true;
       return;
     }
@@ -217,7 +217,7 @@ export function LineupBuilder({
 
   const saveLineupDisabledReason = useMemo(() => {
     if (salaryCapExceeded) {
-      return "Salary cap exceeded — adjust your lineup before saving.";
+      return "Salary cap exceeded â€” adjust your lineup before saving.";
     }
     if (rosterCount !== ROSTER_MAX) {
       return `Select exactly ${ROSTER_MAX} golfers (currently ${rosterCount}).`;
@@ -235,13 +235,13 @@ export function LineupBuilder({
 
   const payDisabledReason = useMemo(() => {
     if (editingContestEntryId) {
-      return "Editing an existing entry — payment is not available.";
+      return "Editing an existing entry â€” payment is not available.";
     }
     if (payEntryBlockedBanner) {
       return payEntryBlockedBanner;
     }
     if (contestLineupLocked) {
-      return "Contest started — lineups locked";
+      return "Contest started â€” lineups locked";
     }
     if (contestId === "default") {
       return "Open the lobby, pick a contest, then use Lineup Builder from there (or enter from My Lineups).";
@@ -302,11 +302,11 @@ export function LineupBuilder({
 
   function saveLineupToSupabase() {
     if (rosterFrozen) {
-      setEntryStatus("Contest started — lineups locked");
+      setEntryStatus("Contest started â€” lineups locked");
       return;
     }
     if (salaryCapExceeded) {
-      setEntryStatus("Salary cap exceeded — cannot save this lineup.");
+      setEntryStatus("Salary cap exceeded â€” cannot save this lineup.");
       return;
     }
     if (rosterCount !== ROSTER_MAX) {
@@ -330,7 +330,7 @@ export function LineupBuilder({
         setLineupSaveSuccess(true);
         setEntryStatus(editMode ? "Lineup updated" : "Lineup saved");
         const hasContest = Boolean(contestId.trim()) && contestId !== "default";
-        // Edit draft → My Lineups. New lineup from contest link → Lobby. New practice draft → My Lineups.
+        // Edit draft â†’ My Lineups. New lineup from contest link â†’ Lobby. New practice draft â†’ My Lineups.
         const destination =
           editMode != null ? "/dashboard/lineups" : hasContest ? "/lobby" : "/dashboard/lineups";
         window.setTimeout(() => {
@@ -345,7 +345,7 @@ export function LineupBuilder({
 
   function submitLineupToSupabase() {
     if (contestLineupLocked) {
-      setEntryStatus("Contest started — lineups locked");
+      setEntryStatus("Contest started â€” lineups locked");
       return;
     }
     if (editingContestEntryId) {
@@ -413,7 +413,7 @@ export function LineupBuilder({
           className="border-b border-amber-500/40 bg-amber-950/50 px-4 py-3 text-center text-sm font-semibold text-amber-100"
           role="alert"
         >
-          Contest started — lineups locked
+          Contest started â€” lineups locked
         </div>
       ) : null}
       {payEntryBlockedBanner && !contestLineupLocked && (
@@ -425,7 +425,7 @@ export function LineupBuilder({
           {payEntryBlockedBanner}
         </div>
       )}
-      {/* Summary — DFS-style (cap / remaining / count) */}
+      {/* Summary â€” DFS-style (cap / remaining / count) */}
       <div className="sticky top-0 z-20 border-b border-[#2a3039] bg-[#0c1015]">
         <div className="grid grid-cols-2 gap-px bg-[#2a3039] sm:grid-cols-4">
           <div className="bg-[#141920] px-4 py-4 sm:px-5">
@@ -516,7 +516,7 @@ export function LineupBuilder({
           </div>
           <p className="text-[11px] leading-snug text-[#6b7684]">
             Your tier ({tier})
-            {discountPct > 0 ? ` · ${discountPct}% protection discount` : ""}. Applied at checkout.
+            {discountPct > 0 ? ` Â· ${discountPct}% protection discount` : ""}. Applied at checkout.
           </p>
           <p className="text-xs text-[#8b98a5]">
             Safety coverage subtotal:{" "}
@@ -556,10 +556,10 @@ export function LineupBuilder({
               <div>
                 <h2 className="text-xs font-bold uppercase tracking-wider text-[#c5cdd5]">Player pool</h2>
                 <p className="mt-0.5 text-[11px] text-[#6b7684]">
-                  Sorted by salary · highest first
+                  Sorted by salary Â· highest first
                   {lateSwapActive && swapTargetSlot !== null ? (
                     <span className="mt-1 block font-semibold text-emerald-200/90">
-                      Choose a replacement for G{swapTargetSlot + 1} — then save.
+                      Choose a replacement for G{swapTargetSlot + 1} â€” then save.
                     </span>
                   ) : null}
                 </p>
@@ -570,7 +570,7 @@ export function LineupBuilder({
                   type="search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name…"
+                  placeholder="Search by nameâ€¦"
                   autoComplete="off"
                   className="w-full rounded border border-[#2a3039] bg-[#0f1419] px-3 py-2 text-sm text-[#e8ecf0] placeholder:text-[#6b7684] focus:border-[#3d8bfd] focus:outline-none focus:ring-1 focus:ring-[#3d8bfd]/50"
                 />
@@ -590,7 +590,7 @@ export function LineupBuilder({
                 {loadingGolfers && (
                   <tr>
                     <td colSpan={3} className="px-4 py-10 text-center text-[#6b7684]">
-                      Loading golfers…
+                      Loading golfersâ€¦
                     </td>
                   </tr>
                 )}
@@ -698,7 +698,7 @@ export function LineupBuilder({
                             disabled={addDisabled}
                             title={
                               rosterFrozen
-                                ? "Contest started — lineups locked"
+                                ? "Contest started â€” lineups locked"
                                 : wouldExceedCap || salaryCapExceeded
                                   ? "Salary cap exceeded"
                                   : replaceMode && rosterFull && swapTargetSlot === null
@@ -720,14 +720,14 @@ export function LineupBuilder({
           </div>
         </div>
 
-        {/* Lineup column — DFS-style */}
+        {/* Lineup column â€” DFS-style */}
         <aside className="w-full shrink-0 border-t border-[#2a3039] bg-[#0f1419] lg:w-[340px] lg:border-t-0 lg:border-l">
           <div className="border-b border-[#2a3039] bg-[#1a1f26] px-4 py-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#c5cdd5]">
               Your lineup
             </h2>
             <p className="mt-0.5 text-[11px] text-[#6b7684]">
-              {rosterCount}/{ROSTER_MAX} golfers · ${salaryUsed.toLocaleString()} used · $
+              {rosterCount}/{ROSTER_MAX} golfers Â· ${salaryUsed.toLocaleString()} used Â· $
               {remainingSalary.toLocaleString()} left
             </p>
           </div>
@@ -770,12 +770,12 @@ export function LineupBuilder({
             {canSaveLineup ? (
               <div className="space-y-1.5">
                 <p className="font-medium">
-                  Ready to save — 6 players, salary at or under ${SALARY_CAP.toLocaleString()}.
+                  Ready to save â€” 6 players, salary at or under ${SALARY_CAP.toLocaleString()}.
                 </p>
                 {!validation.ok && (
                   <p className="text-[11px] leading-snug text-amber-200/95">
                     Pay &amp; enter still needs:{" "}
-                    {validation.errors.filter((m) => !m.includes("Salary cap") && !m.includes("exactly")).join(" · ") ||
+                    {validation.errors.filter((m) => !m.includes("Salary cap") && !m.includes("exactly")).join(" Â· ") ||
                       "see checklist above."}
                   </p>
                 )}
@@ -797,7 +797,7 @@ export function LineupBuilder({
               onClick={saveLineupToSupabase}
               title={
                 rosterFrozen
-                  ? "Contest started — lineups locked"
+                  ? "Contest started â€” lineups locked"
                   : (saveLineupDisabledReason ?? undefined)
               }
               className="inline-flex w-full items-center justify-center rounded border border-[#2d7a3a] bg-[#1f8a3b] py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#249544] disabled:cursor-not-allowed disabled:opacity-45"
@@ -814,7 +814,7 @@ export function LineupBuilder({
               {savePending ? (
                 <>
                   <InlineSpinner className="mr-2 h-3.5 w-3.5 shrink-0 animate-spin text-white" />
-                  Saving…
+                  Savingâ€¦
                 </>
               ) : editMode ? (
                 "Save changes"
@@ -834,7 +834,7 @@ export function LineupBuilder({
               {paySubmitting ? (
                 <>
                   <InlineSpinner className="mr-2 h-3.5 w-3.5 shrink-0 animate-spin text-[#e8ecf0]" />
-                  Processing…
+                  Processingâ€¦
                 </>
               ) : (
                 "Save & pay entry now"
@@ -876,14 +876,14 @@ export function LineupBuilder({
                 className="mt-3 rounded-lg border border-emerald-500/30 bg-[#0c1410] px-4 py-4 text-left shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]"
               >
                 <p className="text-center text-base font-black tracking-tight text-white">
-                  Entry Confirmed <span aria-hidden="true">✅</span>
+                  Entry Confirmed <span aria-hidden="true">âœ…</span>
                 </p>
                 <dl className="mt-4 space-y-3 text-sm">
                   <div>
                     <dt className="text-[11px] font-bold uppercase tracking-wider text-[#8b98a5]">Contest</dt>
                     <dd className="mt-1 font-semibold text-[#e8ecf0]">
                       {contestName}
-                      <span className="text-[#6b7684]"> · </span>
+                      <span className="text-[#6b7684]"> Â· </span>
                       <span className="tabular-nums text-white">
                         {entryFeeUsd > 0 ? entryFeeLabel : formatMoneyUsd(0)}
                       </span>
@@ -894,7 +894,7 @@ export function LineupBuilder({
                       Protection
                     </dt>
                     <dd className="mt-1 text-[#c5cdd5]">
-                      Automatic — activates if any roster golfer is WD, DQ, or DNS.
+                      Automatic â€” activates if any roster golfer is WD, DQ, or DNS.
                     </dd>
                   </div>
                   <div>
@@ -931,7 +931,7 @@ export function LineupBuilder({
                   </Link>
                 </div>
                 <p className="mt-3 text-center text-[11px] text-[#6b7684]">
-                  Redirecting to My Lineups in 3 seconds…
+                  Redirecting to My Lineups in 3 secondsâ€¦
                 </p>
               </div>
             )}

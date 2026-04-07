@@ -24,7 +24,7 @@ import type { BetaPriority } from "@/lib/beta-priority";
 import { BETA_PRIORITIES, parseBetaPriority } from "@/lib/beta-priority";
 import { INVITE_SOURCES, type InviteSource, parseInviteSource } from "@/lib/invite-source";
 import { APP_CONFIG_DEFAULT_MAX_BETA_USERS, APP_CONFIG_KEY_MAX_BETA_USERS, parseConfigNumber } from "@/lib/config";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type BetaUserRow = {
   id: string;
@@ -43,9 +43,9 @@ type BetaUserRow = {
 };
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "â€”";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "â€”";
   return d.toLocaleString();
 }
 
@@ -376,7 +376,7 @@ export default function BetaManagementPage() {
                   });
                 }}
               >
-                {isPending ? "Approving…" : "Approve"}
+                {isPending ? "Approvingâ€¦" : "Approve"}
               </button>
             </div>
           </div>
@@ -581,7 +581,7 @@ function DfsPremiumToggles({
     <div className="mt-3 rounded-lg border border-slate-700/80 bg-slate-950/40 px-3 py-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Advanced DFS tools</p>
       <p className="mt-1 text-xs text-slate-400">
-        DFS beta: {row.is_beta_tester ? "on" : "off"} · Premium: {row.is_premium ? "on" : "off"}
+        DFS beta: {row.is_beta_tester ? "on" : "off"} Â· Premium: {row.is_premium ? "on" : "off"}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button
@@ -651,12 +651,12 @@ function PendingUserCard({
     <div className="adminUserCard">
       <p className="text-xs uppercase tracking-wide text-slate-500">Joined {formatDate(row.created_at)}</p>
       <p className="mt-1 text-sm text-slate-400">
-        Email <span className="font-medium text-slate-200">{row.email || "—"}</span>
+        Email <span className="font-medium text-slate-200">{row.email || "â€”"}</span>
       </p>
       <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-400">
         <span>
           Username{" "}
-          <span className="font-medium text-slate-200">{row.username?.trim() ? `@${row.username}` : "—"}</span>
+          <span className="font-medium text-slate-200">{row.username?.trim() ? `@${row.username}` : "â€”"}</span>
         </span>
         {row.founding_tester ? <FounderBadge /> : null}
       </p>
@@ -719,17 +719,17 @@ function ApprovedUserCard({
     <div className="adminUserCard">
       <p className="text-xs uppercase tracking-wide text-slate-500">Joined {formatDate(row.created_at)}</p>
       <p className="mt-1 text-sm text-slate-400">
-        Email <span className="font-medium text-slate-200">{row.email || "—"}</span>
+        Email <span className="font-medium text-slate-200">{row.email || "â€”"}</span>
       </p>
       <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-400">
         <span>
           Username{" "}
-          <span className="font-medium text-slate-200">{row.username?.trim() ? `@${row.username}` : "—"}</span>
+          <span className="font-medium text-slate-200">{row.username?.trim() ? `@${row.username}` : "â€”"}</span>
         </span>
         {row.founding_tester ? <FounderBadge /> : null}
       </p>
       <p className="mt-1 text-sm text-slate-400">
-        Role <span className="font-medium text-slate-200">{row.role || "—"}</span>
+        Role <span className="font-medium text-slate-200">{row.role || "â€”"}</span>
       </p>
       <InviteSourceField row={row} busy={busy} onSetSource={onSetInviteSource} />
       <BetaPriorityField row={row} busy={busy} canEdit={canSetBetaPriority} onSetPriority={onSetBetaPriority} />

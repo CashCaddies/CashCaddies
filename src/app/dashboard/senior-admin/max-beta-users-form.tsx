@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { updateMaxBetaUsersCap } from "@/app/admin/user-actions";
 import { APP_CONFIG_DEFAULT_MAX_BETA_USERS, APP_CONFIG_KEY_MAX_BETA_USERS, parseConfigNumber } from "@/lib/config";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export function MaxBetaUsersForm() {
   const [draft, setDraft] = useState(String(APP_CONFIG_DEFAULT_MAX_BETA_USERS));
@@ -62,7 +62,7 @@ export function MaxBetaUsersForm() {
       </p>
       <form className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={onSave}>
         <label className="block flex-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Limit (whole number, ≥ 0)</span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Limit (whole number, â‰¥ 0)</span>
           <input
             type="text"
             inputMode="numeric"
@@ -79,10 +79,10 @@ export function MaxBetaUsersForm() {
           disabled={loading || saving}
           className="rounded-md border border-amber-600/50 bg-amber-950/40 px-4 py-2 text-sm font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-950/60 disabled:pointer-events-none disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? "Savingâ€¦" : "Save"}
         </button>
       </form>
-      {loading ? <p className="mt-3 text-sm text-slate-500">Loading current value…</p> : null}
+      {loading ? <p className="mt-3 text-sm text-slate-500">Loading current valueâ€¦</p> : null}
       {message ? <p className="mt-3 text-sm font-medium text-emerald-300">{message}</p> : null}
       {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
     </div>

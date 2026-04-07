@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard-shell";
 import type { FeedbackIntakeType } from "@/app/feedback/actions";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type Flow = "choose" | FeedbackIntakeType;
 
@@ -79,7 +79,7 @@ export function FeedbackForm({
   return (
     <DashboardShell
       title="Help Improve CashCaddies"
-      description="Report a bug or suggest an idea — your feedback shapes what we build next."
+      description="Report a bug or suggest an idea â€” your feedback shapes what we build next."
     >
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 shadow-sm">
         {success ? (
@@ -119,7 +119,7 @@ export function FeedbackForm({
                 <span className="text-xs font-semibold uppercase tracking-wide text-red-300/90">Report</span>
                 <span className="mt-1 text-lg font-bold text-red-100">Report Bug</span>
                 <span className="mt-2 text-sm text-red-200/80">
-                  Something broke, looks wrong, or blocked you — tell us what happened.
+                  Something broke, looks wrong, or blocked you â€” tell us what happened.
                 </span>
               </button>
               <button
@@ -159,7 +159,7 @@ export function FeedbackForm({
                 }}
                 className="text-sm font-semibold text-slate-400 underline hover:text-slate-200"
               >
-                ← Back
+                â† Back
               </button>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -225,7 +225,7 @@ export function FeedbackForm({
                     : "bg-emerald-600 text-slate-950 hover:bg-emerald-500"
                 }`}
               >
-                {isPending ? "Submitting…" : isBug ? "Submit bug report" : "Submit idea"}
+                {isPending ? "Submittingâ€¦" : isBug ? "Submit bug report" : "Submit idea"}
               </button>
             </form>
           </>

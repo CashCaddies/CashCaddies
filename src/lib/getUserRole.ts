@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export async function getUserRole(userId: string): Promise<string> {
   const uid = String(userId ?? "").trim();

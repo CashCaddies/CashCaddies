@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserRole } from "@/lib/getUserRole";
 import { isAdmin as isAdminRole } from "@/lib/permissions";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 type ContestRow = {
@@ -20,7 +20,7 @@ type ContestRow = {
 
 function formatMoney(n: number | string | null): string {
   const v = Number(n);
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "â€”";
   return `$${v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
@@ -89,7 +89,7 @@ export default function AdminContestsPage() {
   }, [isReady, user]);
 
   if (!isReady || loadingPage) {
-    return <p className="text-slate-400">Loading…</p>;
+    return <p className="text-slate-400">Loadingâ€¦</p>;
   }
 
   if (!user) {
@@ -304,7 +304,7 @@ export default function AdminContestsPage() {
                   <td className="px-3 py-3 text-slate-300">
                     {row.starts_at
                       ? new Date(row.starts_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
-                      : "—"}
+                      : "â€”"}
                     <div className="mt-1 text-xs text-slate-500">Created by: {row.created_by || "unknown"}</div>
                   </td>
                 </tr>

@@ -28,7 +28,7 @@ import {
   type WalletTransaction,
 } from "@/lib/wallet-transaction";
 import { formatMoney } from "@/lib/wallet";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 const ADD_AMOUNTS = [50, 100, 250, 500] as const;
 const RESET_BALANCE = 5000;
@@ -44,7 +44,7 @@ function WalletLoadingSpinner() {
         className="h-10 w-10 animate-spin rounded-full border-2 border-yellow-500/25 border-t-yellow-400"
         aria-hidden
       />
-      <p className="text-sm text-slate-400">Loading wallet…</p>
+      <p className="text-sm text-slate-400">Loading walletâ€¦</p>
     </div>
   );
 }
@@ -299,7 +299,7 @@ export default function WalletPage() {
         href="/dashboard"
         className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition hover:text-slate-200"
       >
-        <span aria-hidden>←</span>
+        <span aria-hidden>â†</span>
         Back to Dashboard
       </Link>
 
@@ -329,7 +329,7 @@ export default function WalletPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Deposit</p>
         <p className="mt-1 text-sm text-slate-400">
           {canAddFunds
-            ? "Add funds to your bankroll (simulated — no card charge yet)."
+            ? "Add funds to your bankroll (simulated â€” no card charge yet)."
             : "Deposits unlock when your beta access is approved."}
         </p>
         <button

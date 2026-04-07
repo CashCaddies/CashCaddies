@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/wallet";
 import { RecentAdminActivity } from "@/components/recent-admin-activity";
 
@@ -164,7 +164,7 @@ export default function DashboardAdminCommandCenterPage() {
   }, [isReady, user]);
 
   if (!isReady) {
-    return <p className="text-slate-400">Loading…</p>;
+    return <p className="text-slate-400">Loadingâ€¦</p>;
   }
 
   if (!user) {
@@ -185,7 +185,7 @@ export default function DashboardAdminCommandCenterPage() {
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Users</span>
           </div>
           <p className="mt-3 text-3xl font-bold tabular-nums text-white">
-            {loadingStats ? "…" : (users ?? "—")}
+            {loadingStats ? "â€¦" : (users ?? "â€”")}
           </p>
         </div>
 
@@ -195,7 +195,7 @@ export default function DashboardAdminCommandCenterPage() {
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Approved Beta</span>
           </div>
           <p className="mt-3 text-3xl font-bold tabular-nums text-green-400">
-            {loadingStats ? "…" : (approvedBeta ?? "—")}
+            {loadingStats ? "â€¦" : (approvedBeta ?? "â€”")}
           </p>
         </div>
 
@@ -226,7 +226,7 @@ export default function DashboardAdminCommandCenterPage() {
             <IconArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-500/60" />
           </div>
           <p className="mt-3 text-3xl font-bold tabular-nums text-yellow-400">
-            {loadingStats ? "…" : (pending ?? "—")}
+            {loadingStats ? "â€¦" : (pending ?? "â€”")}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">Click to review</p>
         </Link>
@@ -237,7 +237,7 @@ export default function DashboardAdminCommandCenterPage() {
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Beta Wallet</span>
           </div>
           <p className="mt-3 text-3xl font-bold tabular-nums text-yellow-300">
-            {loadingStats ? "…" : totalBetaWalletUsd === null ? "—" : formatMoney(totalBetaWalletUsd)}
+            {loadingStats ? "â€¦" : totalBetaWalletUsd === null ? "â€”" : formatMoney(totalBetaWalletUsd)}
           </p>
         </div>
       </div>

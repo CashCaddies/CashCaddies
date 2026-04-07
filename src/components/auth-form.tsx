@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
 
 type Props = {
@@ -198,7 +198,7 @@ export function AuthForm({ mode }: Props) {
       }
     }
 
-    setStatus(mode === "login" ? "Logged in. Redirecting..." : "Welcome! Redirecting to your dashboard…");
+    setStatus(mode === "login" ? "Logged in. Redirecting..." : "Welcome! Redirecting to your dashboardâ€¦");
 
     router.push("/dashboard");
     router.refresh();
@@ -239,7 +239,7 @@ export function AuthForm({ mode }: Props) {
               disabled={resendSending}
               onClick={() => void resendConfirmation()}
             >
-              {resendSending ? "Sending…" : "Resend confirmation email"}
+              {resendSending ? "Sendingâ€¦" : "Resend confirmation email"}
             </button>
             {resendMsg ? (
               <p
@@ -342,7 +342,7 @@ export function AuthForm({ mode }: Props) {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                   <button type="button" disabled={resetSending} onClick={() => void sendReset()}>
-                    {resetSending ? "Sending…" : "Send Reset Email"}
+                    {resetSending ? "Sendingâ€¦" : "Send Reset Email"}
                   </button>
                   {resetMsg ? (
                     <p

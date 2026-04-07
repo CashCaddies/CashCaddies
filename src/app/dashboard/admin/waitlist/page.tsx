@@ -7,7 +7,7 @@ import { processWaitlistSignup } from "@/app/admin/user-actions";
 import { useAuth } from "@/contexts/auth-context";
 import { getProfileByUserId } from "@/lib/getProfile";
 import { hasPermission } from "@/lib/permissions";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type SignupRow = {
   id: string;
@@ -21,9 +21,9 @@ type SignupRow = {
 type FilterTab = "active" | "processed";
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "â€”";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "â€”";
   return d.toLocaleString();
 }
 
@@ -145,7 +145,7 @@ export default function WaitlistManagerPage() {
   }
 
   if (!isReady || roleLoading) {
-    return <p className="pageWrap py-8 text-slate-400">Loading…</p>;
+    return <p className="pageWrap py-8 text-slate-400">Loadingâ€¦</p>;
   }
 
   if (!user) {
@@ -261,7 +261,7 @@ export default function WaitlistManagerPage() {
                   <tr key={row.id} className="border-b border-slate-800/80">
                     <td className="px-4 py-3 text-slate-400">{formatDate(row.created_at)}</td>
                     <td className="max-w-[14rem] truncate px-4 py-3 text-slate-200">{row.email}</td>
-                    <td className="px-4 py-3 text-slate-200">{row.username ? `@${row.username}` : "—"}</td>
+                    <td className="px-4 py-3 text-slate-200">{row.username ? `@${row.username}` : "â€”"}</td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-400">{row.source}</td>
                     <td className="px-4 py-3">
                       <span
@@ -301,7 +301,7 @@ export default function WaitlistManagerPage() {
                             </button>
                           </>
                         ) : (
-                          <span className="text-xs text-slate-600">—</span>
+                          <span className="text-xs text-slate-600">â€”</span>
                         )}
                       </div>
                     </td>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FeedbackForm } from "@/app/feedback/feedback-form";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export default function DashboardFeedbackIdeaPage() {
   const [ready, setReady] = useState(false);

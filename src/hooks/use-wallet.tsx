@@ -12,7 +12,7 @@ import {
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { normalizeProfileRow, type ProfileRow } from "@/lib/wallet";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import {
   isMissingColumnOrSchemaError,
   isRelationMissingOrNotExposedError,
@@ -20,7 +20,7 @@ import {
 
 /**
  * Auth user merged with `public.profiles.role` (defaults to `"user"` when missing).
- * Use `fullUser.role` for admin checks — never `user.role` from auth alone.
+ * Use `fullUser.role` for admin checks â€” never `user.role` from auth alone.
  */
 export type FullUser = User & {
   role: string;
@@ -46,7 +46,7 @@ export async function refreshWallet(): Promise<void> {
   await refreshWalletImpl?.();
 }
 
-/** Same as {@link refreshWallet} — refetch `profiles` row (wallet_balance / account_balance) after mutations. */
+/** Same as {@link refreshWallet} â€” refetch `profiles` row (wallet_balance / account_balance) after mutations. */
 export async function fetchWallet(): Promise<void> {
   return refreshWallet();
 }

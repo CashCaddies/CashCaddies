@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type Row = {
   id: string;
@@ -92,7 +92,7 @@ export function ProtectionActivitySection() {
       <p className="mt-1 text-sm text-slate-400">
         Safety Coverage fund credits issued when a protected golfer WD/DNS/DQ is resolved without a swap.
       </p>
-      {loading && <p className="mt-4 text-sm text-slate-500">Loading…</p>}
+      {loading && <p className="mt-4 text-sm text-slate-500">Loadingâ€¦</p>}
       {err && (
         <p className="mt-4 rounded border border-amber-800/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-200">
           {err}
@@ -106,7 +106,7 @@ export function ProtectionActivitySection() {
           {rows.map((r) => (
             <li key={r.id} className="py-3 first:pt-0">
               <p className="font-medium text-slate-100">
-                Protected lineup – {String(r.event_type).toUpperCase()}
+                Protected lineup â€“ {String(r.event_type).toUpperCase()}
               </p>
               <p className="mt-0.5 text-sm text-emerald-300">
                 ${Number(r.protection_amount ?? 0).toFixed(2)} safety coverage credit issued

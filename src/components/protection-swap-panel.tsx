@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { GolferRow } from "@/lib/golfers";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { swapProtectedGolferAction } from "@/app/protection/actions";
 
 const SALARY_CAP = 50_000;
@@ -101,7 +101,7 @@ export function ProtectionSwapPanel({
   }
 
   if (loading) {
-    return <p className="text-xs text-slate-500">Loading swap options…</p>;
+    return <p className="text-xs text-slate-500">Loading swap optionsâ€¦</p>;
   }
 
   return (
@@ -110,7 +110,7 @@ export function ProtectionSwapPanel({
       className="mt-3 rounded-lg border border-amber-700/40 bg-amber-950/20 px-3 py-3 text-sm text-amber-50"
     >
       <p className="font-semibold text-amber-100">
-        Swap available — replace {oldGolferName}
+        Swap available â€” replace {oldGolferName}
       </p>
       <p className="mt-1 text-xs text-amber-200/90">
         Pick a golfer who has not teed off. Swap available until replacement tee time.
@@ -123,10 +123,10 @@ export function ProtectionSwapPanel({
             onChange={(e) => setChoice(e.target.value)}
             className="mt-1 w-full rounded border border-amber-800/60 bg-slate-950 px-2 py-2 text-sm text-white"
           >
-            <option value="">Select golfer…</option>
+            <option value="">Select golferâ€¦</option>
             {eligible.map((g) => (
               <option key={g.id} value={g.id}>
-                {g.name} · ${g.salary.toLocaleString()}
+                {g.name} Â· ${g.salary.toLocaleString()}
               </option>
             ))}
           </select>
@@ -136,13 +136,13 @@ export function ProtectionSwapPanel({
           disabled={!choice || overCap || busy}
           className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-40"
         >
-          {busy ? "Swapping…" : "Swap"}
+          {busy ? "Swappingâ€¦" : "Swap"}
         </button>
       </div>
       {selected ? (
         <p className={`mt-2 text-xs ${overCap ? "font-semibold text-red-300" : "text-amber-200/80"}`}>
           New lineup salary: ${newTotal.toLocaleString()}
-          {overCap ? ` — exceeds $${SALARY_CAP.toLocaleString()} cap` : ""}
+          {overCap ? ` â€” exceeds $${SALARY_CAP.toLocaleString()} cap` : ""}
         </p>
       ) : null}
       {msg ? <p className="mt-2 text-xs text-red-300">{msg}</p> : null}

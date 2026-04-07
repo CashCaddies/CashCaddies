@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type AdminLogRow = {
   id: string;
@@ -19,13 +19,13 @@ function formatAdmin(row: AdminLogRow): string {
   if (d) {
     return d;
   }
-  return `${row.admin_user_id.slice(0, 8)}…`;
+  return `${row.admin_user_id.slice(0, 8)}â€¦`;
 }
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) {
-    return "—";
+    return "â€”";
   }
   return d.toLocaleString(undefined, {
     dateStyle: "short",
@@ -74,7 +74,7 @@ export function RecentAdminActivity() {
           {error}
         </p>
       ) : rows === null ? (
-        <p className="mt-4 text-sm text-slate-500">Loading…</p>
+        <p className="mt-4 text-sm text-slate-500">Loadingâ€¦</p>
       ) : rows.length === 0 ? (
         <p className="mt-4 text-sm text-slate-500">No admin activity logged yet.</p>
       ) : (
@@ -99,13 +99,13 @@ export function RecentAdminActivity() {
                     <td className="px-3 py-2.5 text-slate-300">{formatAdmin(r)}</td>
                     <td className="px-3 py-2.5 tabular-nums text-slate-400">{formatTime(r.created_at)}</td>
                     <td className="max-w-[160px] truncate px-3 py-2.5 text-slate-400" title={r.target ?? undefined}>
-                      {r.target?.trim() ? r.target : "—"}
+                      {r.target?.trim() ? r.target : "â€”"}
                     </td>
                     <td
                       className="max-w-[220px] truncate px-3 py-2.5 text-slate-400"
                       title={detailsTrim || undefined}
                     >
-                      {detailsTrim || "—"}
+                      {detailsTrim || "â€”"}
                     </td>
                   </tr>
                 );

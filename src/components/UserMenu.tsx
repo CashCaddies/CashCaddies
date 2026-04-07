@@ -5,7 +5,7 @@ import { Shield } from "lucide-react";
 import { FounderBadge } from "@/components/founder-badge";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { hasPermission, isAdmin, isSeniorAdmin } from "@/lib/permissions";
 
 export type UserMenuProfile = {
@@ -21,7 +21,7 @@ type Props = {
   /** Fallback label, e.g. @handle or Account */
   label: string;
   locked?: boolean;
-  /** Paid / admin premium — show crown next to handle. */
+  /** Paid / admin premium â€” show crown next to handle. */
   premiumSubscriber?: boolean;
 };
 
@@ -45,7 +45,7 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  /** Direct `profiles` fetch — backup if parent props lag or omit role / founding_tester. */
+  /** Direct `profiles` fetch â€” backup if parent props lag or omit role / founding_tester. */
   const [clientRole, setClientRole] = useState<string | null>(null);
   const [clientFoundingTester, setClientFoundingTester] = useState<boolean | null>(null);
 
@@ -127,7 +127,7 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
           <span className="username inline-flex items-center gap-1">
             {premiumSubscriber ? (
               <span className="text-amber-400" title="Premium member" aria-hidden="true">
-                👑
+                ðŸ‘‘
               </span>
             ) : null}
             {displayName}

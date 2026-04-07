@@ -7,7 +7,7 @@ import { formatMoney } from "@/lib/wallet";
 import { FounderBadge } from "@/components/founder-badge";
 import { ProfileUsernameForm } from "@/components/profile-username-form";
 import { useWallet } from "@/hooks/use-wallet";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 const inputClass =
   "mt-2 block w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white placeholder:text-slate-500 focus:border-emerald-500/60 focus:outline-none focus:ring-1 focus:ring-emerald-500/40";
@@ -92,7 +92,7 @@ export default function ProfilePage() {
       title="Profile"
       description="Your account and beta wallet during the closed beta."
     >
-      {walletLoading && <p className="text-slate-400">Loading…</p>}
+      {walletLoading && <p className="text-slate-400">Loadingâ€¦</p>}
       {error && (
         <p className="rounded-lg border border-amber-700/50 bg-amber-950/40 px-4 py-3 text-amber-200">{error}</p>
       )}
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                       <div>
                         <p className="text-sm font-medium text-slate-300">Profile photo</p>
                         <label className="mt-1 inline-block cursor-pointer text-sm text-emerald-400 underline hover:text-emerald-300">
-                          {avatarUploading ? "Uploading…" : "Choose image"}
+                          {avatarUploading ? "Uploadingâ€¦" : "Choose image"}
                           <input
                             type="file"
                             accept="image/jpeg,image/png,image/webp,image/gif"
@@ -135,7 +135,7 @@ export default function ProfilePage() {
                             onChange={(ev) => void uploadAvatar(ev)}
                           />
                         </label>
-                        <p className="mt-1 text-xs text-slate-500">JPEG, PNG, WebP, or GIF · max 5 MB</p>
+                        <p className="mt-1 text-xs text-slate-500">JPEG, PNG, WebP, or GIF Â· max 5 MB</p>
                         {avatarMsg ? (
                           <p className="mt-2 text-sm text-amber-200" role="status">
                             {avatarMsg}
@@ -162,7 +162,7 @@ export default function ProfilePage() {
                     <ProfileUsernameForm initialUsername={wallet.username} onUpdated={() => void refresh()} />
                   </>
                 ) : (
-                  <p className="text-sm text-slate-400">Loading profile…</p>
+                  <p className="text-sm text-slate-400">Loading profileâ€¦</p>
                 )}
               </div>
 
@@ -238,12 +238,12 @@ export default function ProfilePage() {
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-slate-500">Email</dt>
-                <dd className="mt-0.5 text-slate-200">{user.email ?? "—"}</dd>
+                <dd className="mt-0.5 text-slate-200">{user.email ?? "â€”"}</dd>
               </div>
               <div>
                 <dt className="text-slate-500">DFS handle</dt>
                 <dd className="mt-0.5 font-medium text-slate-200">
-                  {wallet ? `@${wallet.username}` : "—"}
+                  {wallet ? `@${wallet.username}` : "â€”"}
                 </dd>
               </div>
               <div>

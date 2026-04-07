@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { approveBetaUser, setBetaWaitlist } from "@/app/admin/user-actions";
 import { formatMoney } from "@/lib/wallet";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 export type BetaUserProfileModalProps = {
   userId: string | null;
@@ -29,9 +29,9 @@ type ProfileDetail = {
 };
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "â€”";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "â€”";
   return d.toLocaleString();
 }
 
@@ -187,20 +187,20 @@ export function BetaUserProfileModal({
             className="rounded-md px-2 py-1 text-sm text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-50"
             aria-label="Close"
           >
-            ✕
+            âœ•
           </button>
         </div>
 
         {betaAtCapacity && canApprove ? (
           <p className="mt-3 rounded-lg border border-amber-500/35 bg-amber-950/25 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-amber-100">
-            Beta full — approve disabled
+            Beta full â€” approve disabled
           </p>
         ) : null}
 
         {loading ? (
           <p className="mt-6 flex items-center gap-2 text-sm text-slate-400">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-            Loading…
+            Loadingâ€¦
           </p>
         ) : fetchError ? (
           <p className="mt-4 text-sm text-red-300">{fetchError}</p>
@@ -208,12 +208,12 @@ export function BetaUserProfileModal({
           <dl className="mt-4 space-y-3 text-sm">
             <div>
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</dt>
-              <dd className="mt-0.5 text-slate-200">{profile.email?.trim() || "—"}</dd>
+              <dd className="mt-0.5 text-slate-200">{profile.email?.trim() || "â€”"}</dd>
             </div>
             <div>
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Username</dt>
               <dd className="mt-0.5 text-slate-200">
-                {profile.username?.trim() ? `@${profile.username.trim()}` : "—"}
+                {profile.username?.trim() ? `@${profile.username.trim()}` : "â€”"}
               </dd>
             </div>
             <div>
@@ -230,7 +230,7 @@ export function BetaUserProfileModal({
                 <span
                   className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusBadgeClass(profile.beta_status)}`}
                 >
-                  {profile.beta_status ?? "—"}
+                  {profile.beta_status ?? "â€”"}
                 </span>
               </dd>
             </div>
@@ -249,7 +249,7 @@ export function BetaUserProfileModal({
             <div>
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</dt>
               <dd className="mt-0.5 whitespace-pre-wrap break-words text-slate-300">
-                {profile.beta_notes?.trim() ? profile.beta_notes : <span className="text-slate-600">—</span>}
+                {profile.beta_notes?.trim() ? profile.beta_notes : <span className="text-slate-600">â€”</span>}
               </dd>
             </div>
             <div>
@@ -265,7 +265,7 @@ export function BetaUserProfileModal({
             <button
               type="button"
               disabled={approveBusy || betaAtCapacity}
-              title={betaAtCapacity ? "Beta full — cannot approve" : undefined}
+              title={betaAtCapacity ? "Beta full â€” cannot approve" : undefined}
               onClick={() => void handleApprove()}
               className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-emerald-600/50 bg-emerald-950/50 px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-emerald-100 hover:bg-emerald-950/70 disabled:pointer-events-none disabled:opacity-50"
             >
@@ -277,7 +277,7 @@ export function BetaUserProfileModal({
               <div className="rounded-lg border border-sky-800/50 bg-sky-950/20 p-3">
                 {waitlistError ? <p className="mb-2 text-sm text-red-300">{waitlistError}</p> : null}
                 <p className="mb-2 text-xs text-sky-200/90">
-                  Program is full — add this user to the waitlist without changing their beta status.
+                  Program is full â€” add this user to the waitlist without changing their beta status.
                 </p>
                 <button
                   type="button"

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { fetchDashboardLineups, type DashboardLineup } from "@/lib/dashboard-lineups";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 /** Refresh often when the user has a paid contest entry; less often when only drafts / empty (fewer Supabase round-trips). */
 const POLL_MS_WITH_ENTRY = 30_000;
@@ -65,7 +65,7 @@ export function useDashboardLineups() {
     if (!supabase) {
       return;
     }
-    /* No background refresh when there are no lineups — avoids repeat round-trips (contest_entries only runs when entries exist). */
+    /* No background refresh when there are no lineups â€” avoids repeat round-trips (contest_entries only runs when entries exist). */
     if (lineups.length === 0) {
       return;
     }

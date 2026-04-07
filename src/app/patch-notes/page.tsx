@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@/hooks/use-wallet";
 import { hasPermission } from "@/lib/permissions";
 import { PATCHES } from "@/lib/patch-notes";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type FounderUpdate = {
   id: string;
