@@ -46,40 +46,41 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   /** Direct `profiles` fetch â€” backup if parent props lag or omit role / founding_tester. */
-  const [clientRole, setClientRole] = useState<string | null>(null);
-  const [clientFoundingTester, setClientFoundingTester] = useState<boolean | null>(null);
+  const [profileState, setProfile] = useState<UserMenuProfile | null>(null);
 
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     if (!supabase) return;
-    let cancelled = false;
+    let mounted = true;
 
-    async function load() {
+    async function loadUserData() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user || cancelled) return;
-      if (!user.id) return;
 
-      const { data: row } = await supabase
+      if (!user || !mounted) return;
+
+      const { data: profile, error } = await supabase
         .from("profiles")
-        .select("role, founding_tester")
+        .select("*")
         .eq("id", user.id)
-        .maybeSingle();
-      if (cancelled) return;
-      if (process.env.NODE_ENV === "development") {
-        console.log("PROFILE:", row, "ROLE:", row?.role);
+        .single();
+
+      if (error) {
+        console.error("PROFILE LOAD ERROR:", error);
+        return;
       }
-      const r = row && typeof (row as { role?: unknown }).role === "string" ? String((row as { role: string }).role).trim() : "";
-      if (r) setClientRole(r);
-      const ft = row && (row as { founding_tester?: unknown }).founding_tester === true;
-      setClientFoundingTester(ft);
+
+      if (mounted) {
+        setProfile(profile as UserMenuProfile);
+      }
     }
 
-    void load();
+    void loadUserData();
+
     return () => {
-      cancelled = true;
+      mounted = false;
     };
   }, []);
 
@@ -110,9 +111,14 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
   }
 
   const propRole = profile?.role != null && String(profile.role).trim() !== "" ? String(profile.role).trim() : null;
-  const effectiveRole = propRole ?? clientRole;
+  const clientRoleFromFetch =
+    profileState?.role != null && String(profileState.role).trim() !== ""
+      ? String(profileState.role).trim()
+      : null;
+  const effectiveRole = propRole ?? clientRoleFromFetch;
   const isAdminUser = isAdmin(effectiveRole);
   const isSeniorAdminUser = isSeniorAdmin(effectiveRole);
+  const clientFoundingTester = profileState === null ? null : profileState.founding_tester === true;
   const showFounderBadge =
     profile?.founding_tester === true || clientFoundingTester === true;
 
