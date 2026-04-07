@@ -72,6 +72,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      if (!user?.id) {
+        setWallet(null);
+        setError("");
+        if (!background) {
+          setProfileLoading(false);
+        }
+        return;
+      }
+
       if (!background) {
         setProfileLoading(true);
       }
@@ -82,7 +91,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           data: { user: authUser },
         } = await supabase.auth.getUser();
 
-        if (!authUser) {
+        if (!authUser?.id) {
           setWallet(null);
           return;
         }
@@ -149,7 +158,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [isReady],
+    [isReady, user?.id],
   );
 
   const refresh = useCallback(() => fetchProfile(true), [fetchProfile]);

@@ -54,12 +54,19 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
   useEffect(() => {
     if (!supabase) return;
     let cancelled = false;
-    void (async () => {
+
+    async function load() {
       const {
-        data: { user: u },
+        data: { user },
       } = await supabase.auth.getUser();
-      if (!u || cancelled) return;
-      const { data: row } = await supabase.from("profiles").select("role, founding_tester").eq("id", u.id).maybeSingle();
+      if (!user || cancelled) return;
+      if (!user.id) return;
+
+      const { data: row } = await supabase
+        .from("profiles")
+        .select("role, founding_tester")
+        .eq("id", user.id)
+        .maybeSingle();
       if (cancelled) return;
       if (process.env.NODE_ENV === "development") {
         console.log("PROFILE:", row, "ROLE:", row?.role);
@@ -68,7 +75,9 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
       if (r) setClientRole(r);
       const ft = row && (row as { founding_tester?: unknown }).founding_tester === true;
       setClientFoundingTester(ft);
-    })();
+    }
+
+    void load();
     return () => {
       cancelled = true;
     };

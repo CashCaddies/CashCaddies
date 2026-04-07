@@ -24,7 +24,7 @@ export default function ProfilePage() {
   async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !supabase || !user || !wallet) {
+    if (!file || !supabase || !user?.id || !wallet) {
       return;
     }
     setAvatarMsg("");
@@ -58,6 +58,10 @@ export default function ProfilePage() {
 
   async function changePassword() {
     setMsg("");
+    if (!user?.id) {
+      setMsg("Sign in required.");
+      return;
+    }
     if (password.length < 8) {
       setMsg("Password must be at least 8 characters");
       return;

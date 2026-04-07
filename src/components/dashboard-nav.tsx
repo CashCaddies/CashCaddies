@@ -339,7 +339,7 @@ type DashboardNavProps = {
 
 export function DashboardNav({ mode = "single" }: DashboardNavProps) {
   const pathname = usePathname() ?? "";
-  const { wallet, fullUser, loading } = useWallet();
+  const { wallet, fullUser, loading, user } = useWallet();
   const [newFeedbackCount, setNewFeedbackCount] = useState<number | null>(null);
 
   /** `profiles.role` from wallet row first, then `fullUser.role` (same underlying row). */
@@ -371,6 +371,10 @@ export function DashboardNav({ mode = "single" }: DashboardNavProps) {
   }, [loading, wallet, fullUser?.role, resolvedRole]);
 
   const refreshNewCount = useCallback(async () => {
+    if (!user?.id) {
+      setNewFeedbackCount(null);
+      return;
+    }
     if (!isAdmin(profileRole ?? fullUser?.role)) {
       setNewFeedbackCount(null);
       return;
@@ -379,7 +383,7 @@ export function DashboardNav({ mode = "single" }: DashboardNavProps) {
     if (r.ok) {
       setNewFeedbackCount(r.count);
     }
-  }, [profileRole, fullUser?.role]);
+  }, [user?.id, profileRole, fullUser?.role]);
 
   useEffect(() => {
     void refreshNewCount();
