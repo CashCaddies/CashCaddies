@@ -178,6 +178,14 @@ export function AuthForm({ mode }: Props) {
       return;
     }
 
+    if (mode === "login" && !authError && authData?.user) {
+      setStatus("Logged in. Redirecting...");
+      router.push("/dashboard");
+      router.refresh();
+      setLoading(false);
+      return;
+    }
+
     if (mode === "signup" && authData.user) {
       if (!authData.session) {
         setSignupSuccess(true);
@@ -198,11 +206,9 @@ export function AuthForm({ mode }: Props) {
       }
     }
 
-    setStatus(mode === "login" ? "Logged in. Redirecting..." : "Welcome! Redirecting to your dashboardâ€¦");
-
+    setStatus("Welcome! Redirecting to your dashboard…");
     router.push("/dashboard");
     router.refresh();
-
     setLoading(false);
   }
 
