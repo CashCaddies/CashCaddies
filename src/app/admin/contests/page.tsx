@@ -7,7 +7,11 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserRole } from "@/lib/getUserRole";
 import { isAdmin as isAdminRole } from "@/lib/permissions";
-import { legacyContestsStatusText } from "@/lib/contest-admin-state";
+import {
+  contestStatusBadgeClassName,
+  contestStatusBadgeLabel,
+  legacyContestsStatusText,
+} from "@/lib/contest-admin-state";
 import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
@@ -357,10 +361,11 @@ export default function AdminContestsPage() {
       <div className="goldCard p-6">
         <h2 className="text-lg font-bold text-white">Existing contests</h2>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-sm">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
               <tr className="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
                 <th className="px-3 py-2.5">Name</th>
+                <th className="px-3 py-2.5">Status</th>
                 <th className="px-3 py-2.5">Entry fee</th>
                 <th className="px-3 py-2.5">Entries</th>
                 <th className="px-3 py-2.5">Start date</th>
@@ -371,6 +376,13 @@ export default function AdminContestsPage() {
               {(rows || []).map((row) => (
                 <tr key={row.id}>
                   <td className="px-3 py-3 text-slate-100">{row.name}</td>
+                  <td className="px-3 py-3">
+                    <span
+                      className={`inline-flex shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${contestStatusBadgeClassName(row.contest_status)}`}
+                    >
+                      {contestStatusBadgeLabel(row.contest_status)}
+                    </span>
+                  </td>
                   <td className="px-3 py-3 text-slate-200">{formatMoney(row.entry_fee_usd)}</td>
                   <td className="px-3 py-3 text-slate-200">{Number(row.entry_count ?? 0)}</td>
                   <td className="px-3 py-3 text-slate-300">
@@ -395,7 +407,7 @@ export default function AdminContestsPage() {
               ))}
               {rows.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-slate-500" colSpan={5}>
+                  <td className="px-3 py-4 text-slate-500" colSpan={6}>
                     No contests found.
                   </td>
                 </tr>
