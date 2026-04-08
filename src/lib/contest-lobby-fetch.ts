@@ -52,7 +52,7 @@ export async function fetchLobbyContests(): Promise<{
       .select(
         "id,name,entry_fee,entry_fee_usd,max_entries,entry_count,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
       )
-      .not("contest_status", "in", "(settled,cancelled)")
+      .eq("contest_status", "open")
       .order("start_time", { ascending: true });
 
     const data = q.data as Array<Record<string, unknown>> | null;
