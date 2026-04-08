@@ -218,7 +218,7 @@ export async function assertContestEntryCapacityOk(
 
   const { count: totalCount, error: tErr } = await supabase
     .from("contest_entries")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("contest_id", contestId);
 
   if (tErr) {
@@ -230,7 +230,7 @@ export async function assertContestEntryCapacityOk(
 
   const { count: userCount, error: uErr } = await supabase
     .from("contest_entries")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("contest_id", contestId)
     .eq("user_id", ctx.userId);
 

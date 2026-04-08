@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
+import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
@@ -11,6 +12,10 @@ export type ContestEntryRow = {
   user_id: string;
   lineup_id: string | null;
   created_at: string;
+  entry_fee?: number | null;
+  total_paid?: number | null;
+  status?: string | null;
+  entry_number?: number | null;
   entry_protected?: boolean | null;
   lineup_edited?: boolean | null;
   entry_protection_forced?: boolean | null;
@@ -28,11 +33,9 @@ export async function getContestEntries(
   const sb = opts?.client ?? supabase;
   if (!sb) return [];
 
-  const selectWithProfiles =
-    "id, contest_id, user_id, lineup_id, created_at, entry_protected, lineup_edited, entry_protection_forced, lock_timestamp, profiles(username,email)";
-  const selectBare =
-    "id, contest_id, user_id, lineup_id, created_at, entry_protected, lineup_edited, entry_protection_forced, lock_timestamp";
-  const selectMinimal = "id, contest_id, user_id, lineup_id, created_at";
+  const selectWithProfiles = `${CONTEST_ENTRIES_READ_BASE}, profiles(username,email)`;
+  const selectBare = CONTEST_ENTRIES_READ_BASE;
+  const selectMinimal = CONTEST_ENTRIES_READ_BASE;
 
   let query = sb.from("contest_entries").select(selectWithProfiles).eq("contest_id", id).order("created_at", { ascending: true });
 
@@ -42,7 +45,13 @@ export async function getContestEntries(
     query = query.eq("user_id", userId);
   }
 
-  let { data, error } = await query;
+  let data: ContestEntryRow[] | null = null;
+  let error: { message: string } | null = null;
+  {
+    const first = await query;
+    data = first.data as ContestEntryRow[] | null;
+    error = first.error;
+  }
 
   if (error && isPostgrestRelationshipOrEmbedError(error)) {
     let q2 = sb.from("contest_entries").select(selectBare).eq("contest_id", id).order("created_at", { ascending: true });
@@ -52,7 +61,7 @@ export async function getContestEntries(
       q2 = q2.eq("user_id", userId);
     }
     const second = await q2;
-    data = second.data;
+    data = second.data as ContestEntryRow[] | null;
     error = second.error;
   }
 
@@ -64,7 +73,7 @@ export async function getContestEntries(
       q3 = q3.eq("user_id", userId);
     }
     const third = await q3;
-    data = third.data;
+    data = third.data as ContestEntryRow[] | null;
     error = third.error;
   }
 

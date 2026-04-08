@@ -4,6 +4,7 @@ import { LineupBuilder } from "@/components/lineup-builder";
 import { CASHCADDIE_PROTECTION_FEE_USD } from "@/lib/contest-lobby-data";
 import { getPayEntryBlockedBannerForUser } from "@/lib/contest-entry-eligibility";
 import { loadContestForLineupPage } from "@/lib/contest-resolve";
+import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { loadDraftLineupForEditor, loadLatestDraftLineupForContest } from "@/lib/lineup-draft-load";
 import { createClient } from "@/lib/supabase/server";
 
@@ -128,7 +129,7 @@ export default async function LineupPage(props: LineupPageProps) {
       error: entryErr,
     } = await supabase
       .from("contest_entries")
-      .select("id, user_id, contest_id, lineup_id, entry_number")
+      .select(CONTEST_ENTRIES_READ_BASE)
       .eq("id", entryTrim)
       .maybeSingle();
 

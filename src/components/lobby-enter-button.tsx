@@ -116,7 +116,7 @@ export function LobbyEnterButton({
     void (async () => {
       const { count, error } = await sb
         .from("contest_entries")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("contest_id", contestId)
         .eq("user_id", authUser.id);
       if (cancelled) {
@@ -261,7 +261,7 @@ export function LobbyEnterButton({
         if (sb && authUser) {
           const { count, error: cErr } = await sb
             .from("contest_entries")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .eq("contest_id", contestId)
             .eq("user_id", authUser.id);
           if (!cErr) {

@@ -6,7 +6,6 @@ import type { DashboardLineupPlayerNested } from "@/lib/lineup-players";
 import { lineupTotalScore } from "@/lib/scoring";
 import {
   isMissingColumnOrSchemaError,
-  isPostgrestRelationshipOrEmbedError,
   isRelationMissingOrNotExposedError,
 } from "@/lib/supabase-missing-column";
 
@@ -93,9 +92,9 @@ export type DashboardLineup = {
   contest_id: string | null;
   /** Set when the user has completed contest entry; roster is locked. */
   contest_entry_id: string | null;
-  /** Golfer who triggered automatic protection (`contest_entries.protected_golfer_id`). */
+  /** Stabilization: always null (contest_entries protection columns omitted from reads). */
   insured_golfer_id: string | null;
-  /** True when a Safety Coverage Credit was issued for this entry (pre–Round-1 WD/DNS/DQ). */
+  /** Stabilization: always false. */
   safety_token_issued: boolean;
   /** Entered contest with safety coverage fee — eligible for automatic credit rules. */
   safety_coverage_eligible: boolean;
@@ -151,13 +150,6 @@ type LineupsQueryRow = {
   total_paid: number | null;
   protection_enabled: boolean | null;
   lineup_players: DashboardLineupPlayerNested[] | null;
-};
-
-type ContestEntryProtectionRow = {
-  id: string;
-  protected_golfer_id?: string | null;
-  protection_token_issued?: boolean | null;
-  [key: string]: unknown;
 };
 
 /** Only columns guaranteed on stabilized `lineups` / `lineup_players` / `golfers` (no optional engine columns). */
@@ -237,61 +229,6 @@ export async function fetchDashboardLineups(
     }
   }
 
-  const contestEntryIds = [
-    ...new Set(rows.map((r) => r.contest_entry_id).filter((id): id is string => Boolean(id))),
-  ];
-  const entryMetaById = new Map<
-    string,
-    { protectedGolferId: string | null; safetyTokenIssued: boolean }
-  >();
-  if (contestEntryIds.length > 0) {
-    const ceFull = "id,protected_golfer_id,protection_token_issued";
-    const ceSafe = "id,protected_golfer_id,protection_token_issued";
-    const ceMinimal = "id,protected_golfer_id";
-
-    let ceRows: ContestEntryProtectionRow[] | null = null;
-    let ceErr: { message: string } | null = null;
-
-    const c1 = await client.from("contest_entries").select(ceFull).in("id", contestEntryIds);
-    ceRows = (c1.data ?? null) as ContestEntryProtectionRow[] | null;
-    ceErr = c1.error;
-
-    if (ceErr && isRelationMissingOrNotExposedError(ceErr)) {
-      ceRows = [];
-      ceErr = null;
-    } else if (ceErr && isMissingColumnOrSchemaError(ceErr)) {
-      const c2 = await client.from("contest_entries").select(ceSafe).in("id", contestEntryIds);
-      ceRows = (c2.data ?? null) as ContestEntryProtectionRow[] | null;
-      ceErr = c2.error;
-    }
-    if (ceErr && isMissingColumnOrSchemaError(ceErr)) {
-      const c3 = await client.from("contest_entries").select(ceMinimal).in("id", contestEntryIds);
-      ceRows = (c3.data ?? null) as ContestEntryProtectionRow[] | null;
-      ceErr = c3.error;
-    }
-    if (ceErr && isRelationMissingOrNotExposedError(ceErr)) {
-      ceRows = [];
-      ceErr = null;
-    } else if (ceErr && isPostgrestRelationshipOrEmbedError(ceErr)) {
-      ceRows = [];
-      ceErr = null;
-    }
-    if (ceErr) {
-      ceRows = [];
-    }
-
-    for (const ce of ceRows ?? []) {
-      const protId =
-        ce.protected_golfer_id != null && String(ce.protected_golfer_id).trim() !== ""
-          ? String(ce.protected_golfer_id)
-          : null;
-      entryMetaById.set(ce.id, {
-        protectedGolferId: protId,
-        safetyTokenIssued: Boolean(ce.protection_token_issued),
-      });
-    }
-  }
-
   const lineups: DashboardLineup[] = rows.map((row) => {
     const lp = row.lineup_players ?? [];
     const players: DashboardPlayer[] = lp
@@ -319,10 +256,8 @@ export async function fetchDashboardLineups(
       : lineupTotalScore(players);
     const contestMeta =
       row.contest_id != null ? (contestById.get(row.contest_id) ?? null) : null;
-    const entryMeta =
-      row.contest_entry_id != null ? entryMetaById.get(row.contest_entry_id) : undefined;
-    const insuredGolferId = entryMeta?.protectedGolferId ?? null;
-    const safetyTokenIssued = entryMeta?.safetyTokenIssued ?? false;
+    const insuredGolferId = null;
+    const safetyTokenIssued = false;
     const validContestEntry = row.contest_entry_id != null;
     const safetyCoverageEligible =
       validContestEntry && (Boolean(row.protection_enabled) || Number(row.protection_fee ?? 0) > 0);

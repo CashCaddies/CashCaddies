@@ -12,6 +12,7 @@ import {
   type ResolvedSimulationScenario,
   type SimulationScenario,
 } from "@/lib/contest-lab/simulation-engine";
+import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/permissions";
 
@@ -294,7 +295,7 @@ export async function runContestLabSimulation(payload: {
 
   const { data: ce, error: ceErr } = await supabase
     .from("contest_entries")
-    .select("id, user_id, lineup_id, contest_id")
+    .select(CONTEST_ENTRIES_READ_BASE)
     .eq("id", payload.entryId)
     .maybeSingle();
 

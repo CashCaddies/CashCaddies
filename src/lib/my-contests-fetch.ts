@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getContestDisplay } from "@/lib/contest-lobby-data";
 import { type ContestLifecyclePhase, contestLifecyclePhaseFromRow } from "@/lib/contest-lobby-shared";
+import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 function phaseToUserLabel(phase: ContestLifecyclePhase): string {
@@ -32,7 +33,7 @@ export type MyEnteredContestRow = {
   lineupSalary: number | null;
   protectionEnabled: boolean;
   protectionFeeUsd: number;
-  /** Automatic protection applied when `protected_golfer_id` is set (WD/DNS/DQ). */
+  /** Stabilization: always false (protection columns omitted from reads). */
   hasProtectedEntry: boolean;
   contestStatus: string;
   enteredAt: string;
@@ -45,9 +46,8 @@ type ContestEntryQueryRow = {
   contest_id: string;
   entry_number?: number | null;
   entry_fee: number | string | null;
-  protection_enabled: boolean | null;
-  protection_fee: number | string | null;
-  protected_golfer_id?: string | null;
+  total_paid?: number | string | null;
+  status?: string | null;
   created_at: string;
   lineup_id: string | null;
   /** PostgREST may return one object or a single-element array for FK embeds. */
@@ -91,60 +91,16 @@ export async function fetchMyEnteredContests(
     return { rows: [], error: "Missing user id." };
   }
 
-  const selectWithProtection = `
-      id,
-      contest_id,
-      entry_number,
-      entry_fee,
-      protection_enabled,
-      protection_fee,
-      protected_golfer_id,
-      created_at,
-      lineup_id,
-      lineups ( total_salary )
-    `;
+  const selectWithLineups = `${CONTEST_ENTRIES_READ_BASE}, lineups ( total_salary )`;
 
-  const selectWithoutProtection = `
-      id,
-      contest_id,
-      entry_number,
-      entry_fee,
-      protection_enabled,
-      protection_fee,
-      protected_golfer_id,
-      created_at,
-      lineup_id,
-      lineups ( total_salary )
-    `;
-
-  const selectNoEmbed = `
-      id,
-      contest_id,
-      entry_number,
-      entry_fee,
-      protection_enabled,
-      protection_fee,
-      protected_golfer_id,
-      created_at,
-      lineup_id
-    `;
+  const selectNoEmbed = CONTEST_ENTRIES_READ_BASE;
 
   let entries: unknown[] | null = null;
   let entriesErr: { message: string } | null = null;
 
-  const q1 = await client.from("contest_entries").select(selectWithProtection).eq("user_id", uid).order("created_at", { ascending: false });
+  const q1 = await client.from("contest_entries").select(selectWithLineups).eq("user_id", uid).order("created_at", { ascending: false });
   entries = q1.data;
   entriesErr = q1.error;
-
-  if (entriesErr && isMissingColumnOrSchemaError(entriesErr)) {
-    const q2 = await client
-      .from("contest_entries")
-      .select(selectWithoutProtection)
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false });
-    entries = q2.data;
-    entriesErr = q2.error;
-  }
 
   /* Last resort: no embed (avoids 400 from lineups FK/embed); still filtered by user_id. */
   if (entriesErr) {
@@ -223,9 +179,6 @@ export async function fetchMyEnteredContests(
         ? Number(rawSalary)
         : null;
 
-    const gid = (entry as ContestEntryQueryRow).protected_golfer_id;
-    const hasProtectedEntry = gid != null && String(gid).trim() !== "";
-
     return {
       entryId: entry.id,
       contestId: entry.contest_id,
@@ -233,9 +186,9 @@ export async function fetchMyEnteredContests(
       entryNumber: entryNumberForContestUser(list, entry),
       entryFeeUsd: Number(entry.entry_fee ?? 0),
       lineupSalary,
-      protectionEnabled: Boolean(entry.protection_enabled),
-      protectionFeeUsd: Number(entry.protection_fee ?? 0),
-      hasProtectedEntry,
+      protectionEnabled: false,
+      protectionFeeUsd: 0,
+      hasProtectedEntry: false,
       contestStatus,
       enteredAt: entry.created_at,
     };

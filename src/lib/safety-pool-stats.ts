@@ -1,20 +1,17 @@
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
 import { createClient } from "@/lib/supabase/server";
-import {
-  isMissingColumnOrSchemaError,
-  isRelationMissingOrNotExposedError,
-} from "@/lib/supabase-missing-column";
+import { isRelationMissingOrNotExposedError } from "@/lib/supabase-missing-column";
 
 export type ContestSafetyPoolStats = {
   /** Global `insurance_pool.total_balance`. */
   poolUsd: number;
   totalEntries: number;
-  /** Entries with `protected_golfer_id` set (automatic protection applied). */
+  /** Stabilization: always 0 (protection columns omitted from `contest_entries` reads). */
   protectedCount: number;
   /** Share of contest entries that selected a protected golfer (0–100). */
   protectedPercent: number;
-  /** Sum of `protection_fee` for protected entries in this contest. */
+  /** Stabilization: always 0. */
   totalProtectionFeesUsd: number;
 };
 
@@ -34,7 +31,7 @@ export async function fetchContestSafetyPoolStats(contestIdRaw: string): Promise
 
     const totalQ = await supabase
       .from("contest_entries")
-      .select("*", { count: "exact", head: true })
+      .select("id", { count: "exact", head: true })
       .eq("contest_id", id);
     if (totalQ.error) {
       if (isRelationMissingOrNotExposedError(totalQ.error)) {
@@ -55,47 +52,14 @@ export async function fetchContestSafetyPoolStats(contestIdRaw: string): Promise
       };
     }
 
-    const totalEntriesRaw = totalQ.count;
-
-    let protectedCountRaw: number | null = null;
-    const protQ = await supabase
-      .from("contest_entries")
-      .select("*", { count: "exact", head: true })
-      .eq("contest_id", id)
-      .not("protected_golfer_id", "is", null);
-    if (protQ.error && isMissingColumnOrSchemaError(protQ.error)) {
-      protectedCountRaw = 0;
-    } else if (protQ.error && isRelationMissingOrNotExposedError(protQ.error)) {
-      protectedCountRaw = 0;
-    } else if (protQ.error) {
-      protectedCountRaw = 0;
-    } else {
-      protectedCountRaw = protQ.count;
-    }
-
-    const feeQ = await supabase
-      .from("contest_entries")
-      .select("*")
-      .eq("contest_id", id);
-    let totalProtectionFeesUsd = 0;
-    if (!feeQ.error && feeQ.data) {
-      totalProtectionFeesUsd = (feeQ.data as { protection_fee?: number }[]).reduce((s, r) => {
-        const pf = Number(r.protection_fee ?? 0);
-        return s + (pf > 0 ? pf : 0);
-      }, 0);
-    }
-
-    const totalEntries = Number(totalEntriesRaw ?? 0);
-    const protectedCount = Number(protectedCountRaw ?? 0);
-    const protectedPercent =
-      totalEntries > 0 ? Math.round((protectedCount / totalEntries) * 1000) / 10 : 0;
+    const totalEntries = Number(totalQ.count ?? 0);
 
     return {
       poolUsd: Number.isFinite(poolUsd) ? poolUsd : 0,
       totalEntries,
-      protectedCount,
-      protectedPercent,
-      totalProtectionFeesUsd: Math.round(totalProtectionFeesUsd * 100) / 100,
+      protectedCount: 0,
+      protectedPercent: 0,
+      totalProtectionFeesUsd: 0,
     };
   } catch {
     return null;

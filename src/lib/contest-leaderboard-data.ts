@@ -1,5 +1,6 @@
 import { unstable_noStore } from "next/cache";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
+import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { ensureContestEntryProtection } from "@/lib/entry-protection-server";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -44,22 +45,15 @@ type ProfilesEmbed = {
   username?: string | null;
 };
 
-type GolfersNameEmbed = { name?: string | null };
-
 type ContestEntryQueryRow = {
   id: string;
   user_id: string;
   /** 1-based index of this user's entry in the contest (from DB). */
   entry_number?: number | null;
-  protection_enabled?: boolean | null;
-  protection_token_issued?: boolean | null;
-  protected_golfer_id?: string | null;
   lineup_id?: string | null;
   created_at?: string;
-  entry_protected?: boolean | null;
   lineups: LineupsEmbed | LineupsEmbed[] | null;
   profiles: ProfilesEmbed | ProfilesEmbed[] | null;
-  golfers?: GolfersNameEmbed | GolfersNameEmbed[] | null;
 };
 
 export type LeaderboardForContestResult = {
@@ -83,12 +77,6 @@ function lineupFromRow(row: ContestEntryQueryRow): LineupsEmbed | null {
 
 function profilesFromRow(row: ContestEntryQueryRow): ProfilesEmbed | null {
   return firstEmbed(row.profiles);
-}
-
-function insuredGolferNameFromRow(row: ContestEntryQueryRow): string | null {
-  const obj = firstEmbed(row.golfers ?? null);
-  const n = trimStr(obj?.name);
-  return n === "" ? null : n;
 }
 
 /** Fallback when `entry_number` is missing (legacy rows): order by created_at, id. */
@@ -131,47 +119,9 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
 
     await ensureContestEntryProtection(supabase, id);
 
-    const selectFull = `
-        id,
-        user_id,
-        entry_number,
-        protection_enabled,
-        protection_token_issued,
-        protected_golfer_id,
-        lineup_id,
-        created_at,
-        entry_protected,
-        lineups ( id, total_score, total_salary ),
-        profiles ( username ),
-        golfers!protected_golfer_id ( name )
-      `;
+    const selectFull = `${CONTEST_ENTRIES_READ_BASE}, lineups ( id, total_score, total_salary ), profiles ( username )`;
 
-    const selectSafe = `
-        id,
-        user_id,
-        entry_number,
-        protection_enabled,
-        protected_golfer_id,
-        lineup_id,
-        created_at,
-        entry_protected,
-        lineups ( id, total_score, total_salary ),
-        profiles ( username ),
-        golfers!protected_golfer_id ( name )
-      `;
-
-    const selectMinimal = `
-        id,
-        user_id,
-        entry_number,
-        protection_enabled,
-        protection_token_issued,
-        protected_golfer_id,
-        lineup_id,
-        created_at,
-        entry_protected,
-        lineups ( id, total_score, total_salary )
-      `;
+    const selectMinimal = `${CONTEST_ENTRIES_READ_BASE}, lineups ( id, total_score, total_salary )`;
 
     let data: unknown[] | null = null;
     let error: { message: string } | null = null;
@@ -180,19 +130,10 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
     data = q1.data;
     error = q1.error;
 
-    if (error && isMissingColumnOrSchemaError(error)) {
-      const q2 = await supabase.from("contest_entries").select(selectSafe).eq("contest_id", id);
+    if (error && (isPostgrestRelationshipOrEmbedError(error) || isMissingColumnOrSchemaError(error))) {
+      const q2 = await supabase.from("contest_entries").select(selectMinimal).eq("contest_id", id);
       data = q2.data;
       error = q2.error;
-    }
-
-    if (
-      error &&
-      (isPostgrestRelationshipOrEmbedError(error) || isMissingColumnOrSchemaError(error))
-    ) {
-      const q3 = await supabase.from("contest_entries").select(selectMinimal).eq("contest_id", id);
-      data = q3.data;
-      error = q3.error;
     }
 
     if (error) {
@@ -217,34 +158,6 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       });
     }
 
-    const needsGolferNames = raw.some(
-      (row) => row.protected_golfer_id != null && String(row.protected_golfer_id).trim() !== "" && !insuredGolferNameFromRow(row),
-    );
-    if (needsGolferNames && raw.length > 0) {
-      const gids = [
-        ...new Set(
-          raw
-            .map((r) => String(r.protected_golfer_id ?? ""))
-            .filter((x) => x.length > 0),
-        ),
-      ];
-      if (gids.length > 0) {
-        const { data: gRows } = await supabase.from("golfers").select("id,name").in("id", gids);
-        const nameById = new Map<string, string>();
-        for (const g of gRows ?? []) {
-          const gid = String((g as { id?: string }).id ?? "");
-          const n = trimStr((g as { name?: string }).name);
-          if (gid && n) nameById.set(gid, n);
-        }
-        raw = raw.map((row) => {
-          const gid = String(row.protected_golfer_id ?? "").trim();
-          if (!gid) return row;
-          const n = nameById.get(gid);
-          return n ? { ...row, golfers: { name: n } } : row;
-        });
-      }
-    }
-
     const sorted = [...raw].sort((a, b) => {
       const la = lineupFromRow(a);
       const lb = lineupFromRow(b);
@@ -266,19 +179,6 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       const rawSal = Number(lu?.total_salary ?? 0);
       const totalSalary = Number.isFinite(rawSal) ? rawSal : 0;
 
-      const protectionTriggered =
-        row.protected_golfer_id != null && String(row.protected_golfer_id).trim() !== "";
-      const protectionTokenIssued = Boolean(row.protection_token_issued);
-      const protectedGolferName = protectionTriggered ? insuredGolferNameFromRow(row) : null;
-      let protectionStatusLabel: LeaderboardDisplayRow["protectionStatusLabel"] = "Standard";
-      if (protectionTokenIssued) {
-        protectionStatusLabel = "Safety Coverage Credit Issued";
-      } else if (protectionTriggered) {
-        protectionStatusLabel = "Scoring adjusted";
-      } else if (Boolean(row.protection_enabled)) {
-        protectionStatusLabel = "Safety Coverage Eligible";
-      }
-
       return {
         rank,
         userId: String(row.user_id ?? ""),
@@ -287,13 +187,13 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
         entryNumber: entryNumberFromRow(row, raw),
         totalSalary,
         totalScore,
-        protectionEnabled: Boolean(row.protection_enabled),
-        protectionTriggered,
-        protectionTokenIssued,
-        protectedGolferName,
-        protectionStatusLabel,
+        protectionEnabled: false,
+        protectionTriggered: false,
+        protectionTokenIssued: false,
+        protectedGolferName: null,
+        protectionStatusLabel: "Standard" as const,
         lineupId: lu?.id ?? row.lineup_id ?? undefined,
-        entryFeeProtected: Boolean(row.entry_protected),
+        entryFeeProtected: false,
       };
     });
 

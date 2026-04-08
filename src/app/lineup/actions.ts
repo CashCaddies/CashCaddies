@@ -22,6 +22,7 @@ import {
   assertContestEntryEligible,
   normalizeContestEntryErrorMessage,
 } from "@/lib/contest-entry-eligibility";
+import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
 
 const SALARY_CAP = 50_000;
@@ -542,7 +543,7 @@ export async function editContestEntryLineup(payload: {
 
   const { data: entryRow, error: entryErr } = await supabase
     .from("contest_entries")
-    .select("id,user_id,contest_id,lineup_id")
+    .select(CONTEST_ENTRIES_READ_BASE)
     .eq("id", entryId)
     .maybeSingle();
 
