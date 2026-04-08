@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import type { MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserRole } from "@/lib/getUserRole";
@@ -26,20 +25,11 @@ type ContestRow = {
   created_by?: string | null;
 };
 
-function publishableStartIso(row: ContestRow): string | null {
-  const st = row.start_time ?? row.starts_at;
-  return typeof st === "string" && st.trim() !== "" ? st : null;
-}
-
-/** Draft (or unset) contests only; not already `open`; start must be in the future. */
+/** Show Publish for draft (or unset `contest_status`); hide when already `open`. */
 function canShowPublishForRow(row: ContestRow): boolean {
   const cs = String(row.contest_status ?? "").trim().toLowerCase();
   if (cs === "open") return false;
-  if (cs !== "" && cs !== "draft") return false;
-  const iso = publishableStartIso(row);
-  if (!iso) return false;
-  const t = Date.parse(iso);
-  return Number.isFinite(t) && t > Date.now();
+  return cs === "" || cs === "draft";
 }
 
 function formatMoney(n: number | string | null): string {
@@ -58,7 +48,7 @@ export default function AdminContestsPage() {
   const [isError, setIsError] = useState(false);
   const [pending, startTransition] = useTransition();
   const [listNotice, setListNotice] = useState<{ text: string; ok: boolean } | null>(null);
-  const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
   const [entryFee, setEntryFee] = useState("5");
@@ -144,25 +134,12 @@ export default function AdminContestsPage() {
     );
   }
 
-  async function handlePublish(e: MouseEvent<HTMLButtonElement>, row: ContestRow) {
-    e.preventDefault();
-    e.stopPropagation();
+  const handlePublish = async (row: ContestRow) => {
     if (!supabase || !canShowPublishForRow(row)) return;
-    const iso = publishableStartIso(row);
-    if (!iso || Date.parse(iso) <= Date.now()) return;
-    const cs = String(row.contest_status ?? "").trim().toLowerCase();
-    if (cs !== "" && cs !== "draft") return;
 
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-    if (!authUser) return;
-    const role = await getUserRole(authUser.id);
-    if (!isAdminRole(role)) return;
-
-    setPublishingId(row.id);
+    setLoading(true);
     try {
-      const { error: upErr } = await supabase
+      const { error } = await supabase
         .from("contests")
         .update({
           contest_status: "open",
@@ -170,17 +147,20 @@ export default function AdminContestsPage() {
         })
         .eq("id", row.id);
 
-      if (upErr) {
-        setListNotice({ text: upErr.message, ok: false });
+      if (error) {
+        console.error(error);
+        alert("Publish failed");
         return;
       }
+
+      router.refresh();
       const contests = await fetchContestsSafe();
       setRows(contests);
       setListNotice({ text: "Contest published", ok: true });
     } finally {
-      setPublishingId(null);
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -395,11 +375,11 @@ export default function AdminContestsPage() {
                     {canShowPublishForRow(row) ? (
                       <button
                         type="button"
-                        disabled={publishingId === row.id}
-                        onClick={(ev) => void handlePublish(ev, row)}
+                        disabled={loading}
+                        onClick={() => void handlePublish(row)}
                         className="inline-flex rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 disabled:opacity-60"
                       >
-                        {publishingId === row.id ? "Publishing..." : "Publish"}
+                        {loading ? "Publishing..." : "Publish"}
                       </button>
                     ) : null}
                   </td>
