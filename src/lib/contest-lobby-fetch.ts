@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { LobbyContestRow } from "@/lib/contest-lobby-shared";
+import { fetchContestEntryCountLive, fetchContestEntryCountsLive } from "@/lib/contest-entry-count-live";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
@@ -50,7 +51,7 @@ export async function fetchLobbyContests(): Promise<{
     const q = await supabase
       .from("contests")
       .select(
-        "id,name,entry_fee,entry_fee_usd,max_entries,entry_count,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
+        "id,name,entry_fee,entry_fee_usd,max_entries,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
       )
       .eq("contest_status", "open")
       .order("start_time", { ascending: true });
@@ -62,6 +63,7 @@ export async function fetchLobbyContests(): Promise<{
 
     const rows = (data ?? []).filter((row) => String(row.id ?? "").trim() !== "");
     const ids = rows.map((row) => String(row.id));
+    const entryCountById = await fetchContestEntryCountsLive(supabase, ids);
     let settledIds = new Set<string>();
     if (ids.length > 0) {
       const { data: stRows } = await supabase.from("contest_settlements").select("contest_id").in("contest_id", ids);
@@ -75,10 +77,7 @@ export async function fetchLobbyContests(): Promise<{
           return null;
         }
         const maxEntries = Math.max(1, Number(row.max_entries ?? 100));
-        const entryCount = Math.max(
-          0,
-          Number(row.entry_count ?? 0),
-        );
+        const entryCount = entryCountById.get(id) ?? 0;
         const computedStatus = entryCount >= maxEntries ? "full" : String(row.status ?? "open");
         const startsAt =
           String(row.start_time ?? row.starts_at ?? row.created_at ?? new Date().toISOString());
@@ -135,7 +134,7 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     const { data, error } = await supabase
       .from("contests")
       .select(
-        "id,name,entry_fee,entry_fee_usd,max_entries,entry_count,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
+        "id,name,entry_fee,entry_fee_usd,max_entries,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
       )
       .eq("id", id)
       .maybeSingle();
@@ -145,7 +144,7 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     }
     const { data: st } = await supabase.from("contest_settlements").select("contest_id").eq("contest_id", id).maybeSingle();
     const maxEntries = Math.max(1, Number(data.max_entries ?? 100));
-    const entryCount = Math.max(0, Number(data.entry_count ?? 0));
+    const entryCount = await fetchContestEntryCountLive(supabase, id);
     const computedStatus = entryCount >= maxEntries ? "full" : String(data.status ?? "open");
     const startsAt = String(data.start_time ?? data.starts_at ?? data.created_at ?? new Date().toISOString());
     const entryFee = Number(data.entry_fee ?? data.entry_fee_usd ?? 0);

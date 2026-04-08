@@ -22,7 +22,7 @@ export type LobbyContestRow = {
   has_settlement?: boolean;
   /** `true` when `now() >= starts_at` (from view or computed from `starts_at`). Entry closes here only — not at `ends_at`. */
   lineup_locked?: boolean;
-  /** `entry_fee_usd * entry_count` from contest entries. */
+  /** Live count from `contest_entries` (via `contest_entry_count` RPC), not `contests.entry_count`. */
   prize_pool?: number | string | null;
   /** Entries with `insured_golfer_id` set (`contests_with_stats`, migration 082+). */
   protected_entries_count?: number;
