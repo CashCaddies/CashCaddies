@@ -8,7 +8,8 @@ type BetaStats = {
   waiting: number;
   founders: number;
   maxBetaUsers: number;
-  approvedUsers: Array<{ username: string; email: string }>;
+  /** Usernames only; API may still return email — not stored or shown. */
+  approvedUsers: Array<{ username: string }>;
 };
 
 export function ClosedBetaStats() {
@@ -41,7 +42,6 @@ export function ClosedBetaStats() {
             approvedUsers: Array.isArray(json.approvedUsers)
               ? json.approvedUsers.map((u) => ({
                   username: typeof u?.username === "string" ? u.username : "",
-                  email: typeof u?.email === "string" ? u.email : "",
                 }))
               : [],
           });
@@ -103,9 +103,8 @@ export function ClosedBetaStats() {
         ) : (
           <ul className="mt-2 space-y-1 text-sm text-slate-300">
             {approvedUsers.map((u, idx) => (
-              <li key={`${u.email}-${idx}`} className="flex items-center justify-between gap-3">
-                <span className="truncate">{u.username ? `@${u.username}` : "—"}</span>
-                <span className="shrink-0 text-slate-400">{u.email || "—"}</span>
+              <li key={`${u.username || "user"}-${idx}`} className="truncate">
+                {u.username ? `@${u.username}` : "—"}
               </li>
             ))}
           </ul>
