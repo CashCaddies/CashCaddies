@@ -6,6 +6,7 @@ export type LobbyContestRow = {
   entry_fee?: number | string | null;
   max_entries: number;
   max_entries_per_user: number | null;
+  /** Filled from `contest_entries ( id )` embed: `contest_entries.length` (PostgREST). */
   entry_count: number;
   starts_at: string;
   /** Optional contest end; when null, UI treats "ended" as starts_at + 3 days. */
@@ -22,7 +23,6 @@ export type LobbyContestRow = {
   has_settlement?: boolean;
   /** `true` when `now() >= starts_at` (from view or computed from `starts_at`). Entry closes here only — not at `ends_at`. */
   lineup_locked?: boolean;
-  /** Live count from `contest_entries` (via `contest_entry_count` RPC), not `contests.entry_count`. */
   prize_pool?: number | string | null;
   /** Entries with `insured_golfer_id` set (`contests_with_stats`, migration 082+). */
   protected_entries_count?: number;
@@ -31,6 +31,13 @@ export type LobbyContestRow = {
   /** Admin: allow DFS late swap after contest goes live. */
   late_swap_enabled?: boolean | null;
 };
+
+/** Rows returned from `contest_entries ( id )` on a contest query; length = entry count (RLS applies). */
+export function entryCountFromContestEntriesRelation(row: Record<string, unknown>): number {
+  const raw = row.contest_entries;
+  if (!Array.isArray(raw)) return 0;
+  return raw.length;
+}
 
 /** Scoring window after start when `ends_at` is absent (matches settlement / my-contests heuristic). */
 export const CONTEST_DEFAULT_END_AFTER_START_MS = 3 * 24 * 60 * 60 * 1000;

@@ -11,7 +11,7 @@ import {
   contestStatusBadgeLabel,
   legacyContestsStatusText,
 } from "@/lib/contest-admin-state";
-import { fetchContestEntryCountLive } from "@/lib/contest-entry-count-live";
+import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
@@ -63,29 +63,22 @@ export default function AdminContestsPage() {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from("contests")
-      .select("id,name,entry_fee_usd,starts_at,start_time,contest_status,created_at,created_by")
+      .select("id,name,entry_fee_usd,starts_at,start_time,contest_status,created_at,created_by, contest_entries ( id )")
       .order("created_at", { ascending: false });
     if (error) {
       console.error("Contest fetch error:", error);
       return [];
     }
-    const raw = (data ?? []) as Array<Record<string, unknown>>;
-    return Promise.all(
-      raw.map(async (row) => {
-        const id = String(row.id ?? "");
-        const entry_count = await fetchContestEntryCountLive(supabase, id);
-        return {
-          id,
-          name: String(row.name ?? ""),
-          entry_fee_usd: (row.entry_fee_usd as number | string | null) ?? null,
-          entry_count,
-          starts_at: typeof row.starts_at === "string" ? row.starts_at : null,
-          start_time: typeof row.start_time === "string" ? row.start_time : null,
-          contest_status: row.contest_status != null ? String(row.contest_status) : null,
-          created_by: typeof row.created_by === "string" ? row.created_by : null,
-        };
-      }),
-    );
+    return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+      id: String(row.id ?? ""),
+      name: String(row.name ?? ""),
+      entry_fee_usd: (row.entry_fee_usd as number | string | null) ?? null,
+      entry_count: entryCountFromContestEntriesRelation(row),
+      starts_at: typeof row.starts_at === "string" ? row.starts_at : null,
+      start_time: typeof row.start_time === "string" ? row.start_time : null,
+      contest_status: row.contest_status != null ? String(row.contest_status) : null,
+      created_by: typeof row.created_by === "string" ? row.created_by : null,
+    }));
   }
 
   useEffect(() => {

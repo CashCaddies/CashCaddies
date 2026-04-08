@@ -1,5 +1,5 @@
-import { fetchContestEntryCountLive } from "@/lib/contest-entry-count-live";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
+import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,7 +16,7 @@ export type ContestSafetyPoolStats = {
 };
 
 /**
- * Transparency stats for the contest page Safety Pool card (entry total via `contest_entry_count` RPC).
+ * Transparency stats for the contest page Safety Pool card (entry total from `contest_entries ( id )` embed).
  */
 export async function fetchContestSafetyPoolStats(contestIdRaw: string): Promise<ContestSafetyPoolStats | null> {
   const id = contestIdForRpc(contestIdRaw);
@@ -29,7 +29,13 @@ export async function fetchContestSafetyPoolStats(contestIdRaw: string): Promise
 
     const { usd: poolUsd } = await fetchInsurancePoolBalanceUsd(supabase);
 
-    const totalEntries = await fetchContestEntryCountLive(supabase, id);
+    const { data: ceRow, error: ceErr } = await supabase
+      .from("contests")
+      .select("contest_entries(id)")
+      .eq("id", id)
+      .maybeSingle();
+    const totalEntries =
+      ceErr || !ceRow ? 0 : entryCountFromContestEntriesRelation(ceRow as Record<string, unknown>);
 
     return {
       poolUsd: Number.isFinite(poolUsd) ? poolUsd : 0,

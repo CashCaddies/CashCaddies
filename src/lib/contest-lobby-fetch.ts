@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { LobbyContestRow } from "@/lib/contest-lobby-shared";
-import { fetchContestEntryCountLive, fetchContestEntryCountsLive } from "@/lib/contest-entry-count-live";
+import { entryCountFromContestEntriesRelation, type LobbyContestRow } from "@/lib/contest-lobby-shared";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
@@ -13,6 +12,22 @@ export {
 } from "@/lib/contest-lobby-shared";
 
 export type ContestPayoutRow = { rank_place: number; payout_pct: number };
+
+const CONTEST_CARD_SELECT = `
+  id,
+  name,
+  entry_fee,
+  entry_fee_usd,
+  max_entries,
+  start_time,
+  starts_at,
+  status,
+  created_at,
+  contest_status,
+  entries_open_at,
+  late_swap_enabled,
+  contest_entries ( id )
+`;
 
 export async function fetchContestPayoutsForContest(contestId: string): Promise<ContestPayoutRow[]> {
   const id = contestId?.trim();
@@ -48,13 +63,7 @@ export async function fetchLobbyContests(): Promise<{
     }
     const { usd: safetyPoolFinite } = await fetchInsurancePoolBalanceUsd(supabase);
 
-    const q = await supabase
-      .from("contests")
-      .select(
-        "id,name,entry_fee,entry_fee_usd,max_entries,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
-      )
-      .eq("contest_status", "open")
-      .order("start_time", { ascending: true });
+    const q = await supabase.from("contests").select(CONTEST_CARD_SELECT).eq("contest_status", "open").order("start_time", { ascending: true });
 
     const data = q.data as Array<Record<string, unknown>> | null;
     if (q.error) {
@@ -63,7 +72,6 @@ export async function fetchLobbyContests(): Promise<{
 
     const rows = (data ?? []).filter((row) => String(row.id ?? "").trim() !== "");
     const ids = rows.map((row) => String(row.id));
-    const entryCountById = await fetchContestEntryCountsLive(supabase, ids);
     let settledIds = new Set<string>();
     if (ids.length > 0) {
       const { data: stRows } = await supabase.from("contest_settlements").select("contest_id").in("contest_id", ids);
@@ -77,7 +85,7 @@ export async function fetchLobbyContests(): Promise<{
           return null;
         }
         const maxEntries = Math.max(1, Number(row.max_entries ?? 100));
-        const entryCount = entryCountById.get(id) ?? 0;
+        const entryCount = entryCountFromContestEntriesRelation(row as Record<string, unknown>);
         const computedStatus = entryCount >= maxEntries ? "full" : String(row.status ?? "open");
         const startsAt =
           String(row.start_time ?? row.starts_at ?? row.created_at ?? new Date().toISOString());
@@ -131,20 +139,14 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     if (!hasAccess && process.env.NODE_ENV === "development") {
       console.log("fetchLobbyContestById: bypassing server-side beta gate during stabilization.");
     }
-    const { data, error } = await supabase
-      .from("contests")
-      .select(
-        "id,name,entry_fee,entry_fee_usd,max_entries,start_time,starts_at,status,created_at,contest_status,entries_open_at,late_swap_enabled",
-      )
-      .eq("id", id)
-      .maybeSingle();
+    const { data, error } = await supabase.from("contests").select(CONTEST_CARD_SELECT).eq("id", id).maybeSingle();
 
     if (error || !data) {
       return null;
     }
     const { data: st } = await supabase.from("contest_settlements").select("contest_id").eq("contest_id", id).maybeSingle();
     const maxEntries = Math.max(1, Number(data.max_entries ?? 100));
-    const entryCount = await fetchContestEntryCountLive(supabase, id);
+    const entryCount = entryCountFromContestEntriesRelation(data as Record<string, unknown>);
     const computedStatus = entryCount >= maxEntries ? "full" : String(data.status ?? "open");
     const startsAt = String(data.start_time ?? data.starts_at ?? data.created_at ?? new Date().toISOString());
     const entryFee = Number(data.entry_fee ?? data.entry_fee_usd ?? 0);
