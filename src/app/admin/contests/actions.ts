@@ -1,6 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import {
+  legacyContestsStatusText,
+  normalizeContestStateForInsert,
+} from "@/lib/contest-admin-state";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export type CreateContestInput = {
@@ -21,6 +25,7 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
   const maxEntries = Math.floor(Number(input.maxEntries ?? NaN));
   const startsAt = String(input.startDate ?? "").trim();
   const requesterUserId = String(input.requesterUserId ?? "").trim();
+  const contestState = normalizeContestStateForInsert(input.status);
 
   if (!name) return { ok: false, error: "Contest name is required." };
   if (!Number.isFinite(entryFee) || entryFee < 0) return { ok: false, error: "Entry fee must be 0 or greater." };
@@ -55,8 +60,8 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
     max_entries: maxEntries,
     entry_count: 0,
     start_time: startsAt,
-    status: "open",
-    contest_status: "filling",
+    status: legacyContestsStatusText(contestState),
+    contest_status: contestState,
     entries_open_at: createdAt,
     max_entries_per_user: 1,
     starts_at: startsAt,

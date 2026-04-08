@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserRole } from "@/lib/getUserRole";
 import { isAdmin as isAdminRole } from "@/lib/permissions";
+import {
+  CONTEST_STATE_VALUES,
+  legacyContestsStatusText,
+  normalizeContestStateForInsert,
+} from "@/lib/contest-admin-state";
 import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
@@ -39,7 +44,7 @@ export default function AdminContestsPage() {
   const [maxEntries, setMaxEntries] = useState("100");
   const [startDate, setStartDate] = useState("");
   const [contestType, setContestType] = useState("Classic");
-  const [status, setStatus] = useState("upcoming");
+  const [status, setStatus] = useState("draft");
 
   const isAdmin = profileAdmin;
 
@@ -148,12 +153,13 @@ export default function AdminContestsPage() {
                 }
 
                 const createdAt = new Date().toISOString();
+                const contestState = normalizeContestStateForInsert(status);
                 const payload = {
                   id: crypto.randomUUID(),
                   name,
                   start_time: new Date(startDate).toISOString(),
-                  status: "open",
-                  contest_status: "filling",
+                  status: legacyContestsStatusText(contestState),
+                  contest_status: contestState,
                   entries_open_at: createdAt,
                   entry_count: 0,
                   created_by: authUser.id,
@@ -261,11 +267,17 @@ export default function AdminContestsPage() {
 
           <label className="space-y-1">
             <span className="text-sm text-slate-300">Status</span>
-            <input
+            <select
               className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-            />
+            >
+              {CONTEST_STATE_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
           </label>
 
           <div className="sm:col-span-2">
