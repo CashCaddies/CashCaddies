@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import type { MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserRole } from "@/lib/getUserRole";
 import { isAdmin as isAdminRole } from "@/lib/permissions";
-import {
-  CONTEST_STATE_VALUES,
-  legacyContestsStatusText,
-  normalizeContestStateForInsert,
-} from "@/lib/contest-admin-state";
+import { legacyContestsStatusText } from "@/lib/contest-admin-state";
 import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
@@ -20,8 +17,26 @@ type ContestRow = {
   entry_fee_usd: number | string | null;
   entry_count: number | null;
   starts_at: string | null;
+  start_time: string | null;
+  contest_status: string | null;
   created_by?: string | null;
 };
+
+function publishableStartIso(row: ContestRow): string | null {
+  const st = row.start_time ?? row.starts_at;
+  return typeof st === "string" && st.trim() !== "" ? st : null;
+}
+
+/** Draft (or unset) contests only; not already `open`; start must be in the future. */
+function canShowPublishForRow(row: ContestRow): boolean {
+  const cs = String(row.contest_status ?? "").trim().toLowerCase();
+  if (cs === "open") return false;
+  if (cs !== "" && cs !== "draft") return false;
+  const iso = publishableStartIso(row);
+  if (!iso) return false;
+  const t = Date.parse(iso);
+  return Number.isFinite(t) && t > Date.now();
+}
 
 function formatMoney(n: number | string | null): string {
   const v = Number(n);
@@ -38,13 +53,14 @@ export default function AdminContestsPage() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [listNotice, setListNotice] = useState<{ text: string; ok: boolean } | null>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [entryFee, setEntryFee] = useState("5");
   const [maxEntries, setMaxEntries] = useState("100");
   const [startDate, setStartDate] = useState("");
   const [contestType, setContestType] = useState("Classic");
-  const [status, setStatus] = useState("draft");
 
   const isAdmin = profileAdmin;
 
@@ -52,7 +68,7 @@ export default function AdminContestsPage() {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from("contests")
-      .select("id,name,entry_fee_usd,entry_count,starts_at,created_at,created_by")
+      .select("id,name,entry_fee_usd,entry_count,starts_at,start_time,contest_status,created_at,created_by")
       .order("created_at", { ascending: false });
     if (error) {
       console.error("Contest fetch error:", error);
@@ -64,6 +80,8 @@ export default function AdminContestsPage() {
       entry_fee_usd: (row.entry_fee_usd as number | string | null) ?? null,
       entry_count: Number(row.entry_count ?? 0),
       starts_at: typeof row.starts_at === "string" ? row.starts_at : null,
+      start_time: typeof row.start_time === "string" ? row.start_time : null,
+      contest_status: row.contest_status != null ? String(row.contest_status) : null,
       created_by: typeof row.created_by === "string" ? row.created_by : null,
     }));
   }
@@ -93,6 +111,12 @@ export default function AdminContestsPage() {
     };
   }, [isReady, user]);
 
+  useEffect(() => {
+    if (!listNotice) return;
+    const t = window.setTimeout(() => setListNotice(null), 4000);
+    return () => window.clearTimeout(t);
+  }, [listNotice]);
+
   if (!isReady || loadingPage) {
     return <p className="text-slate-400">Loadingâ€¦</p>;
   }
@@ -116,8 +140,58 @@ export default function AdminContestsPage() {
     );
   }
 
+  async function handlePublish(e: MouseEvent<HTMLButtonElement>, row: ContestRow) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!supabase || !canShowPublishForRow(row)) return;
+    const iso = publishableStartIso(row);
+    if (!iso || Date.parse(iso) <= Date.now()) return;
+    const cs = String(row.contest_status ?? "").trim().toLowerCase();
+    if (cs !== "" && cs !== "draft") return;
+
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    if (!authUser) return;
+    const role = await getUserRole(authUser.id);
+    if (!isAdminRole(role)) return;
+
+    setPublishingId(row.id);
+    try {
+      const { error: upErr } = await supabase
+        .from("contests")
+        .update({
+          contest_status: "open",
+          status: legacyContestsStatusText("open"),
+        })
+        .eq("id", row.id);
+
+      if (upErr) {
+        setListNotice({ text: upErr.message, ok: false });
+        return;
+      }
+      const contests = await fetchContestsSafe();
+      setRows(contests);
+      setListNotice({ text: "Contest published", ok: true });
+    } finally {
+      setPublishingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {listNotice ? (
+        <div
+          role="status"
+          className={
+            listNotice.ok
+              ? "rounded-lg border border-emerald-500/40 bg-emerald-950/50 px-4 py-3 text-sm text-emerald-100"
+              : "rounded-lg border border-amber-500/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-100"
+          }
+        >
+          {listNotice.text}
+        </div>
+      ) : null}
       <div className="goldCard p-6">
         <h1 className="text-2xl font-bold text-white">Create Contest</h1>
         <p className="mt-1 text-sm text-slate-400">Simple admin tool for creating lobby contests.</p>
@@ -153,7 +227,7 @@ export default function AdminContestsPage() {
                 }
 
                 const createdAt = new Date().toISOString();
-                const contestState = normalizeContestStateForInsert(status);
+                const contestState = "draft" as const;
                 const payload = {
                   id: crypto.randomUUID(),
                   name,
@@ -265,21 +339,6 @@ export default function AdminContestsPage() {
             />
           </label>
 
-          <label className="space-y-1">
-            <span className="text-sm text-slate-300">Status</span>
-            <select
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              {CONTEST_STATE_VALUES.map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
-          </label>
-
           <div className="sm:col-span-2">
             <button
               type="submit"
@@ -305,6 +364,7 @@ export default function AdminContestsPage() {
                 <th className="px-3 py-2.5">Entry fee</th>
                 <th className="px-3 py-2.5">Entries</th>
                 <th className="px-3 py-2.5">Start date</th>
+                <th className="px-3 py-2.5">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -319,11 +379,23 @@ export default function AdminContestsPage() {
                       : "â€”"}
                     <div className="mt-1 text-xs text-slate-500">Created by: {row.created_by || "unknown"}</div>
                   </td>
+                  <td className="px-3 py-3 text-slate-200">
+                    {canShowPublishForRow(row) ? (
+                      <button
+                        type="button"
+                        disabled={publishingId === row.id}
+                        onClick={(ev) => void handlePublish(ev, row)}
+                        className="inline-flex rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 disabled:opacity-60"
+                      >
+                        {publishingId === row.id ? "Publishing..." : "Publish"}
+                      </button>
+                    ) : null}
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-4 text-slate-500" colSpan={4}>
+                  <td className="px-3 py-4 text-slate-500" colSpan={5}>
                     No contests found.
                   </td>
                 </tr>
