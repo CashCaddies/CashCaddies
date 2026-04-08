@@ -156,16 +156,7 @@ export function EnterContestWithSavedLineup({
       ) : null}
 
       <div className="w-full rounded-lg border border-[#2a3039] bg-[#0f1419] p-3 text-left">
-        <div className="rounded-lg border border-emerald-500/25 bg-emerald-950/20 px-2.5 py-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-200">
-            Automatic Protection Enabled
-          </p>
-          <p className="mt-1 text-[11px] leading-relaxed text-emerald-100/90">
-            If any golfer withdraws or is disqualified, your lineup is automatically protected. No pick required.
-          </p>
-        </div>
-
-        <div className="mt-3 border-t border-[#2a3039] pt-3 text-xs text-[#8b98a5]">
+        <div className="text-xs text-[#8b98a5]">
           <div className="flex justify-between tabular-nums">
             <span>Entry</span>
             <span className="text-[#c5cdd5]">{formatMoney(entryFeeUsd)}</span>

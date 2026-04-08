@@ -69,7 +69,7 @@ export default async function EnterContestPage(props: PageProps) {
           ) : null}
         </div>
         <p className="mt-1 text-sm text-[#c5cdd5]">
-          Entry fee {contest.entryFeeLabel} · Required: select one Safety Coverage golfer (WD/DNS/DQ)
+          Entry fee {contest.entryFeeLabel} · Safety Coverage applies automatically when you enter
           {!contest.lineupLocked ? (
             <>
               {" "}

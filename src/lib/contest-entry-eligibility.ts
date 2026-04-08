@@ -33,10 +33,6 @@ export const CONTEST_ENDED_MESSAGE = "This contest has ended — entries are no 
 export const MAX_ENTRIES_PER_USER_LINEUP_BANNER_MESSAGE =
   "You already have the maximum entries for this contest.";
 
-/** User-facing: required single insured golfer for Safety Coverage entries. */
-export const REQUIRED_INSURED_GOLFER_MESSAGE =
-  "CashCaddies Safety Coverage requires selecting one protected golfer.";
-
 /** User-facing when wallet cannot cover entry + protection (after safety credit applied). */
 export const INSUFFICIENT_FUNDS_MESSAGE = "Insufficient funds";
 
@@ -90,9 +86,6 @@ export function normalizeContestEntryErrorMessage(raw: string): string {
   if (/contest has ended/i.test(t) || /entries are no longer accepted/i.test(t)) {
     return CONTEST_ENDED_MESSAGE;
   }
-  if (/insured_golfer_id/i.test(t) || /protected golfer/i.test(t) || /safety coverage requires/i.test(t)) {
-    return REQUIRED_INSURED_GOLFER_MESSAGE;
-  }
   if (/insufficient account balance/i.test(t) || /insufficient funds for contest entry/i.test(t)) {
     return INSUFFICIENT_FUNDS_MESSAGE;
   }
@@ -105,17 +98,6 @@ export function lineupBannerMessageForCapacityError(error: string): string {
     return MAX_ENTRIES_PER_USER_LINEUP_BANNER_MESSAGE;
   }
   return error;
-}
-
-/** Enforce one insured golfer before paid contest entry. */
-export function assertInsuredGolferRequired(
-  insuredGolferId: string | null | undefined,
-): { ok: true } | { ok: false; error: string } {
-  const id = insuredGolferId != null ? String(insuredGolferId).trim() : "";
-  if (!id) {
-    return { ok: false, error: REQUIRED_INSURED_GOLFER_MESSAGE };
-  }
-  return { ok: true };
 }
 
 /** Server: non-null when user cannot start another paid entry for this contest (banner + disable pay). */

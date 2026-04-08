@@ -176,7 +176,7 @@ export async function submitLineup(payload: {
   });
 
   if (atomicErr) {
-    return { ok: false, error: atomicErr.message };
+    return { ok: false, error: normalizeContestEntryErrorMessage(atomicErr.message) };
   }
 
   const atomicRow = atomicData as {
@@ -193,7 +193,7 @@ export async function submitLineup(payload: {
       typeof atomicRow?.error === "string" && atomicRow.error.trim() !== ""
         ? atomicRow.error
         : "Could not create contest entry.";
-    return { ok: false, error: msg };
+    return { ok: false, error: normalizeContestEntryErrorMessage(msg) };
   }
 
   const ceId = atomicRow.contest_entry_id != null ? String(atomicRow.contest_entry_id) : "";

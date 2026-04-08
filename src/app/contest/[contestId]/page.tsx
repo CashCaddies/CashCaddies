@@ -64,7 +64,7 @@ export default async function ContestPage(props: ContestPageProps) {
           </p>
         ) : null}
         <p className="mt-3 text-xs font-medium text-[#9fb0bf]">
-          CashCaddies Safety Coverage protects one golfer per lineup.
+          CashCaddies Safety Coverage applies automatically at entry — no manual golfer pick.
         </p>
         <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-lg border border-[#2a3039] bg-[#0f1419] px-4 py-3">
