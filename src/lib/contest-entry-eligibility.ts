@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isContestCancelled, CONTEST_CANCELLED_ENTRIES_MESSAGE } from "@/lib/contest-cancellation";
 import { parseContestUuid } from "@/lib/contest-id";
 import { CLOSED_BETA_ACCESS_MESSAGE, currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
@@ -67,6 +68,9 @@ export function normalizeContestEntryErrorMessage(raw: string): string {
   }
   if (/contest entries are closed/i.test(t) || t === CONTEST_ENTRIES_CLOSED_MESSAGE) {
     return CONTEST_ENTRIES_CLOSED_MESSAGE;
+  }
+  if (t === CONTEST_CANCELLED_ENTRIES_MESSAGE || /\bcancel(l)?ed contest\b/i.test(t)) {
+    return CONTEST_CANCELLED_ENTRIES_MESSAGE;
   }
   if (
     /contest has started/i.test(t) ||
@@ -168,6 +172,9 @@ export async function assertContestEntryCapacityOk(
     created_at?: string | null;
     status?: string | null;
   };
+  if (isContestCancelled(row.contest_status, row.status)) {
+    return { ok: false, error: CONTEST_CANCELLED_ENTRIES_MESSAGE };
+  }
   const end = row.ends_at != null ? Date.parse(String(row.ends_at)) : NaN;
   if (Number.isFinite(end) && Date.now() > end) {
     return { ok: false, error: CONTEST_ENDED_MESSAGE };
@@ -190,6 +197,7 @@ export async function assertContestEntryCapacityOk(
     effectiveCs === "settled" ||
     effectiveCs === "completed" ||
     effectiveCs === "cancelled" ||
+    effectiveCs === "canceled" ||
     effectiveCs === "live"
   ) {
     return { ok: false, error: CONTEST_ENTRIES_CLOSED_MESSAGE };

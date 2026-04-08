@@ -45,16 +45,17 @@ export function normalizeDbContestStatus(
     raw === "live" ||
     raw === "completed" ||
     raw === "settled" ||
-    raw === "cancelled"
+    raw === "cancelled" ||
+    raw === "canceled"
   ) {
-    return raw;
+    return raw === "canceled" ? "cancelled" : raw;
   }
   const leg = String(legacyStatus ?? "").trim().toLowerCase();
   if (leg === "paid") return "settled";
   if (leg === "open") return "filling";
   if (leg === "full") return "filling";
-  if (leg === "locked" || leg === "live" || leg === "completed" || leg === "cancelled") {
-    return leg;
+  if (leg === "locked" || leg === "live" || leg === "completed" || leg === "cancelled" || leg === "canceled") {
+    return leg === "canceled" ? "cancelled" : leg;
   }
   return null;
 }

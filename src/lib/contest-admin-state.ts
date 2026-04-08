@@ -1,6 +1,7 @@
 /**
  * Valid values for `contests.contest_status` (Postgres enum `contest_state`).
  * Used by admin contest creation so invalid strings are never sent to Supabase.
+ * `cancelled` is omitted: set only after refunding entries (not from this form).
  */
 export const CONTEST_STATE_VALUES = [
   "draft",

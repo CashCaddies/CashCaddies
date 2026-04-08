@@ -1,5 +1,10 @@
 "use server";
 
+/**
+ * Contest lifecycle updates (open/lock/live/complete). Do not set `contest_status` to
+ * `cancelled` here — cancellation belongs only in an admin flow that refunds entries first.
+ */
+
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
