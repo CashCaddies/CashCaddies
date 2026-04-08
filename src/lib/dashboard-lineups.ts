@@ -93,7 +93,7 @@ export type DashboardLineup = {
   contest_id: string | null;
   /** Set when the user has completed contest entry; roster is locked. */
   contest_entry_id: string | null;
-  /** Golfer who triggered automatic protection (`protected_golfer_id`) when `protection_triggered`. */
+  /** Golfer who triggered automatic protection (`contest_entries.protected_golfer_id`). */
   insured_golfer_id: string | null;
   /** True when a Safety Coverage Credit was issued for this entry (pre–Round-1 WD/DNS/DQ). */
   safety_token_issued: boolean;
@@ -155,7 +155,6 @@ type LineupsQueryRow = {
 
 type ContestEntryProtectionRow = {
   id: string;
-  protection_triggered?: boolean | null;
   protected_golfer_id?: string | null;
   protection_token_issued?: boolean | null;
   [key: string]: unknown;
@@ -246,7 +245,7 @@ export async function fetchDashboardLineups(
     { protectedGolferId: string | null; safetyTokenIssued: boolean }
   >();
   if (contestEntryIds.length > 0) {
-    const ceFull = "id,protection_triggered,protected_golfer_id,protection_token_issued";
+    const ceFull = "id,protected_golfer_id,protection_token_issued";
     const ceSafe = "id,protected_golfer_id,protection_token_issued";
     const ceMinimal = "id,protected_golfer_id";
 
@@ -283,7 +282,7 @@ export async function fetchDashboardLineups(
 
     for (const ce of ceRows ?? []) {
       const protId =
-        ce.protection_triggered && ce.protected_golfer_id != null
+        ce.protected_golfer_id != null && String(ce.protected_golfer_id).trim() !== ""
           ? String(ce.protected_golfer_id)
           : null;
       entryMetaById.set(ce.id, {

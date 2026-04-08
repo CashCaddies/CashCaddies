@@ -32,7 +32,7 @@ export type MyEnteredContestRow = {
   lineupSalary: number | null;
   protectionEnabled: boolean;
   protectionFeeUsd: number;
-  /** `contest_entries.protection_triggered` — automatic protection applied (WD/DNS/DQ). */
+  /** Automatic protection applied when `protected_golfer_id` is set (WD/DNS/DQ). */
   hasProtectedEntry: boolean;
   contestStatus: string;
   enteredAt: string;
@@ -47,7 +47,7 @@ type ContestEntryQueryRow = {
   entry_fee: number | string | null;
   protection_enabled: boolean | null;
   protection_fee: number | string | null;
-  protection_triggered?: boolean | null;
+  protected_golfer_id?: string | null;
   created_at: string;
   lineup_id: string | null;
   /** PostgREST may return one object or a single-element array for FK embeds. */
@@ -98,7 +98,7 @@ export async function fetchMyEnteredContests(
       entry_fee,
       protection_enabled,
       protection_fee,
-      protection_triggered,
+      protected_golfer_id,
       created_at,
       lineup_id,
       lineups ( total_salary )
@@ -111,6 +111,7 @@ export async function fetchMyEnteredContests(
       entry_fee,
       protection_enabled,
       protection_fee,
+      protected_golfer_id,
       created_at,
       lineup_id,
       lineups ( total_salary )
@@ -123,7 +124,7 @@ export async function fetchMyEnteredContests(
       entry_fee,
       protection_enabled,
       protection_fee,
-      protection_triggered,
+      protected_golfer_id,
       created_at,
       lineup_id
     `;
@@ -222,7 +223,8 @@ export async function fetchMyEnteredContests(
         ? Number(rawSalary)
         : null;
 
-    const hasProtectedEntry = Boolean((entry as ContestEntryQueryRow).protection_triggered);
+    const gid = (entry as ContestEntryQueryRow).protected_golfer_id;
+    const hasProtectedEntry = gid != null && String(gid).trim() !== "";
 
     return {
       entryId: entry.id,

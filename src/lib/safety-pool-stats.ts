@@ -10,7 +10,7 @@ export type ContestSafetyPoolStats = {
   /** Global `insurance_pool.total_balance`. */
   poolUsd: number;
   totalEntries: number;
-  /** Entries with `protection_triggered` (automatic protection applied). */
+  /** Entries with `protected_golfer_id` set (automatic protection applied). */
   protectedCount: number;
   /** Share of contest entries that selected a protected golfer (0–100). */
   protectedPercent: number;
@@ -62,7 +62,7 @@ export async function fetchContestSafetyPoolStats(contestIdRaw: string): Promise
       .from("contest_entries")
       .select("*", { count: "exact", head: true })
       .eq("contest_id", id)
-      .eq("protection_triggered", true);
+      .not("protected_golfer_id", "is", null);
     if (protQ.error && isMissingColumnOrSchemaError(protQ.error)) {
       protectedCountRaw = 0;
     } else if (protQ.error && isRelationMissingOrNotExposedError(protQ.error)) {

@@ -52,7 +52,6 @@ type ContestEntryQueryRow = {
   /** 1-based index of this user's entry in the contest (from DB). */
   entry_number?: number | null;
   protection_enabled?: boolean | null;
-  protection_triggered?: boolean | null;
   protection_token_issued?: boolean | null;
   protected_golfer_id?: string | null;
   lineup_id?: string | null;
@@ -137,7 +136,6 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
         user_id,
         entry_number,
         protection_enabled,
-        protection_triggered,
         protection_token_issued,
         protected_golfer_id,
         lineup_id,
@@ -167,7 +165,6 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
         user_id,
         entry_number,
         protection_enabled,
-        protection_triggered,
         protection_token_issued,
         protected_golfer_id,
         lineup_id,
@@ -220,7 +217,9 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       });
     }
 
-    const needsGolferNames = raw.some((row) => row.protection_triggered && !insuredGolferNameFromRow(row));
+    const needsGolferNames = raw.some(
+      (row) => row.protected_golfer_id != null && String(row.protected_golfer_id).trim() !== "" && !insuredGolferNameFromRow(row),
+    );
     if (needsGolferNames && raw.length > 0) {
       const gids = [
         ...new Set(
@@ -238,8 +237,8 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
           if (gid && n) nameById.set(gid, n);
         }
         raw = raw.map((row) => {
-          if (!row.protection_triggered) return row;
-          const gid = String(row.protected_golfer_id ?? "");
+          const gid = String(row.protected_golfer_id ?? "").trim();
+          if (!gid) return row;
           const n = nameById.get(gid);
           return n ? { ...row, golfers: { name: n } } : row;
         });
@@ -267,7 +266,8 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       const rawSal = Number(lu?.total_salary ?? 0);
       const totalSalary = Number.isFinite(rawSal) ? rawSal : 0;
 
-      const protectionTriggered = Boolean(row.protection_triggered);
+      const protectionTriggered =
+        row.protected_golfer_id != null && String(row.protected_golfer_id).trim() !== "";
       const protectionTokenIssued = Boolean(row.protection_token_issued);
       const protectedGolferName = protectionTriggered ? insuredGolferNameFromRow(row) : null;
       let protectionStatusLabel: LeaderboardDisplayRow["protectionStatusLabel"] = "Standard";
