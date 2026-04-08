@@ -45,7 +45,7 @@ export function AdminContestControls({ contestId, lifecycle, lateSwapEnabled = t
   return (
     <div className="mt-1 flex max-w-[14rem] flex-col items-end gap-1">
       <div className="flex flex-wrap justify-end gap-1">
-        {lifecycle === "upcoming" ? (
+        {lifecycle === "upcoming" || lifecycle === "draft" ? (
           <button
             type="button"
             className={btn}

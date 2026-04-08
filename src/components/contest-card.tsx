@@ -11,14 +11,14 @@ import {
 export function ContestLifecycleBadge({ lifecycle }: { lifecycle: ContestLifecycle }) {
   return (
     <span
-      className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${contestLifecycleBadgeClassName(lifecycle)}`}
+      className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide ${contestLifecycleBadgeClassName(lifecycle)}`}
     >
       {contestLifecycleBadgeLabel(lifecycle)}
     </span>
   );
 }
 
-/** Updates every second while mounted (filling / upcoming lock countdown). */
+/** Updates every second while mounted (open / upcoming lock countdown). */
 export function ContestLockCountdown({
   lifecycle,
   startsAtIso,

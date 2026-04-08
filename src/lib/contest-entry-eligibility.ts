@@ -21,8 +21,8 @@ export const ENTRY_LIMIT_PER_USER_MESSAGE =
 export const CONTEST_LOCKED_MESSAGE =
   "This contest has locked — entries are closed and lineups can no longer be changed.";
 
-/** Not yet in `filling` (e.g. upcoming) or wrong lifecycle for entry. */
-export const CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE = "This contest is not open for entries yet.";
+/** Contest is draft, not yet published, or `contest_status` is not `open` for entry. */
+export const CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE = "Contest not open for entries";
 
 export const CONTEST_ENTRIES_CLOSED_MESSAGE = "Contest entries are closed.";
 
@@ -63,7 +63,11 @@ export function normalizeContestEntryErrorMessage(raw: string): string {
   if (t === MAX_ENTRIES_REACHED_MESSAGE || /\bmaximum entries reached\b/i.test(t)) {
     return ENTRY_LIMIT_PER_USER_MESSAGE;
   }
-  if (/not open for entries yet/i.test(t) || t === CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE) {
+  if (
+    /not open for entries yet/i.test(t) ||
+    t === CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE ||
+    /^contest not open for entries$/i.test(t)
+  ) {
     return CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE;
   }
   if (/contest entries are closed/i.test(t) || t === CONTEST_ENTRIES_CLOSED_MESSAGE) {
@@ -182,15 +186,18 @@ export async function assertContestEntryCapacityOk(
 
   const cs = String(row.contest_status ?? "").trim().toLowerCase();
   const legacy = String(row.status ?? "").trim().toLowerCase();
-  const effectiveCs =
+  let effectiveCs =
     cs ||
     (legacy === "open" || legacy === "full"
-      ? "filling"
+      ? "open"
       : legacy === "paid"
         ? "settled"
         : legacy);
+  if (effectiveCs === "filling") {
+    effectiveCs = "open";
+  }
 
-  if (effectiveCs === "upcoming") {
+  if (effectiveCs === "draft" || effectiveCs === "upcoming") {
     return { ok: false, error: CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE };
   }
   if (
@@ -217,8 +224,8 @@ export async function assertContestEntryCapacityOk(
     return { ok: false, error: CONTEST_LOCKED_MESSAGE };
   }
 
-  if (effectiveCs !== "filling") {
-    return { ok: false, error: CONTEST_ENTRIES_CLOSED_MESSAGE };
+  if (effectiveCs !== "open") {
+    return { ok: false, error: CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE };
   }
 
   const maxE = Math.max(1, Math.floor(Number(c.max_entries ?? 1)));

@@ -358,7 +358,7 @@ export default function AdminContestsPage() {
                   <td className="px-3 py-3 text-slate-100">{row.name}</td>
                   <td className="px-3 py-3">
                     <span
-                      className={`inline-flex shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${contestStatusBadgeClassName(row.contest_status)}`}
+                      className={`inline-flex shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide ${contestStatusBadgeClassName(row.contest_status)}`}
                     >
                       {contestStatusBadgeLabel(row.contest_status)}
                     </span>

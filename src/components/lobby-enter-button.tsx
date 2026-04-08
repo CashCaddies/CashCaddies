@@ -22,7 +22,7 @@ type Props = {
   contestId: string;
   contestName: string;
   entryFeeUsd: number;
-  /** Only `filling` phase allows paid entry (server enforces the same rules). */
+  /** Only published contests (`contest_status` open / resolved `open` lifecycle) allow paid entry. */
   joinAllowed?: boolean;
   /** Shown when `joinAllowed` is false (tooltip + disabled state). */
   joinBlockedTitle?: string;

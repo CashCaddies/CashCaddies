@@ -7,7 +7,10 @@
 export const CONTEST_LIVE_AFTER_START_MS = 5 * 60 * 1000;
 
 export type ContestLifecycle =
+  | "draft"
   | "upcoming"
+  | "open"
+  /** Legacy DB value; treated like `open` for join + badges. */
   | "filling"
   | "locked"
   | "live"
@@ -38,9 +41,10 @@ export function normalizeDbContestStatus(
   legacyStatus: string | null | undefined,
 ): ContestLifecycle | null {
   const raw = String(contestStatus ?? "").trim().toLowerCase();
+  if (raw === "draft") return "draft";
+  if (raw === "open" || raw === "filling") return "open";
   if (
     raw === "upcoming" ||
-    raw === "filling" ||
     raw === "locked" ||
     raw === "live" ||
     raw === "completed" ||
@@ -48,20 +52,19 @@ export function normalizeDbContestStatus(
     raw === "cancelled" ||
     raw === "canceled"
   ) {
-    return raw === "canceled" ? "cancelled" : raw;
+    return raw === "canceled" ? "cancelled" : (raw as ContestLifecycle);
   }
   const leg = String(legacyStatus ?? "").trim().toLowerCase();
   if (leg === "paid") return "settled";
-  if (leg === "open") return "filling";
-  if (leg === "full") return "filling";
+  if (leg === "open" || leg === "full") return "open";
   if (leg === "locked" || leg === "live" || leg === "completed" || leg === "cancelled" || leg === "canceled") {
-    return leg === "canceled" ? "cancelled" : leg;
+    return leg === "canceled" ? "cancelled" : (leg as ContestLifecycle);
   }
   return null;
 }
 
 /**
- * Resolved lifecycle for UI and join eligibility (`filling` only).
+ * Resolved lifecycle for UI and join eligibility (`open` / legacy `filling` only).
  * Time rules: locked from `starts_at` until `starts_at + 5m` (display); live after that until completed/settled.
  */
 export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): ContestLifecycle {
@@ -72,6 +75,9 @@ export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): 
   }
 
   const db = normalizeDbContestStatus(input.contest_status, input.status);
+  if (db === "draft") {
+    return "draft";
+  }
   if (db === "cancelled") {
     return "cancelled";
   }
@@ -102,7 +108,7 @@ export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): 
     return "locked";
   }
 
-  if (db === "filling") {
+  if (db === "open" || db === "filling") {
     if (!Number.isFinite(startMs) || now >= startMs) {
       return "locked";
     }
@@ -110,7 +116,7 @@ export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): 
     if (now < open) {
       return "upcoming";
     }
-    return "filling";
+    return "open";
   }
 
   if (db === "upcoming") {
@@ -121,32 +127,35 @@ export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): 
     if (!Number.isFinite(startMs) || now >= startMs) {
       return Number.isFinite(liveGateMs) && now >= liveGateMs ? "live" : "locked";
     }
-    return "filling";
+    return "open";
   }
 
   return db;
 }
 
 export function canJoinContestInLifecycle(lifecycle: ContestLifecycle): boolean {
-  return lifecycle === "filling";
+  return lifecycle === "open" || lifecycle === "filling";
 }
 
 export function contestLifecycleBadgeLabel(lifecycle: ContestLifecycle): string {
   switch (lifecycle) {
+    case "draft":
+      return "Draft";
     case "upcoming":
-      return "UPCOMING";
+      return "Upcoming";
+    case "open":
     case "filling":
-      return "FILLING";
+      return "Filling";
     case "locked":
-      return "LOCKED";
+      return "Locked";
     case "live":
-      return "LIVE";
+      return "Live";
     case "completed":
-      return "COMPLETED";
+      return "Completed";
     case "settled":
-      return "SETTLED";
+      return "Settled";
     case "cancelled":
-      return "CANCELLED";
+      return "Cancelled";
     default:
       return "—";
   }
@@ -154,8 +163,11 @@ export function contestLifecycleBadgeLabel(lifecycle: ContestLifecycle): string 
 
 export function contestLifecycleBadgeClassName(lifecycle: ContestLifecycle): string {
   switch (lifecycle) {
+    case "draft":
+      return "bg-[#252a32] text-[#8b98a5] border-[#3d4550]";
     case "upcoming":
       return "bg-[#2a3039] text-[#9ca8b4] border-[#3d4550]";
+    case "open":
     case "filling":
       return "bg-[#1a2f4a] text-[#7ab8ff] border-[#3d6a9e]";
     case "locked":
@@ -173,13 +185,13 @@ export function contestLifecycleBadgeClassName(lifecycle: ContestLifecycle): str
   }
 }
 
-/** Countdown target: seconds until lineup lock (`starts_at`) while user-facing phase is filling or upcoming. */
+/** Countdown target: seconds until lineup lock (`starts_at`) while join window (open) or pre-open (upcoming). */
 export function contestLockCountdownLabel(
   lifecycle: ContestLifecycle,
   startsAtIso: string,
   nowMs?: number,
 ): string | null {
-  if (lifecycle !== "filling" && lifecycle !== "upcoming") {
+  if (lifecycle !== "open" && lifecycle !== "filling" && lifecycle !== "upcoming") {
     return null;
   }
   const start = parseMs(startsAtIso);

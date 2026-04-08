@@ -200,8 +200,8 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
             joinAllowed={joinAllowed && !lineupLocked}
             joinBlockedTitle={
               !joinAllowed
-                ? lifecycle === "upcoming"
-                  ? "Contest is not open for entries yet."
+                ? lifecycle === "upcoming" || lifecycle === "draft"
+                  ? "Contest not open for entries"
                   : "Entries are closed for this contest."
                 : lineupLocked
                   ? "Contest started — lineups locked"

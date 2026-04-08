@@ -44,11 +44,21 @@ export function legacyContestsStatusText(state: ContestStateValue): string {
   }
 }
 
-/** Admin table: `contests.contest_status` pill (aligned with lobby lifecycle colors). */
+/** Admin table: `contests.contest_status` pill (lobby-style labels; `open` shows as Filling). */
 export function contestStatusBadgeLabel(status: string | null | undefined): string {
   const s = String(status ?? "").trim().toLowerCase();
   if (s === "") return "—";
-  return s.toUpperCase();
+  const map: Record<string, string> = {
+    draft: "Draft",
+    open: "Filling",
+    locked: "Locked",
+    live: "Live",
+    completed: "Completed",
+    settled: "Settled",
+    cancelled: "Cancelled",
+    canceled: "Cancelled",
+  };
+  return map[s] ?? s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export function contestStatusBadgeClassName(status: string | null | undefined): string {
