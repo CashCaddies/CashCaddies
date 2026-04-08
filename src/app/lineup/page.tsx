@@ -178,7 +178,7 @@ export default async function LineupPage(props: LineupPageProps) {
 
     const { data: slotRows, error: slotsErr } = await supabase
       .from("lineup_players")
-      .select("id, slot_index, golfer_id, game_start_time, is_locked")
+      .select("id, slot_index, golfer_id, is_locked")
       .eq("lineup_id", entryRow.lineup_id)
       .order("slot_index", { ascending: true });
 
@@ -191,7 +191,6 @@ export default async function LineupPage(props: LineupPageProps) {
       lineupPlayerId: String(r.id),
       slotIndex: Number(r.slot_index),
       golferId: String(r.golfer_id),
-      gameStartTime: r.game_start_time != null ? String(r.game_start_time) : null,
       isLocked: Boolean(r.is_locked),
     }));
     const protectedGolferIds: string[] = [];

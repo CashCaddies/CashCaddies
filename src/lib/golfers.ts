@@ -4,11 +4,10 @@ export type GolferRow = {
   id: string;
   name: string;
   salary: number;
-  pga_id: string;
-  image_url: string | null;
-  fantasy_points?: number;
-  /** Tee / round start for late-swap lock (optional until backfilled). */
-  game_start_time?: string | null;
+  fantasy_points?: number | null;
+  withdrawn?: boolean | null;
+  pga_id?: string;
+  image_url?: string | null;
 };
 
 export async function fetchGolfersForLineup(): Promise<{
@@ -19,7 +18,7 @@ export async function fetchGolfersForLineup(): Promise<{
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("golfers")
-      .select("id,name,salary,pga_id,image_url")
+      .select("id,name,salary,fantasy_points,withdrawn")
       .order("salary", { ascending: false });
 
     if (error) {

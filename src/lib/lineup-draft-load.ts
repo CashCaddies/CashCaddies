@@ -6,7 +6,6 @@ export type RosterSlotState = {
   lineupPlayerId: string;
   slotIndex: number;
   golferId: string;
-  gameStartTime: string | null;
   isLocked: boolean;
 };
 

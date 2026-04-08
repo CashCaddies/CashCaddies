@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -115,7 +114,7 @@ export function LineupBuilder({
       if (!cancelled) setLoadingGolfers(true);
       const { data, error } = await supabase
         .from("golfers")
-        .select("id,name,salary,pga_id,image_url,game_start_time")
+        .select("id,name,salary,fantasy_points,withdrawn")
         .order("salary", { ascending: false });
 
       if (cancelled) return;
@@ -648,23 +647,13 @@ export function LineupBuilder({
                       <td className="px-3 py-2.5 pl-4 sm:pl-5">
                         <div className="flex items-center gap-3">
                           <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#2a3039]">
-                            {golfer.image_url ? (
-                              <Image
-                                src={golfer.image_url}
-                                alt={golfer.name}
-                                width={36}
-                                height={36}
-                                className="h-9 w-9 object-cover"
-                              />
-                            ) : (
-                              <span className="flex h-9 w-9 items-center justify-center text-[10px] font-bold text-[#6b7684]">
-                                {golfer.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .slice(0, 2)}
-                              </span>
-                            )}
+                            <span className="flex h-9 w-9 items-center justify-center text-[10px] font-bold text-[#6b7684]">
+                              {golfer.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)}
+                            </span>
                           </div>
                           <span className="font-semibold text-white">{golfer.name}</span>
                         </div>
@@ -739,7 +728,7 @@ export function LineupBuilder({
               const g = selectedGolfers[slot];
               const slotsMeta = editMode?.rosterSlots;
               const slotLocked = Boolean(slotsMeta?.[slot]?.isLocked);
-              const countdownLabel = playerSlotLockCountdownLabel(slotsMeta?.[slot]?.gameStartTime, nowTick);
+              const countdownLabel = playerSlotLockCountdownLabel(null, nowTick);
               return (
                 <LineupPlayerCard
                   key={slot}

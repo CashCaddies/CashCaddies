@@ -28,20 +28,14 @@ import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
 const SALARY_CAP = 50_000;
 const ROSTER_MAX = 6;
 
-type GolferDbRow = { id: string; name: string; salary: number; game_start_time?: string | null };
+type GolferDbRow = { id: string; name: string; salary: number };
 
-function lineupPlayerInsertsFromSubmitted(
-  lineupId: string,
-  submitted: LineupGolferInput[],
-  dbRows: GolferDbRow[],
-): LineupPlayerInsert[] {
-  const byId = new Map(dbRows.map((r) => [r.id, r]));
+function lineupPlayerInsertsFromSubmitted(lineupId: string, submitted: LineupGolferInput[]): LineupPlayerInsert[] {
   return submitted.map((g, slotIndex) => ({
     lineup_id: lineupId,
     golfer_id: g.id,
     is_protected: false,
     slot_index: slotIndex,
-    game_start_time: byId.get(g.id)?.game_start_time ?? null,
   }));
 }
 
@@ -119,7 +113,7 @@ export async function submitLineup(payload: {
 
   const { data: dbRows, error: fetchErr } = await supabase
     .from("golfers")
-    .select("id,name,salary,game_start_time")
+    .select("id,name,salary,fantasy_points,withdrawn")
     .in("id", ids);
 
   if (fetchErr || !dbRows || dbRows.length !== ROSTER_MAX) {
@@ -244,11 +238,7 @@ export async function submitLineup(payload: {
     return { ok: false, error: lineupErr?.message ?? "Failed to save lineup." };
   }
 
-  const playerRows = lineupPlayerInsertsFromSubmitted(
-    lineupRow.id,
-    submitted,
-    [...byId.values()],
-  );
+  const playerRows = lineupPlayerInsertsFromSubmitted(lineupRow.id, submitted);
 
   const { error: playersErr } = await supabase.from("lineup_players").insert(playerRows);
 
@@ -357,7 +347,7 @@ export async function saveLineupDraft(payload: {
 
   const { data: dbRows, error: fetchErr } = await supabase
     .from("golfers")
-    .select("id,name,salary,game_start_time")
+    .select("id,name,salary,fantasy_points,withdrawn")
     .in("id", ids);
 
   if (fetchErr || !dbRows || dbRows.length !== ROSTER_MAX) {
@@ -429,11 +419,7 @@ export async function saveLineupDraft(payload: {
       return { ok: false, error: upErr.message };
     }
 
-    const playerRows = lineupPlayerInsertsFromSubmitted(
-      existingLineupId,
-      submitted,
-      [...byId.values()],
-    );
+    const playerRows = lineupPlayerInsertsFromSubmitted(existingLineupId, submitted);
 
     const { error: playersErr } = await supabase.from("lineup_players").insert(playerRows);
 
@@ -469,7 +455,7 @@ export async function saveLineupDraft(payload: {
     return { ok: false, error: lineupErr?.message ?? "Failed to save lineup." };
   }
 
-  const playerRowsNew = lineupPlayerInsertsFromSubmitted(lineupRow.id, submitted, [...byId.values()]);
+  const playerRowsNew = lineupPlayerInsertsFromSubmitted(lineupRow.id, submitted);
 
   const { error: playersErr } = await supabase.from("lineup_players").insert(playerRowsNew);
 
@@ -588,7 +574,7 @@ export async function editContestEntryLineup(payload: {
 
   const { data: dbRows, error: fetchErr } = await supabase
     .from("golfers")
-    .select("id,name,salary,game_start_time")
+    .select("id,name,salary,fantasy_points,withdrawn")
     .in("id", ids);
 
   if (fetchErr || !dbRows || dbRows.length !== ROSTER_MAX) {
@@ -641,7 +627,7 @@ export async function editContestEntryLineup(payload: {
 
     const { data: slotRows, error: slotsErr } = await supabase
       .from("lineup_players")
-      .select("id, slot_index, golfer_id, game_start_time, is_locked")
+      .select("id, slot_index, golfer_id, is_locked")
       .eq("lineup_id", lineupId)
       .order("slot_index", { ascending: true });
 
@@ -669,12 +655,10 @@ export async function editContestEntryLineup(payload: {
       if (String(slot.golfer_id) === submitted[i].id) {
         continue;
       }
-      const g = byId.get(submitted[i].id);
       const { error: upLpErr } = await supabase
         .from("lineup_players")
         .update({
           golfer_id: submitted[i].id,
-          game_start_time: g?.game_start_time ?? null,
         })
         .eq("id", slot.id)
         .eq("lineup_id", lineupId);
@@ -688,7 +672,7 @@ export async function editContestEntryLineup(payload: {
       return { ok: false, error: delErr.message };
     }
 
-    const playerRows = lineupPlayerInsertsFromSubmitted(lineupId, submitted, [...byId.values()]);
+    const playerRows = lineupPlayerInsertsFromSubmitted(lineupId, submitted);
     const { error: playersErr } = await supabase.from("lineup_players").insert(playerRows);
     if (playersErr) {
       return { ok: false, error: playersErr.message };

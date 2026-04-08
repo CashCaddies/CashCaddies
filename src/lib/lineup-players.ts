@@ -14,7 +14,6 @@ export type LineupPlayerRow = {
 /** Insert payload when submitting a lineup (server generates `id`). */
 export type LineupPlayerInsert = Pick<LineupPlayerRow, "lineup_id" | "golfer_id" | "is_protected"> & {
   slot_index?: number;
-  game_start_time?: string | null;
 };
 
 /** Nested row from `lineups` → `lineup_players` select with joined `golfers`. */
