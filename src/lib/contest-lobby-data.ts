@@ -1,7 +1,7 @@
 /** DFS salary cap (lineup builder). */
 export const SALARY_CAP = 50000;
 
-/** CashCaddies Safety Coverage add-on (USD) shown at lineup entry. */
+/** Legacy constant retained for compatibility (protection is now included inside entry fee split). */
 export const CASHCADDIE_PROTECTION_FEE_USD = 1;
 
 /** Parse "$5" -> 5 for totals (0 if unknown). */

@@ -122,7 +122,7 @@ export default function MyLineupsPage() {
                     </p>
                     {entered && row.valid_contest_entry && row.protection_fee > 0 ? (
                       <p className="mt-1.5 text-sm font-medium tabular-nums text-emerald-300/95">
-                        Safety Contribution: {formatSafetyUsd(row.protection_fee)}
+                        Protection fund allocation: {formatSafetyUsd(row.protection_fee)}
                       </p>
                     ) : null}
                     {missingProtectionSelection ? (

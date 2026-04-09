@@ -33,7 +33,7 @@ export const CONTEST_ENDED_MESSAGE = "This contest has ended — entries are no 
 export const MAX_ENTRIES_PER_USER_LINEUP_BANNER_MESSAGE =
   "You already have the maximum entries for this contest.";
 
-/** User-facing when wallet cannot cover entry + protection (after safety credit applied). */
+/** User-facing when wallet cannot cover the entry fee (after safety credit applied). */
 export const INSUFFICIENT_FUNDS_MESSAGE = "Insufficient funds";
 
 /** Closed beta: allow beta_user OR admin role OR founding_tester before contest entry / paid lineup flow. */

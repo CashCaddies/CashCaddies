@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { editContestEntryLineup, saveLineupDraft, submitLineup } from "@/app/lineup/actions";
 import { refreshWallet } from "@/hooks/use-wallet";
 import { useWallet } from "@/hooks/use-wallet";
+import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import type { GolferRow } from "@/lib/golfers";
 import { LATE_SWAP_HEADER_NOTICE, playerSlotLockCountdownLabel } from "@/lib/late-swap";
-import { computeProtectionFeeUsd, tierFromPoints, TIER_BENEFITS } from "@/lib/loyalty";
 import type { DraftLineupEditorData } from "@/lib/lineup-draft-load";
 import { supabase } from "@/lib/supabase/client";
 import { LineupPlayerCard } from "@/components/player-card";
@@ -23,7 +23,6 @@ type Props = {
   contestName: string;
   entryFeeLabel: string;
   entryFeeUsd: number;
-  protectionFeeUsd: number;
   /** Contest `starts_at` has passed â€” roster and entry actions are disabled (server also enforces). */
   contestLineupLocked?: boolean;
   /** When set, user cannot add another paid entry (e.g. per-user max); disables pay & shows banner. */
@@ -59,7 +58,6 @@ export function LineupBuilder({
   contestName,
   entryFeeLabel,
   entryFeeUsd,
-  protectionFeeUsd,
   contestLineupLocked = false,
   payEntryBlockedBanner = null,
 }: Props) {
@@ -81,22 +79,8 @@ export function LineupBuilder({
   const hydratedEditRef = useRef(false);
   const { wallet } = useWallet();
 
-  const tier = useMemo(
-    () => (wallet ? tierFromPoints(wallet.loyalty_points) : "Bronze"),
-    [wallet],
-  );
-  const discountPct = TIER_BENEFITS[tier].protectionDiscountPercent;
-
-  /** Automatic coverage: single safety fee at entry (tier discount applies). */
-  const protectionFeeApplied = useMemo(
-    () => computeProtectionFeeUsd(protectionFeeUsd, 1, tier),
-    [protectionFeeUsd, tier],
-  );
-  const protectionBaseSubtotal = useMemo(() => {
-    return Math.round(protectionFeeUsd * 100) / 100;
-  }, [protectionFeeUsd]);
-
-  const totalEntryCostUsd = entryFeeUsd + protectionFeeApplied;
+  const feeSplit = useMemo(() => splitEntryFeeUsd(entryFeeUsd), [entryFeeUsd]);
+  const totalEntryCostUsd = entryFeeUsd;
 
   useEffect(() => {
     let cancelled = false;
@@ -496,10 +480,10 @@ export function LineupBuilder({
         </div>
         <p className="mt-1 text-sm text-[#c5cdd5]">{contestName}</p>
         <div className="mt-3 rounded-lg border border-emerald-500/30 bg-[#0c1410] px-3 py-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]">
-          <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">Automatic Safety Coverage Enabled</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">Entry fee includes protection</p>
           <p className="mt-1.5 text-[11px] leading-relaxed text-[#c5cdd5]">
-            Automatic Safety Coverage. If any golfer withdraws before Round 1 lock, your entry receives a Safety
-            Coverage Credit equal to the entry fee.
+            Your entry is split 90% prize pool, 5% protection fund, and 5% platform fee. You are charged only the
+            entry fee.
           </p>
         </div>
         <div className="mt-4 space-y-3 text-sm text-[#e8ecf0]">
@@ -510,22 +494,17 @@ export function LineupBuilder({
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[#c5cdd5]">CashCaddies Safety Coverage (automatic)</span>
-            <span className="font-semibold tabular-nums text-[#53d769]">{formatMoneyUsd(protectionFeeUsd)}</span>
+            <span className="text-[#c5cdd5]">Prize pool (90%)</span>
+            <span className="font-semibold tabular-nums text-[#c5cdd5]">{formatMoneyUsd(feeSplit.prizePoolAmount)}</span>
           </div>
-          <p className="text-[11px] leading-snug text-[#6b7684]">
-            Your tier ({tier})
-            {discountPct > 0 ? ` Â· ${discountPct}% protection discount` : ""}. Applied at checkout.
-          </p>
-          <p className="text-xs text-[#8b98a5]">
-            Safety coverage subtotal:{" "}
-            {discountPct > 0 && protectionBaseSubtotal > 0 ? (
-              <>
-                <span className="line-through opacity-60">{formatMoneyUsd(protectionBaseSubtotal)}</span>{" "}
-              </>
-            ) : null}
-            <span className="font-semibold text-[#53d769]">{formatMoneyUsd(protectionFeeApplied)}</span>
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[#c5cdd5]">Protection fund (5%)</span>
+            <span className="font-semibold tabular-nums text-[#53d769]">{formatMoneyUsd(feeSplit.protectionAmount)}</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[#c5cdd5]">Platform fee (5%)</span>
+            <span className="font-semibold tabular-nums text-[#c5cdd5]">{formatMoneyUsd(feeSplit.websiteFee)}</span>
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#2a3039] pt-3">
             <span className="text-xs font-bold uppercase tracking-wider text-[#8b98a5]">Total entry cost</span>
             <span className="text-lg font-black tabular-nums text-white">{formatMoneyUsd(totalEntryCostUsd)}</span>
@@ -536,7 +515,7 @@ export function LineupBuilder({
               <span className="font-semibold text-[#c5cdd5]">
                 {formatMoneyUsd((wallet.protection_credit_balance ?? 0) + wallet.account_balance)}
               </span>{" "}
-              (safety coverage credit applied before cash)
+              (account balance + credits)
             </p>
           ) : null}
         </div>
@@ -888,7 +867,7 @@ export function LineupBuilder({
                   </div>
                   <div>
                     <dt className="text-[11px] font-bold uppercase tracking-wider text-[#8b98a5]">
-                      Safety contribution
+                      Protection fund (included)
                     </dt>
                     <dd className="mt-1 font-semibold tabular-nums text-[#53d769]">
                       {formatMoneyUsd(safetyPoolContributionUsd ?? 0)}

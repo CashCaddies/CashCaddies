@@ -51,7 +51,7 @@ export async function createContestEntry(payload: {
     contestId: contestIdNorm,
     userId: user.id,
     entryFeeUsd: payload.entryFeeUsd,
-    protectionFeeUsd: payload.protectionFeeUsd,
+    protectionFeeUsd: 0,
     lineupId: payload.lineupId ?? null,
   });
   if (!preEntry.ok) {
@@ -72,7 +72,7 @@ export async function createContestEntry(payload: {
     contestId: contestIdNorm,
     contestName: payload.contestName.trim() || "Contest",
     entryFeeUsd: payload.entryFeeUsd,
-    protectionFeeUsd: payload.protectionFeeUsd,
+    protectionFeeUsd: 0,
     protectionEnabled: payload.protectionEnabled,
     lineupId: payload.lineupId,
     accountBalanceOnly: payload.accountBalanceOnly,

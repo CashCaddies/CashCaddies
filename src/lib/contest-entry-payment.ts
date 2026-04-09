@@ -34,6 +34,7 @@ type AtomicRpcRow = {
  * - Default (free, or account-balance-only paid): single DB transaction via `create_contest_entry_atomic`
  *   (contest_entries + wallet + transactions roll back together on failure).
  * - Legacy: site_credits + account_balance split when `accountBalanceOnly === false` and total > 0.
+ * Entry billing is fee-only: protection is funded from the entry split, not as an added charge.
  */
 export async function chargeContestEntry(
   admin: SupabaseClient,
@@ -47,7 +48,7 @@ export async function chargeContestEntry(
     /** Set when roster already exists (saved draft or re-link). */
     lineupId?: string | null;
     /**
-     * When true, entry + protection are debited only from `account_balance` (site_credits untouched).
+     * When true, entry fee debit uses `account_balance` only (site_credits untouched).
      * Insufficient balance blocks the entry before any wallet mutation besides rollback.
      */
     accountBalanceOnly?: boolean;
@@ -59,8 +60,8 @@ export async function chargeContestEntry(
   }
 
   const entryFeeUsd = round2(Math.max(0, params.entryFeeUsd));
-  const protectionFeeUsd = round2(Math.max(0, params.protectionFeeUsd));
-  const total = round2(entryFeeUsd + protectionFeeUsd);
+  const protectionFeeUsd = 0;
+  const total = entryFeeUsd;
 
   const useAtomicRpc = total <= 0 || params.accountBalanceOnly !== false;
 

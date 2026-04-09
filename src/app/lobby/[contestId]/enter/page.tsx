@@ -69,7 +69,7 @@ export default async function EnterContestPage(props: PageProps) {
           ) : null}
         </div>
         <p className="mt-1 text-sm text-[#c5cdd5]">
-          Entry fee {contest.entryFeeLabel} · Safety Coverage applies automatically when you enter
+          Entry fee {contest.entryFeeLabel} (90% prize pool / 5% protection / 5% platform)
           {!contest.lineupLocked ? (
             <>
               {" "}

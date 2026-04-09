@@ -3,8 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { refundContestEntryCharge, type DebitSnapshot } from "@/lib/contest-entry-payment";
-import { computeProtectionFeeUsd, tierFromPoints } from "@/lib/loyalty";
-import { CASHCADDIE_PROTECTION_FEE_USD } from "@/lib/contest-lobby-data";
+import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { resolveContestEntryForSubmit } from "@/lib/contest-resolve";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import type { LineupPlayerInsert } from "@/lib/lineup-players";
@@ -138,25 +137,18 @@ export async function submitLineup(payload: {
     return { ok: false, error: "Lineup cannot exceed the $50,000 salary cap." };
   }
 
-  /** Automatic lineup protection: flat safety coverage fee (one “slot”) at entry. */
+  /** Automatic protection is included in the entry fee split. */
   const protectionEnabled = true;
-  const { data: walletRow } = await supabase
-    .from("profiles")
-    .select("loyalty_points")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const tier = tierFromPoints(Number(walletRow?.loyalty_points ?? 0));
-  const protectionFeeUsd = computeProtectionFeeUsd(CASHCADDIE_PROTECTION_FEE_USD, 1, tier);
-
   const { contestName, entryFeeUsd } = await resolveContestEntryForSubmit(supabase, contestId);
-  const totalPaidUsd = entryFeeUsd + protectionFeeUsd;
+  const feeSplit = splitEntryFeeUsd(entryFeeUsd);
+  const protectionFeeUsd = feeSplit.protectionAmount;
+  const totalPaidUsd = entryFeeUsd;
 
   const eligSubmit = await assertContestEntryEligible(supabase, {
     contestId,
     userId: user.id,
     entryFeeUsd,
-    protectionFeeUsd,
+    protectionFeeUsd: 0,
   });
   if (!eligSubmit.ok) {
     return { ok: false, error: eligSubmit.error };
@@ -168,7 +160,7 @@ export async function submitLineup(payload: {
     p_user_id: user.id,
     p_contest_id: contestId,
     p_entry_fee: entryFeeUsd,
-    p_protection_fee: protectionFeeUsd,
+    p_protection_fee: 0,
     p_total_paid: totalPaidUsd,
     p_protection_enabled: protectionEnabled,
     p_lineup_id: null,
@@ -782,23 +774,16 @@ export async function enterContestWithSavedLineup(payload: {
     return { ok: false, error: lineupProtErr.message };
   }
 
-  const { data: walletRow } = await supabase
-    .from("profiles")
-    .select("loyalty_points")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const tier = tierFromPoints(Number(walletRow?.loyalty_points ?? 0));
-
   const { contestName, entryFeeUsd } = await resolveContestEntryForSubmit(supabase, contestId);
-  const protectionFeeUsd = computeProtectionFeeUsd(CASHCADDIE_PROTECTION_FEE_USD, 1, tier);
-  const totalPaidUsd = entryFeeUsd + protectionFeeUsd;
+  const feeSplit = splitEntryFeeUsd(entryFeeUsd);
+  const protectionFeeUsd = feeSplit.protectionAmount;
+  const totalPaidUsd = entryFeeUsd;
 
   const eligEnter = await assertContestEntryEligible(supabase, {
     contestId,
     userId: user.id,
     entryFeeUsd,
-    protectionFeeUsd,
+    protectionFeeUsd: 0,
     lineupId,
   });
   if (!eligEnter.ok) {
@@ -811,7 +796,7 @@ export async function enterContestWithSavedLineup(payload: {
     p_user_id: user.id,
     p_contest_id: contestId,
     p_entry_fee: entryFeeUsd,
-    p_protection_fee: protectionFeeUsd,
+    p_protection_fee: 0,
     p_total_paid: totalPaidUsd,
     p_protection_enabled: protectionEnabled,
     p_lineup_id: lineupId,

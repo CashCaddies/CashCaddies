@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LineupBuilder } from "@/components/lineup-builder";
-import { CASHCADDIE_PROTECTION_FEE_USD } from "@/lib/contest-lobby-data";
 import { getPayEntryBlockedBannerForUser } from "@/lib/contest-entry-eligibility";
 import { loadContestForLineupPage } from "@/lib/contest-resolve";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
@@ -106,7 +105,6 @@ export default async function LineupPage(props: LineupPageProps) {
           contestName={resolved.name}
           entryFeeLabel={resolved.entryFeeLabel}
           entryFeeUsd={resolved.entryFeeUsd}
-          protectionFeeUsd={CASHCADDIE_PROTECTION_FEE_USD}
           contestLineupLocked={resolved.lineupLocked}
           payEntryBlockedBanner={payEntryBlockedBanner}
         />
@@ -235,7 +233,6 @@ export default async function LineupPage(props: LineupPageProps) {
           contestName={resolved.name}
           entryFeeLabel={resolved.entryFeeLabel}
           entryFeeUsd={resolved.entryFeeUsd}
-          protectionFeeUsd={CASHCADDIE_PROTECTION_FEE_USD}
           contestLineupLocked={resolved.lineupLocked}
           payEntryBlockedBanner={payEntryBlockedBanner}
         />
@@ -275,7 +272,6 @@ export default async function LineupPage(props: LineupPageProps) {
         contestName={resolved.name}
         entryFeeLabel={resolved.entryFeeLabel}
         entryFeeUsd={resolved.entryFeeUsd}
-        protectionFeeUsd={CASHCADDIE_PROTECTION_FEE_USD}
         contestLineupLocked={resolved.lineupLocked}
         payEntryBlockedBanner={payEntryBlockedBanner}
       />

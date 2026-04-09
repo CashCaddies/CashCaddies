@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { enterContestWithSavedLineup } from "@/app/lineup/actions";
 import { InsufficientFundsModal } from "@/components/insufficient-funds-modal";
 import type { DraftLineupPlayer } from "@/lib/contest-enter";
-import { CASHCADDIE_PROTECTION_FEE_USD } from "@/lib/contest-lobby-data";
-import { computeProtectionFeeUsd, tierFromPoints, type TierName, TIER_BENEFITS } from "@/lib/loyalty";
+import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
+import type { TierName } from "@/lib/loyalty";
 import { refreshWallet, useWallet } from "@/hooks/use-wallet";
 import { dispatchWalletBankrollFlash } from "@/lib/wallet-bankroll-events";
 import {
@@ -65,21 +65,14 @@ export function EnterContestWithSavedLineup({
   const { wallet, user } = useWallet();
   const [insufficientOpen, setInsufficientOpen] = useState(false);
   const [insufficientCtx, setInsufficientCtx] = useState<{ balance: number; required: number } | null>(null);
-  const effectiveTier = useMemo(() => {
-    if (wallet) return tierFromPoints(wallet.loyalty_points);
-    return tier;
-  }, [wallet, tier]);
-  const discountPct = TIER_BENEFITS[effectiveTier].protectionDiscountPercent;
+  void tier;
 
   const [error, setError] = useState<string | null>(null);
   const [poolSuccess, setPoolSuccess] = useState<string | null>(null);
   const [enterSubmitting, setEnterSubmitting] = useState(false);
 
-  const protectionFee = useMemo(
-    () => computeProtectionFeeUsd(CASHCADDIE_PROTECTION_FEE_USD, 1, effectiveTier),
-    [effectiveTier],
-  );
-  const totalDue = entryFeeUsd + protectionFee;
+  const feeSplit = splitEntryFeeUsd(entryFeeUsd);
+  const totalDue = entryFeeUsd;
 
   function onEnter() {
     if (lineupLocked) {
@@ -119,7 +112,9 @@ export function EnterContestWithSavedLineup({
           await refreshWallet();
           dispatchWalletBankrollFlash();
           if (result.safetyContributionUsd > 0) {
-            setPoolSuccess(`You contributed $${result.safetyContributionUsd.toFixed(2)} to the Safety Pool.`);
+            setPoolSuccess(
+              `Includes $${result.safetyContributionUsd.toFixed(2)} from your entry fee to the Safety Pool.`,
+            );
             window.setTimeout(() => {
               router.push("/dashboard/lineups");
               router.refresh();
@@ -162,8 +157,16 @@ export function EnterContestWithSavedLineup({
             <span className="text-[#c5cdd5]">{formatMoney(entryFeeUsd)}</span>
           </div>
           <div className="mt-1 flex justify-between tabular-nums">
-            <span>CashCaddies Safety Coverage ({effectiveTier} tier{discountPct > 0 ? ` · ${discountPct}% off` : ""})</span>
-            <span className="text-[#53d769]">{formatMoney(protectionFee)}</span>
+            <span>Prize pool (90%)</span>
+            <span className="text-[#c5cdd5]">{formatMoney(feeSplit.prizePoolAmount)}</span>
+          </div>
+          <div className="mt-1 flex justify-between tabular-nums">
+            <span>Protection fund (5%)</span>
+            <span className="text-[#53d769]">{formatMoney(feeSplit.protectionAmount)}</span>
+          </div>
+          <div className="mt-1 flex justify-between tabular-nums">
+            <span>Platform fee (5%)</span>
+            <span className="text-[#c5cdd5]">{formatMoney(feeSplit.websiteFee)}</span>
           </div>
           <div className="mt-2 flex justify-between border-t border-[#2a3039] pt-2 font-bold text-white">
             <span>Total</span>

@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { refundContestEntryCharge } from "@/lib/contest-entry-payment";
-import { CASHCADDIE_PROTECTION_FEE_USD } from "@/lib/contest-lobby-data";
+import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { resolveContestEntryForSubmit } from "@/lib/contest-resolve";
-import { computeProtectionFeeUsd, tierFromPoints } from "@/lib/loyalty";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { contestLockErrorMessage, getContestLineupLockState } from "@/lib/contest-lock-server";
 import { parseContestUuid } from "@/lib/contest-id";
@@ -55,8 +54,8 @@ export async function precheckContestEntryCapacity(
 }
 
 /**
- * Create contest_entries (with lineup_id), debit account_balance for entry + protection when applicable,
- * link lineup, and persist protection_fee / protection_enabled from the saved roster.
+ * Create contest_entries (with lineup_id), debit entry fee from account_balance,
+ * link lineup, and persist protection allocation metadata from the saved roster.
  */
 export async function confirmLobbyContestEntry(payload: {
   contestId: string;
@@ -110,29 +109,19 @@ export async function confirmLobbyContestEntry(payload: {
     return { ok: false, error: "This lineup is already entered in a contest." };
   }
 
-  const { data: prof, error: profErr } = await supabase
-    .from("profiles")
-    .select("loyalty_points")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profErr) {
-    return { ok: false, error: profErr.message };
-  }
-
-  const tier = tierFromPoints(Number(prof?.loyalty_points ?? 0));
   const protectionEnabled = true;
-  const protectionFeeUsd = computeProtectionFeeUsd(CASHCADDIE_PROTECTION_FEE_USD, 1, tier);
 
   const { contestName, entryFeeUsd } = await resolveContestEntryForSubmit(supabase, contestId);
   const fee = round2(Math.max(0, entryFeeUsd));
-  const totalPaid = round2(fee + protectionFeeUsd);
+  const split = splitEntryFeeUsd(fee);
+  const protectionFeeUsd = split.protectionAmount;
+  const totalPaid = fee;
 
   const eligLobby = await assertContestEntryEligible(supabase, {
     contestId,
     userId: user.id,
     entryFeeUsd: fee,
-    protectionFeeUsd,
+    protectionFeeUsd: 0,
     lineupId,
   });
   if (!eligLobby.ok) {
@@ -143,7 +132,7 @@ export async function confirmLobbyContestEntry(payload: {
     p_user_id: user.id,
     p_contest_id: contestId,
     p_entry_fee: fee,
-    p_protection_fee: protectionFeeUsd,
+    p_protection_fee: 0,
     p_total_paid: totalPaid,
     p_protection_enabled: protectionEnabled,
     p_lineup_id: lineupId,
@@ -224,21 +213,8 @@ export async function confirmLobbyContestEntry(payload: {
   revalidatePath(`/lobby/${contestId}/enter`);
   revalidatePath(`/contest/${contestId}`);
 
-  const parts: string[] = [];
-  if (fee > 0) parts.push(`entry $${fee.toFixed(2)}`);
-  if (protectionFeeUsd > 0) parts.push(`protection $${protectionFeeUsd.toFixed(2)}`);
-  const charged = parts.length > 0 ? parts.join(" + ") : "";
-
-  const poolLine =
-    protectionFeeUsd > 0
-      ? ` You contributed $${protectionFeeUsd.toFixed(2)} to the Safety Pool.`
-      : "";
-
   return {
     ok: true,
-    message:
-      charged.length > 0
-        ? `Entered ${contestName}! Charged to your account balance: ${charged}.${poolLine}`
-        : `Entered ${contestName}!${poolLine}`,
+    message: `Entered ${contestName}! Charged to your account balance: entry $${fee.toFixed(2)}.`,
   };
 }

@@ -50,7 +50,7 @@ export function newDepositTransaction(amount: number): WalletTransaction {
   };
 }
 
-/** Bankroll debit for contest entry (entry fee + safety coverage in one line). */
+/** Bankroll debit for contest entry (entry fee only). */
 export function newEntryFeeTransaction(totalCashDebitUsd: number): WalletTransaction {
   const debit = round2(-Math.abs(totalCashDebitUsd));
   return {
