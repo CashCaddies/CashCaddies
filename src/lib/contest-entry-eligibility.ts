@@ -289,8 +289,8 @@ export async function assertContestEntryEligible(
   }
 
   const entryFee = round2(Math.max(0, ctx.entryFeeUsd));
-  const prot = round2(Math.max(0, ctx.protectionFeeUsd));
-  const total = round2(entryFee + prot);
+  /** User pays entry fee only; `protectionFeeUsd` on context is legacy — wallet check uses entry fee. */
+  const total = entryFee;
 
   if (total > 0) {
     const { data: prof, error: pErr } = await supabase

@@ -30,8 +30,10 @@ export default async function AdminSettlementPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Contest settlement</h1>
         <p className="mt-2 max-w-2xl text-sm text-[#8b98a5]">
           After the contest window ends, distributes the prize pool from{" "}
-          <span className="text-[#c5cdd5]">contest_payouts</span> (rank → % of pool) to finishers. Sort order matches
-          the public leaderboard (lineup <span className="text-[#c5cdd5]">total_score</span> desc). Eligible when{" "}
+          <span className="text-[#c5cdd5]">contest_payouts</span> (rank → % of pool) to finishers. The distributable pool
+          is <span className="text-[#c5cdd5]">90%</span> of collected entry fees (
+          <span className="font-mono text-[#c5cdd5]">settle_contest_prizes</span>). Sort order matches the public
+          leaderboard (lineup <span className="text-[#c5cdd5]">total_score</span> desc). Eligible when{" "}
           <span className="font-mono text-[#c5cdd5]">now() &gt;= starts_at + 3 days</span>. Each contest settles at
           most once (<span className="text-[#c5cdd5]">contest_settlements</span>).{" "}
           <Link href="/admin/scoring" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">

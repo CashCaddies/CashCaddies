@@ -14,18 +14,15 @@ export type CreateContestEntryResult =
   | { ok: false; error: string };
 
 /**
- * Creates a contest entry and debits the wallet in one database transaction
- * (via `create_contest_entry_atomic` when using the atomic path).
+ * Creates a contest entry and debits the wallet via `create_contest_entry_atomic` only.
  * Requires an authenticated user; uses the service role for billing RPCs.
  */
 export async function createContestEntry(payload: {
   contestId: string;
   contestName: string;
   entryFeeUsd: number;
-  protectionFeeUsd: number;
   protectionEnabled: boolean;
   lineupId?: string | null;
-  accountBalanceOnly?: boolean;
 }): Promise<CreateContestEntryResult> {
   let supabase;
   try {
@@ -72,9 +69,7 @@ export async function createContestEntry(payload: {
     contestId: contestIdNorm,
     contestName: payload.contestName.trim() || "Contest",
     entryFeeUsd: payload.entryFeeUsd,
-    protectionFeeUsd: 0,
     protectionEnabled: payload.protectionEnabled,
     lineupId: payload.lineupId,
-    accountBalanceOnly: payload.accountBalanceOnly,
   });
 }

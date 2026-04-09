@@ -13,7 +13,8 @@ export function AdminTriggerSettlement() {
       <h2 className="text-lg font-semibold text-white">Trigger contest settlement</h2>
       <p className="mt-2 text-sm text-slate-400">
         Runs prize settlement on the <span className="text-slate-300">earliest eligible</span> contest: not yet
-        settled, at least 3 days after start, with entries and payout structure. Credits winners via{" "}
+        settled, at least 3 days after start, with entries and payout structure. Pool uses{" "}
+        <span className="text-slate-300">90%</span> of entry fees; credits winners via{" "}
         <span className="font-mono text-slate-400">settle_contest_prizes</span> (same as{" "}
         <a href="/admin/settlement" className="text-emerald-400 underline hover:text-emerald-300">
           Contest settlement

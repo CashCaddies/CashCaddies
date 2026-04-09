@@ -8,8 +8,8 @@ const UNASSIGNED_CONTEST_KEY = "__unassigned__";
 
 function lineupAmountPaidUsd(l: DashboardLineup): number {
   if (l.total_paid > 0) return l.total_paid;
-  const fromParts = l.entry_fee + l.protection_fee;
-  if (fromParts > 0) return fromParts;
+  // Single entry fee (protection is not an add-on); do not sum legacy protection_fee onto entry_fee.
+  if (l.entry_fee > 0) return l.entry_fee;
   if (l.contest?.entry_fee_usd != null && Number.isFinite(l.contest.entry_fee_usd)) {
     return l.contest.entry_fee_usd;
   }

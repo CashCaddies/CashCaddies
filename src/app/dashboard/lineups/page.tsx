@@ -16,6 +16,7 @@ import {
 import { useDashboardLineups } from "@/hooks/use-dashboard-lineups";
 import { useInsuranceClaims } from "@/hooks/use-insurance-claims";
 import { ContestLabPanel } from "@/components/contest-lab-modal";
+import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 
 function formatSubmitted(iso: string) {
   try {
@@ -76,6 +77,12 @@ export default function MyLineupsPage() {
               : null;
             const missingProtectionSelection = false;
             const entryStatus = resolveLineupEntryStatus(row);
+            const protectionFundUsd =
+              entered && row.valid_contest_entry
+                ? row.protection_fee > 0
+                  ? row.protection_fee
+                  : splitEntryFeeUsd(row.entry_fee).protectionAmount
+                : 0;
             const roster = row.players
               .map((p) => `${p.name}${p.withdrawn ? " (WD)" : ""}`)
               .join(", ");
@@ -120,9 +127,9 @@ export default function MyLineupsPage() {
                         </>
                       ) : null}
                     </p>
-                    {entered && row.valid_contest_entry && row.protection_fee > 0 ? (
+                    {entered && row.valid_contest_entry && protectionFundUsd > 0 ? (
                       <p className="mt-1.5 text-sm font-medium tabular-nums text-emerald-300/95">
-                        Protection fund allocation: {formatSafetyUsd(row.protection_fee)}
+                        Protection fund allocation: {formatSafetyUsd(protectionFundUsd)}
                       </p>
                     ) : null}
                     {missingProtectionSelection ? (

@@ -131,7 +131,9 @@ export function resolveLineupEntryStatus(row: DashboardLineup): {
     return { kind: "locked", label: "Locked Entry" };
   }
   const hasProtection =
-    row.insured_golfer_id != null || row.protection_fee > 0 || row.protection_enabled;
+    row.insured_golfer_id != null ||
+    row.protection_enabled ||
+    (row.valid_contest_entry && row.entry_fee > 0);
   if (hasProtection) {
     return { kind: "protected", label: "Safety Coverage Eligible" };
   }
@@ -260,7 +262,7 @@ export async function fetchDashboardLineups(
     const safetyTokenIssued = false;
     const validContestEntry = row.contest_entry_id != null;
     const safetyCoverageEligible =
-      validContestEntry && (Boolean(row.protection_enabled) || Number(row.protection_fee ?? 0) > 0);
+      validContestEntry && (Boolean(row.protection_enabled) || Number(row.entry_fee ?? 0) > 0);
     return {
       id: row.id,
       contest_id: row.contest_id,

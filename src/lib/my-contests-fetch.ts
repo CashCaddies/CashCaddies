@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getContestDisplay } from "@/lib/contest-lobby-data";
 import { type ContestLifecyclePhase, contestLifecyclePhaseFromRow } from "@/lib/contest-lobby-shared";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
+import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 function phaseToUserLabel(phase: ContestLifecyclePhase): string {
@@ -31,7 +32,9 @@ export type MyEnteredContestRow = {
   entryNumber: number;
   entryFeeUsd: number;
   lineupSalary: number | null;
+  /** True when entry fee > 0 (safety coverage funded from entry split). */
   protectionEnabled: boolean;
+  /** 5% of entry fee → protection fund (not an extra charge). */
   protectionFeeUsd: number;
   /** Stabilization: always false (protection columns omitted from reads). */
   hasProtectedEntry: boolean;
@@ -179,15 +182,18 @@ export async function fetchMyEnteredContests(
         ? Number(rawSalary)
         : null;
 
+    const entryFeeUsd = Number(entry.entry_fee ?? 0);
+    const split = splitEntryFeeUsd(entryFeeUsd);
+
     return {
       entryId: entry.id,
       contestId: entry.contest_id,
       contestName,
       entryNumber: entryNumberForContestUser(list, entry),
-      entryFeeUsd: Number(entry.entry_fee ?? 0),
+      entryFeeUsd,
       lineupSalary,
-      protectionEnabled: false,
-      protectionFeeUsd: 0,
+      protectionEnabled: entryFeeUsd > 0,
+      protectionFeeUsd: split.protectionAmount,
       hasProtectedEntry: false,
       contestStatus,
       enteredAt: entry.created_at,

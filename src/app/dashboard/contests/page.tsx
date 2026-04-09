@@ -53,7 +53,7 @@ export default function MyContestsPage() {
                 <th className="px-4 py-3">Contest</th>
                 <th className="px-4 py-3">Entry fee</th>
                 <th className="px-4 py-3 text-right">Lineup salary</th>
-                <th className="px-4 py-3">CashCaddies Safety Coverage</th>
+                <th className="px-4 py-3">Protection fund (5% of entry)</th>
                 <th className="px-4 py-3">Contest status</th>
                 <th className="px-4 py-3 text-right">Entered</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -100,15 +100,10 @@ export default function MyContestsPage() {
                       {r.lineupSalary !== null ? `$${r.lineupSalary.toLocaleString()}` : "—"}
                     </td>
                     <td className="px-4 py-3.5 text-slate-300">
-                      {r.protectionEnabled ? (
-                        <span>
-                          <span className="font-semibold text-emerald-300">On</span>
-                          {r.protectionFeeUsd > 0 ? (
-                            <span className="text-slate-500"> · {formatUsd(r.protectionFeeUsd)}</span>
-                          ) : null}
-                        </span>
+                      {r.entryFeeUsd > 0 ? (
+                        <span className="tabular-nums text-emerald-200/90">{formatUsd(r.protectionFeeUsd)}</span>
                       ) : (
-                        <span className="text-slate-500">Off</span>
+                        <span className="text-slate-500">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3.5">
