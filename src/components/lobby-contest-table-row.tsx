@@ -46,6 +46,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const safetyPoolUsd = contest.safety_pool_usd ?? 0;
   const fillPct = Math.min(100, (current / max) * 100);
   const perUserLabel = formatPerUserEntryLimit(contest.max_entries_per_user);
+  const hasPayouts = contest.payouts.length > 0;
   const lifecycle = resolveEffectiveContestLifecycle({
     status: contest.status,
     starts_at: contest.starts_at,
@@ -159,6 +160,12 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
           <div className="flex flex-wrap gap-x-1.5 gap-y-0">
             <dt className="font-semibold uppercase tracking-wide text-[#6b7684]">Protected Entries</dt>
             <dd className="tabular-nums text-emerald-200/95">{protectedPctLabel}%</dd>
+          </div>
+          <div className="flex flex-wrap gap-x-1.5 gap-y-0">
+            <dt className="font-semibold uppercase tracking-wide text-[#6b7684]">Payouts</dt>
+            <dd className={hasPayouts ? "tabular-nums text-[#c5cdd5]" : "text-[#8b98a5]"}>
+              {hasPayouts ? `${contest.payouts.length} places` : "No payout structure"}
+            </dd>
           </div>
         </dl>
       </td>

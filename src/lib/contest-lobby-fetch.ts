@@ -1,9 +1,14 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import { entryCountFromContestEntriesRelation, type LobbyContestRow } from "@/lib/contest-lobby-shared";
+import {
+  entryCountFromContestEntriesRelation,
+  type LobbyContestPayoutRow,
+  type LobbyContestRow,
+} from "@/lib/contest-lobby-shared";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
-export type { LobbyContestRow } from "@/lib/contest-lobby-shared";
+export type { LobbyContestRow, LobbyContestPayoutRow } from "@/lib/contest-lobby-shared";
 export {
   formatContestStartDate,
   formatLobbyEntryFeeUsd,
@@ -11,7 +16,8 @@ export {
   isContestLineupLocked,
 } from "@/lib/contest-lobby-shared";
 
-export type ContestPayoutRow = { rank_place: number; payout_pct: number };
+/** @deprecated Use `LobbyContestPayoutRow` from `@/lib/contest-lobby-shared`. */
+export type ContestPayoutRow = LobbyContestPayoutRow;
 
 const CONTEST_CARD_SELECT = `
   id,
@@ -28,57 +34,70 @@ const CONTEST_CARD_SELECT = `
   contest_entries ( id )
 `;
 
-export async function fetchContestPayoutsForContest(contestId: string): Promise<ContestPayoutRow[]> {
-  const id = String(contestId ?? "").trim();
-  if (!id) return [];
-  try {
-    const supabase = await createClient();
-    const hasAccess = await currentUserHasContestAccess(supabase);
-    // Match fetchLobbyContestById: do not hide payout rows in dev when server auth/beta gate is flaky.
-    if (!hasAccess && process.env.NODE_ENV !== "development") {
-      return [];
-    }
-    if (!hasAccess && process.env.NODE_ENV === "development") {
-      console.log("fetchContestPayoutsForContest: bypassing server-side beta gate during stabilization.");
-    }
+/** Raw row shape after DB fetch (before contest_id normalization). */
+type ContestPayoutDbRow = {
+  contest_id?: unknown;
+  rank_place?: unknown;
+  payout_pct?: unknown;
+};
 
-    const idCandidates = [...new Set([id, id.toLowerCase(), id.toUpperCase()])].filter((c) => c.length > 0);
+/** Normalized for in-memory matching only (messy DB text → comparable key). */
+type NormalizedPayoutRow = {
+  contest_id: string;
+  rank_place: unknown;
+  payout_pct: unknown;
+};
 
-    const { data, error } = await supabase
-      .from("contest_payouts")
-      .select("*")
-      .in("contest_id", idCandidates)
-      .order("rank_place", { ascending: true });
+/**
+ * Fetch all `contest_payouts` rows — no `.in()` / `.eq()` on contest_id; matching is 100% in JS.
+ */
+async function fetchAllContestPayoutRows(supabase: SupabaseClient): Promise<ContestPayoutDbRow[]> {
+  const { data, error } = await supabase
+    .from("contest_payouts")
+    .select("contest_id, rank_place, payout_pct")
+    .order("rank_place", { ascending: true });
 
-    // TEMP debug (remove when stable)
+  if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.log("contest.id", id);
-      console.log("payouts", data, "error", error);
+      console.warn("fetchAllContestPayoutRows", error);
     }
-
-    if (error) {
-      return [];
-    }
-
-    const rows = data ?? [];
-    if (!rows.length) {
-      return [];
-    }
-
-    const mapped: ContestPayoutRow[] = rows
-      .map((r) => {
-        const row = r as { rank_place?: unknown; payout_pct?: unknown };
-        return {
-          rank_place: Number(row.rank_place),
-          payout_pct: Number(row.payout_pct),
-        };
-      })
-      .filter((r) => Number.isFinite(r.rank_place) && r.rank_place >= 1 && Number.isFinite(r.payout_pct));
-
-    return mapped;
-  } catch {
     return [];
   }
+  return (data ?? []) as ContestPayoutDbRow[];
+}
+
+function normalizePayoutRows(payouts: ContestPayoutDbRow[]): NormalizedPayoutRow[] {
+  return payouts.map((p) => ({
+    contest_id: String(p.contest_id).trim().toLowerCase(),
+    rank_place: p.rank_place,
+    payout_pct: p.payout_pct,
+  }));
+}
+
+function toLobbyPayoutRows(rows: NormalizedPayoutRow[]): LobbyContestPayoutRow[] {
+  return rows
+    .map((p) => ({
+      rank_place: Number(p.rank_place),
+      payout_pct: Number(p.payout_pct),
+    }))
+    .filter((r) => Number.isFinite(r.rank_place) && r.rank_place >= 1 && Number.isFinite(r.payout_pct))
+    .sort((a, b) => a.rank_place - b.rank_place);
+}
+
+/**
+ * Attach payouts for one contest using only normalized string equality (DB can be messy).
+ */
+function payoutsForContest(normalizedPayouts: NormalizedPayoutRow[], contestIdRaw: string): LobbyContestPayoutRow[] {
+  const normalizedContestId = String(contestIdRaw).trim().toLowerCase();
+  const matched = normalizedPayouts.filter((p) => p.contest_id === normalizedContestId);
+  const contestPayouts = toLobbyPayoutRows(matched);
+
+  console.log("MATCH TEST →", {
+    contestId: normalizedContestId,
+    matched: contestPayouts,
+  });
+
+  return contestPayouts;
 }
 
 export async function fetchLobbyContests(): Promise<{
@@ -108,12 +127,16 @@ export async function fetchLobbyContests(): Promise<{
     }
 
     const rows = (data ?? []).filter((row) => String(row.id ?? "").trim() !== "");
-    const ids = rows.map((row) => String(row.id));
+    const ids = rows.map((row) => String(row.id).trim()).filter(Boolean);
+
     let settledIds = new Set<string>();
     if (ids.length > 0) {
       const { data: stRows } = await supabase.from("contest_settlements").select("contest_id").in("contest_id", ids);
       settledIds = new Set((stRows ?? []).map((r) => String((r as { contest_id: string }).contest_id)));
     }
+
+    const rawPayouts = await fetchAllContestPayoutRows(supabase);
+    const normalizedPayouts = normalizePayoutRows(rawPayouts);
 
     const contests = rows
       .map((row) => {
@@ -128,6 +151,7 @@ export async function fetchLobbyContests(): Promise<{
           String(row.start_time ?? row.starts_at ?? row.created_at ?? new Date().toISOString());
         const entryFee = Number(row.entry_fee ?? row.entry_fee_usd ?? 0);
         const createdAt = row.created_at != null ? String(row.created_at) : undefined;
+        const payouts = payoutsForContest(normalizedPayouts, id);
         const mapped: LobbyContestRow = {
           id,
           name: String(row.name ?? "Contest"),
@@ -148,6 +172,7 @@ export async function fetchLobbyContests(): Promise<{
             row.late_swap_enabled === undefined || row.late_swap_enabled === null
               ? true
               : Boolean(row.late_swap_enabled),
+          payouts,
         };
         return mapped;
       })
@@ -164,7 +189,7 @@ export async function fetchLobbyContests(): Promise<{
   }
 }
 
-/** Single contest from `contests` for `/contest/[id]` and `/contests/[id]`. */
+/** Single contest from `contests` for `/contest/[id]` and `/contests/[id]` and `/lobby/[contestId]`. */
 export async function fetchLobbyContestById(contestId: string): Promise<LobbyContestRow | null> {
   const id = contestId?.trim();
   if (!id) return null;
@@ -187,6 +212,11 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     const startsAt = String(data.start_time ?? data.starts_at ?? data.created_at ?? new Date().toISOString());
     const entryFee = Number(data.entry_fee ?? data.entry_fee_usd ?? 0);
     const createdAt = data.created_at != null ? String(data.created_at) : undefined;
+
+    const rawPayouts = await fetchAllContestPayoutRows(supabase);
+    const normalizedPayouts = normalizePayoutRows(rawPayouts);
+    const payouts = payoutsForContest(normalizedPayouts, String(data.id));
+
     return {
       id: String(data.id),
       name: String(data.name),
@@ -205,6 +235,7 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
       safety_pool_usd: 0,
       late_swap_enabled:
         (data as { late_swap_enabled?: boolean | null }).late_swap_enabled !== false,
+      payouts,
     };
   } catch {
     return null;

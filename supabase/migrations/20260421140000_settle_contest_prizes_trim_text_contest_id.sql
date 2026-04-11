@@ -77,15 +77,15 @@ begin
     return jsonb_build_object('ok', false, 'error', 'No payout structure for this contest (contest_payouts).');
   end if;
 
-  select coalesce(sum(payout_amount), 0)
-  into total_payouts
-  from public.contest_payouts
-  where trim(contest_id) = trim(v_cid);
-
   select (coalesce(c.entry_fee, c.entry_fee_usd, 0)::numeric * v_entry_count * 0.90)
   into expected_pool
   from public.contests c
   where c.id = v_cid::uuid;
+
+  select coalesce(sum(expected_pool * coalesce(pp.payout_pct, 0) / 100.0), 0)
+  into total_payouts
+  from public.contest_payouts pp
+  where trim(pp.contest_id) = trim(v_cid);
 
   if round(total_payouts::numeric, 2) <> round(expected_pool::numeric, 2) then
     raise exception 'Payouts do not match prize pool';

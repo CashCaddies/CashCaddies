@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ContestDbDetail } from "@/components/contest-db-detail";
-import { fetchContestPayoutsForContest, fetchLobbyContestById } from "@/lib/contest-lobby-fetch";
+import { fetchLobbyContestById } from "@/lib/contest-lobby-fetch";
 
 type ContestDetailsPageProps = {
   params: Promise<{ contestId: string }>;
@@ -18,7 +18,5 @@ export default async function LobbyContestDetailsPage(props: ContestDetailsPageP
     notFound();
   }
 
-  const payouts = await fetchContestPayoutsForContest(contestId);
-
-  return <ContestDbDetail contestId={contestId} row={row} payouts={payouts} />;
+  return <ContestDbDetail contestId={contestId} row={row} />;
 }

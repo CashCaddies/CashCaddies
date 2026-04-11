@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { ContestPayoutRow } from "@/lib/contest-lobby-fetch";
 import type { LobbyContestRow } from "@/lib/contest-lobby-shared";
 import {
   formatContestStartDate,
@@ -11,10 +10,11 @@ import { SALARY_CAP } from "@/lib/contest-lobby-data";
 type Props = {
   contestId: string;
   row: LobbyContestRow;
-  payouts: ContestPayoutRow[];
 };
 
-export function ContestDbDetail({ contestId, row, payouts }: Props) {
+export function ContestDbDetail({ contestId, row }: Props) {
+  const payouts = row.payouts ?? [];
+  const hasPayouts = payouts.length > 0;
   const max = Math.max(1, row.max_entries);
   const current = Math.min(row.entry_count || 0, max);
   const fillPct = Math.min(100, (current / max) * 100);
@@ -75,7 +75,7 @@ export function ContestDbDetail({ contestId, row, payouts }: Props) {
         </div>
       </div>
 
-      {payouts.length === 0 ? (
+      {!hasPayouts ? (
         <div className="border-x border-[#2a3039] bg-[#0c1015] px-4 py-6 sm:px-8">
           <h2 className="text-lg font-bold uppercase tracking-wide text-[#c5cdd5]">Prize breakdown</h2>
           <p className="mt-2 text-sm text-[#6b7684]">No payout structure</p>

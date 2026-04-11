@@ -83,7 +83,7 @@ begin
 
   v_expected_pool := round(v_contest.entry_fee_usd * v_entry_count * 0.90, 2);
 
-  select coalesce(sum(coalesce(pp.payout_amount, v_expected_pool * pp.payout_pct / 100.0)), 0)
+  select coalesce(sum(v_expected_pool * coalesce(pp.payout_pct, 0) / 100.0), 0)
   into v_total_payouts
   from public.contest_payouts pp
   where pp.contest_id = v_cid;

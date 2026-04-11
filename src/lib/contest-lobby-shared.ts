@@ -1,3 +1,9 @@
+/** One row from `contest_payouts` (rank → % of prize pool). Loaded with lobby contests. */
+export type LobbyContestPayoutRow = {
+  rank_place: number;
+  payout_pct: number;
+};
+
 /** Row from `contests_with_stats` (see supabase/migrations). Safe for client components — no server Supabase import. */
 export type LobbyContestRow = {
   id: string;
@@ -28,6 +34,8 @@ export type LobbyContestRow = {
   safety_pool_usd?: number;
   /** Admin: allow DFS late swap after contest goes live. */
   late_swap_enabled?: boolean | null;
+  /** From `contest_payouts` for this contest id (explicit fetch in `fetchLobbyContests` / `fetchLobbyContestById`). */
+  payouts: LobbyContestPayoutRow[];
 };
 
 /** Rows returned from `contest_entries ( id )` on a contest query; length = entry count (RLS applies). */
