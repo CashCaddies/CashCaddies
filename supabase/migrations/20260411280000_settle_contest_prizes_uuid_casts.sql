@@ -38,7 +38,7 @@ begin
     raise exception 'Contest already settled';
   end if;
 
-  if exists (select 1 from public.contest_settlements s where s.contest_id = v_cid) then
+  if exists (select 1 from public.contest_settlements s where trim(s.contest_id) = trim(v_cid)) then
     return jsonb_build_object('ok', false, 'error', 'Contest already settled.');
   end if;
 
@@ -70,14 +70,16 @@ begin
     );
   end if;
 
-  if not exists (select 1 from public.contest_payouts pp where pp.contest_id = v_cid) then
+  raise notice 'Looking for payouts with contest_id: %', v_cid;
+
+  if not exists (select 1 from public.contest_payouts pp where trim(pp.contest_id) = trim(v_cid)) then
     return jsonb_build_object('ok', false, 'error', 'No payout structure for this contest (contest_payouts).');
   end if;
 
   select coalesce(sum(payout_amount), 0)
   into total_payouts
   from public.contest_payouts
-  where contest_id = v_cid;
+  where trim(contest_id) = trim(v_cid);
 
   select (coalesce(c.entry_fee, c.entry_fee_usd, 0)::numeric * v_entry_count * 0.90)
   into expected_pool
@@ -113,7 +115,7 @@ begin
   for r_payout in
     select pp.rank_place, pp.payout_pct
     from public.contest_payouts pp
-    where pp.contest_id = v_cid
+    where trim(pp.contest_id) = trim(v_cid)
     order by pp.rank_place
   loop
     if r_payout.rank_place < 1 or r_payout.rank_place > v_len then
