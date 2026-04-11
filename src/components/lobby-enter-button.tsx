@@ -87,6 +87,8 @@ export function LobbyEnterButton({
   const [insufficientOpen, setInsufficientOpen] = useState(false);
   const [insufficientCtx, setInsufficientCtx] = useState<{ balance: number; required: number } | null>(null);
   const enterFlowInFlight = useRef(false);
+  /** Bumps after successful entry so `contest_entries` count refetches. */
+  const [entriesRefreshTick, setEntriesRefreshTick] = useState(0);
 
   const maxPer = useMemo(() => effectiveMaxPerUser(maxEntriesPerUser), [maxEntriesPerUser]);
 
@@ -129,7 +131,7 @@ export function LobbyEnterButton({
     return () => {
       cancelled = true;
     };
-  }, [isReady, authUser, contestId]);
+  }, [isReady, authUser, contestId, entriesRefreshTick]);
 
   const feeLabel = Number.isFinite(entryFeeUsd)
     ? `$${entryFeeUsd.toLocaleString(undefined, {
@@ -143,21 +145,20 @@ export function LobbyEnterButton({
     joinBlockedTitle ??
     (lineupLocked ? "Contest started — lineups locked" : "Entries are not open for this contest.");
 
+  const countBusy = Boolean(authUser && !entryCountReady);
+
   const onEnterContest = useCallback(async () => {
-    if (enterFlowInFlight.current || loading) {
-      return;
-    }
     if (blocked) {
       setError(blockedTitle);
+      setLoading(false);
+      enterFlowInFlight.current = false;
       return;
     }
     if (atMaxPerUser) {
+      setLoading(false);
+      enterFlowInFlight.current = false;
       return;
     }
-    enterFlowInFlight.current = true;
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
     try {
       const sb = supabase;
       if (!sb) {
@@ -230,6 +231,16 @@ export function LobbyEnterButton({
   function handleEnterClick(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
+    if (loading || enterFlowInFlight.current) {
+      return;
+    }
+    if (blocked || atMaxPerUser || countBusy) {
+      return;
+    }
+    enterFlowInFlight.current = true;
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
     void onEnterContest();
   }
 
@@ -264,19 +275,9 @@ export function LobbyEnterButton({
         writePersistedWalletBalance(authUser.id, roundMoney2(Math.max(0, balanceBefore - totalDue)));
         setModalOpen(false);
         setSuccess(result.message);
+        setEntriesRefreshTick((t) => t + 1);
         await refreshWallet();
         dispatchWalletBankrollFlash();
-        const sb = supabase;
-        if (sb && authUser) {
-          const { count, error: cErr } = await sb
-            .from("contest_entries")
-            .select("id", { count: "exact", head: true })
-            .eq("contest_id", contestId)
-            .eq("user_id", authUser.id);
-          if (!cErr) {
-            setUserEntryCount(count ?? 0);
-          }
-        }
         router.refresh();
         return;
       }
@@ -287,7 +288,6 @@ export function LobbyEnterButton({
     setPending(false);
   }
 
-  const countBusy = Boolean(authUser && !entryCountReady);
   const buttonDisabled = loading || blocked || atMaxPerUser || countBusy;
   const buttonLabel = atMaxPerUser
     ? "Max entries reached"
