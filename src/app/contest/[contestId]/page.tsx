@@ -30,14 +30,16 @@ export default async function ContestLeaderboardPage(props: PageProps) {
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-500">
               <th className="pb-2 pr-4 font-medium">Rank</th>
+              <th className="pb-2 pr-4 font-medium">Username</th>
               <th className="pb-2 pr-4 font-medium">Score</th>
               <th className="pb-2 font-medium">Winnings</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={`${r.rank}-${r.user_id}`} className="border-b border-slate-800/80">
+            {rows.map((r, i) => (
+              <tr key={`${r.rank}-${r.user_id}-${i}`} className="border-b border-slate-800/80">
                 <td className="py-2 pr-4 tabular-nums text-slate-200">{r.rank}</td>
+                <td className="py-2 pr-4 text-slate-200">{r.username}</td>
                 <td className="py-2 pr-4 tabular-nums text-slate-200">{r.score}</td>
                 <td className="py-2 tabular-nums text-slate-200">
                   {r.winnings == null ? "-" : formatMoney(r.winnings)}

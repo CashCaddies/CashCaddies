@@ -10,8 +10,9 @@ import {
 export type ContestLeaderboardRow = {
   rank: number;
   user_id: string;
+  username: string;
   score: number;
-  /** `null` when the contest is not settled yet (UI shows "-"). */
+  /** Always computed; `null` when contest is not settled (UI shows "-"). */
   winnings: number | null;
 };
 
@@ -26,15 +27,47 @@ function num(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function trimStr(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const t = v.trim();
+  return t === "" ? "" : t;
+}
+
 function firstEmbed<T>(raw: T | T[] | null | undefined): T | null {
   if (raw == null) return null;
   return Array.isArray(raw) ? (raw[0] ?? null) : raw;
 }
 
+/** Competition ranking: same score → same rank; next distinct score → rank = index + 1 (skips). */
+function assignCompetitionRanks(sortedScores: number[]): number[] {
+  const ranks: number[] = [];
+  for (let i = 0; i < sortedScores.length; i++) {
+    if (i === 0) {
+      ranks.push(1);
+    } else if (sortedScores[i] === sortedScores[i - 1]) {
+      ranks.push(ranks[i - 1]!);
+    } else {
+      ranks.push(i + 1);
+    }
+  }
+  return ranks;
+}
+
+/** Sum `payout_pct` for finishing places `startPlace` … `startPlace + span - 1` (inclusive). */
+function sumPctForPlaces(payoutByPlace: Map<number, number>, startPlace: number, span: number): number {
+  let t = 0;
+  for (let k = 0; k < span; k++) {
+    t += payoutByPlace.get(startPlace + k) ?? 0;
+  }
+  return t;
+}
+
 /**
- * Entries ordered by `lineups.total_score` DESC; rank 1..n.
- * `winnings` = prize_pool × (contest_payouts.payout_pct / 100) when `contests.status` is `settled`.
- * Prize pool matches settlement: `entry_fee_usd × entry_count × 0.90` (two decimal USD).
+ * Entries ordered by `lineups.total_score` DESC (ties keep stable order by entry id).
+ * Ranks use competition rules (ties share rank; next rank skips).
+ * Tied users split combined prize % for the places they occupy (DFS-style).
+ * `winnings` is the computed USD share when settled; otherwise `null` (amount still computed internally).
+ * Prize pool: `entry_fee_usd × entry_count × 0.90`.
  */
 export async function getContestLeaderboard(contestIdRaw: string): Promise<GetContestLeaderboardResult> {
   unstable_noStore();
@@ -75,6 +108,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
     let entryRows: unknown[] | null = entriesQ.data as unknown[] | null;
     let entriesErr = entriesQ.error;
+    let usedMinimalEntrySelect = false;
 
     if (
       entriesErr &&
@@ -86,6 +120,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
         .eq("contest_id", contestId);
       entryRows = retry.data as unknown[] | null;
       entriesErr = retry.error;
+      usedMinimalEntrySelect = true;
     }
 
     if (entriesErr) {
@@ -97,10 +132,61 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       user_id: string;
       lineup_id?: string | null;
       lineups?: { total_score?: unknown } | { total_score?: unknown }[] | null;
+      profiles?: { username?: string | null } | { username?: string | null }[] | null;
     };
 
     const raw = (entryRows ?? []) as RawEntry[];
-    const nEntries = raw.length;
+
+    type Prelim = {
+      id: string;
+      user_id: string;
+      score: number;
+      usernameFromEmbed: string;
+    };
+
+    const preliminary: Prelim[] = raw.map((r) => {
+      const lu = firstEmbed(r.lineups ?? null);
+      const pr = firstEmbed(r.profiles ?? null);
+      return {
+        id: String(r.id),
+        user_id: String(r.user_id ?? ""),
+        score: num(lu?.total_score),
+        usernameFromEmbed: trimStr(pr?.username),
+      };
+    });
+
+    const userIds = [...new Set(preliminary.map((p) => p.user_id).filter(Boolean))];
+    const needProfileBatch =
+      userIds.length > 0 &&
+      (usedMinimalEntrySelect || preliminary.some((p) => p.usernameFromEmbed === ""));
+
+    const nameById = new Map<string, string>();
+    if (needProfileBatch) {
+      const { data: profRows } = await supabase.from("profiles").select("id, username").in("id", userIds);
+      for (const p of profRows ?? []) {
+        const rec = p as { id?: string; username?: string | null };
+        const id = String(rec.id ?? "");
+        if (!id) continue;
+        nameById.set(id, trimStr(rec.username) || "—");
+      }
+    }
+
+    const scored = preliminary.map((p) => {
+      const u = p.usernameFromEmbed || nameById.get(p.user_id) || "";
+      return {
+        id: p.id,
+        user_id: p.user_id,
+        score: p.score,
+        username: u === "" ? "—" : u,
+      };
+    });
+
+    scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.id.localeCompare(b.id);
+    });
+
+    const nEntries = scored.length;
     const prizePool = Math.round(entryFee * nEntries * 0.9 * 100) / 100;
 
     const payoutByPlace = new Map<number, number>();
@@ -111,32 +197,38 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       payoutByPlace.set(place, num(row.payout_pct));
     }
 
-    const scored = raw.map((r) => {
-      const lu = firstEmbed(r.lineups ?? null);
-      return {
-        id: String(r.id),
-        user_id: String(r.user_id ?? ""),
-        score: num(lu?.total_score),
-      };
-    });
+    const scores = scored.map((s) => s.score);
+    const ranks = assignCompetitionRanks(scores);
 
-    scored.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return a.id.localeCompare(b.id);
-    });
+    const rows: ContestLeaderboardRow[] = [];
 
-    const rows: ContestLeaderboardRow[] = scored.map((r, index) => {
-      const rank = index + 1;
-      const pct = payoutByPlace.get(rank) ?? 0;
-      const winnings = settled ? Math.round(prizePool * (pct / 100) * 100) / 100 : null;
+    let i = 0;
+    while (i < scored.length) {
+      const score = scored[i]!.score;
+      const startRank = ranks[i]!;
+      let j = i + 1;
+      while (j < scored.length && scored[j]!.score === score) {
+        j++;
+      }
+      const group = scored.slice(i, j);
+      const m = group.length;
+      const totalPct = sumPctForPlaces(payoutByPlace, startRank, m);
+      const poolUsd = prizePool * (totalPct / 100);
+      const eachUsd = m > 0 ? Math.round((poolUsd / m) * 100) / 100 : 0;
 
-      return {
-        rank,
-        user_id: r.user_id,
-        score: r.score,
-        winnings,
-      };
-    });
+      for (const ent of group) {
+        const computed = eachUsd;
+        rows.push({
+          rank: startRank,
+          user_id: ent.user_id,
+          username: ent.username,
+          score: ent.score,
+          winnings: settled ? computed : null,
+        });
+      }
+
+      i = j;
+    }
 
     return { rows, settled, contestExists: true };
   } catch {
