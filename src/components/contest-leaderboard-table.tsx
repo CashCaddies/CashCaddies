@@ -12,14 +12,14 @@ export function ContestLeaderboardTable({ rows }: Props) {
     <section className="border-x border-b border-[#2a3039] bg-[#141920] px-4 py-4 sm:px-6">
       <h2 className="text-sm font-bold uppercase tracking-wide text-[#c5cdd5]">Leaderboard</h2>
         <p className="mt-1 text-xs text-[#6b7684]">
-        Ordered by total score (highest first). Status reflects Safety Coverage credits and post–Round-1 scoring
-        adjustments.
+        Ordered by entry time (earliest first). Total score is shown when available. Status reflects Safety Coverage
+        credits and post–Round-1 scoring adjustments.
       </p>
       <div className="mt-4 overflow-x-auto rounded-lg border border-[#2a3039] bg-[#0f1419]">
         <table className="w-full min-w-[820px] table-fixed border-collapse text-left text-sm">
           <caption className="sr-only">
-            Contest leaderboard: rank, user, total salary, total score, protection, safety coverage. Sorted by total score
-            descending.
+            Contest leaderboard: rank, user, total salary, total score, protection, safety coverage. Sorted by entry time
+            ascending.
           </caption>
           <thead>
             <tr className="border-b border-[#2a3039] bg-[#1a1f26] text-[11px] font-bold uppercase tracking-wider text-[#8b98a5]">

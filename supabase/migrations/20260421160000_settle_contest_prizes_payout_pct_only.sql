@@ -102,10 +102,9 @@ begin
     select
       ce.user_id,
       row_number() over (
-        order by coalesce(l.total_score, 0) desc nulls last, ce.id
+        order by ce.created_at asc, ce.id asc
       ) as ord
     from public.contest_entries ce
-    left join public.lineups l on l.id = ce.lineup_id
     where ce.contest_id = v_cid::uuid
   ) ranked;
 

@@ -1253,10 +1253,9 @@ begin
     select
       ce.user_id,
       row_number() over (
-        order by coalesce(l.total_score, 0) desc nulls last, ce.id
+        order by ce.created_at asc, ce.id asc
       ) as ord
     from public.contest_entries ce
-    left join public.lineups l on l.id = ce.lineup_id
     where ce.contest_id = v_cid
   ) ranked;
 
@@ -1345,7 +1344,7 @@ $$;
 ALTER FUNCTION "public"."settle_contest_prizes"("p_contest_id" "text") OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."settle_contest_prizes"("p_contest_id" "text") IS 'Sort leaderboard by lineup total_score, apply contest_payouts, credit account_balance and transactions (idempotent per contest). Rejects settlement if any prize would exceed beta wallet cap (5000 USD).';
+COMMENT ON FUNCTION "public"."settle_contest_prizes"("p_contest_id" "text") IS 'Order entries by contest_entries.created_at asc (then id), apply contest_payouts, credit account_balance and transactions (idempotent per contest). Rejects settlement if any prize would exceed beta wallet cap (5000 USD).';
 
 
 

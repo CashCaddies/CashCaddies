@@ -159,11 +159,9 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
     }
 
     const sorted = [...raw].sort((a, b) => {
-      const la = lineupFromRow(a);
-      const lb = lineupFromRow(b);
-      const sb = Number(lb?.total_score ?? 0);
-      const sa = Number(la?.total_score ?? 0);
-      if (sb !== sa) return sb - sa;
+      const ta = Date.parse(a.created_at ?? "") || 0;
+      const tb = Date.parse(b.created_at ?? "") || 0;
+      if (ta !== tb) return ta - tb;
       return String(a.id).localeCompare(String(b.id));
     });
 

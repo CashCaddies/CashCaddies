@@ -6,12 +6,13 @@ export type ContestResultRow = {
   userId: string;
   lineupId: string | null;
   rank: number;
+  /** From lineup when present; informational until scoring exists. */
   score: number | null;
 };
 
 /**
- * Contest “results” for MVP: entries joined to `lineups.total_score`, ordered high → low.
- * Optional `contest_results` table is not required — scores live on lineups.
+ * Contest results for settlement preview: same order as DB settlement (`contest_entries.created_at` asc, then id).
+ * Lineup score is included when available but does not determine rank.
  */
 export async function getContestResults(
   supabase: SupabaseClient,
@@ -24,7 +25,7 @@ export async function getContestResults(
 
   const { data, error } = await supabase
     .from("contest_entries")
-    .select("id, user_id, lineup_id, lineups ( total_score )")
+    .select("id, user_id, lineup_id, created_at, lineups ( total_score )")
     .eq("contest_id", id);
 
   if (error) {
@@ -35,6 +36,7 @@ export async function getContestResults(
     id: string;
     user_id: string;
     lineup_id: string | null;
+    created_at?: string | null;
     lineups: { total_score: number | null } | { total_score: number | null }[] | null;
   };
 
@@ -51,13 +53,14 @@ export async function getContestResults(
       userId: String(r.user_id),
       lineupId: r.lineup_id != null ? String(r.lineup_id) : null,
       score,
+      createdAt: typeof r.created_at === "string" ? r.created_at : "",
     };
   });
 
   scored.sort((a, b) => {
-    const sa = a.score ?? Number.NEGATIVE_INFINITY;
-    const sb = b.score ?? Number.NEGATIVE_INFINITY;
-    if (sb !== sa) return sb - sa;
+    const ta = Date.parse(a.createdAt) || 0;
+    const tb = Date.parse(b.createdAt) || 0;
+    if (ta !== tb) return ta - tb;
     return a.entryId.localeCompare(b.entryId);
   });
 

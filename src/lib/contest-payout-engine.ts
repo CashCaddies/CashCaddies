@@ -47,8 +47,8 @@ function parsePayoutLines(raw: unknown): ContestPayoutLine[] {
 }
 
 /**
- * Runs DB `settle_contest_prizes`: requires `contests.status = 'complete'`; sorted leaderboard by
- * `lineups.total_score`; `contest_payouts` percentages of prize pool (90% of gross entry fees);
+ * Runs DB `settle_contest_prizes`: requires `contests.status = 'complete'`; entry order is
+ * `contest_entries.created_at` asc (then id), not lineup scores; `contest_payouts` percentages of prize pool (90% of gross entry fees);
  * credits `profiles.account_balance` and `transactions` (`contest_prize`). Idempotent via `contest_settlements`.
  */
 export async function settleContestPrizes(
