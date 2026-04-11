@@ -1,16 +1,8 @@
 /**
- * Valid values for `contests.contest_status` (Postgres enum `contest_state`).
- * Used by admin contest creation so invalid strings are never sent to Supabase.
- * `cancelled` is omitted: set only after refunding entries (not from this form).
+ * Valid values for `contests.status` (see `contests_status_lifecycle_check`).
+ * `cancelled` is omitted from admin create: set only after refunding entries.
  */
-export const CONTEST_STATE_VALUES = [
-  "draft",
-  "open",
-  "locked",
-  "live",
-  "completed",
-  "settled",
-] as const;
+export const CONTEST_STATE_VALUES = ["filling", "locked", "live", "complete", "settled"] as const;
 
 export type ContestStateValue = (typeof CONTEST_STATE_VALUES)[number];
 
@@ -19,41 +11,18 @@ export function normalizeContestStateForInsert(raw: string | null | undefined): 
   if ((CONTEST_STATE_VALUES as readonly string[]).includes(t)) {
     return t as ContestStateValue;
   }
-  return "draft";
+  return "locked";
 }
 
-/**
- * Legacy `contests.status` column (baseline CHECK) allows:
- * open | locked | live | completed | cancelled | paid
- */
-export function legacyContestsStatusText(state: ContestStateValue): string {
-  switch (state) {
-    case "draft":
-    case "open":
-      return "open";
-    case "locked":
-      return "locked";
-    case "live":
-      return "live";
-    case "completed":
-      return "completed";
-    case "settled":
-      return "paid";
-    default:
-      return "open";
-  }
-}
-
-/** Admin table: `contests.contest_status` pill (lobby-style labels; `open` shows as Filling). */
+/** Admin table: `contests.status` pill (lobby-style labels). */
 export function contestStatusBadgeLabel(status: string | null | undefined): string {
   const s = String(status ?? "").trim().toLowerCase();
   if (s === "") return "—";
   const map: Record<string, string> = {
-    draft: "Draft",
-    open: "Filling",
+    filling: "Filling",
     locked: "Locked",
     live: "Live",
-    completed: "Completed",
+    complete: "Complete",
     settled: "Settled",
     cancelled: "Cancelled",
     canceled: "Cancelled",
@@ -63,15 +32,13 @@ export function contestStatusBadgeLabel(status: string | null | undefined): stri
 
 export function contestStatusBadgeClassName(status: string | null | undefined): string {
   switch (String(status ?? "").trim().toLowerCase()) {
-    case "draft":
-      return "bg-[#252a32] text-[#8b98a5] border-[#3d4550]";
-    case "open":
+    case "filling":
       return "bg-[#1a2f4a] text-[#7ab8ff] border-[#3d6a9e]";
     case "locked":
       return "bg-[#3d2a1a] text-[#ffb14a] border-[#8b5a2b]";
     case "live":
       return "bg-[#142e1c] text-[#53d769] border-[#2d7a3a]";
-    case "completed":
+    case "complete":
       return "bg-[#2a1f3d] text-[#c4a8ff] border-[#5c4a7a]";
     case "settled":
       return "bg-[#3d3420] text-[#e8c96a] border-[#8a7630]";

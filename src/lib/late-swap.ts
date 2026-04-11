@@ -3,7 +3,8 @@ import { CONTEST_LIVE_AFTER_START_MS } from "@/lib/contest-state";
 export type LateSwapContestMeta = {
   startsAtIso: string | null | undefined;
   lateSwapEnabled?: boolean | null;
-  contestStatus?: string | null;
+  /** `contests.status` */
+  status?: string | null;
 };
 
 /** Matches SQL `contest_late_swap_live`: live phase (starts + 5m) and feature enabled. */
@@ -11,10 +12,10 @@ export function lateSwapWindowOpenForContest(meta: LateSwapContestMeta): boolean
   if (meta.lateSwapEnabled === false) {
     return false;
   }
-  const s = String(meta.contestStatus ?? "")
+  const s = String(meta.status ?? "")
     .trim()
     .toLowerCase();
-  if (s === "completed" || s === "settled" || s === "cancelled") {
+  if (s === "complete" || s === "settled" || s === "cancelled") {
     return false;
   }
   const t = Date.parse(String(meta.startsAtIso ?? ""));

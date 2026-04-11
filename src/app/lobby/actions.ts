@@ -25,7 +25,7 @@ export type ConfirmLobbyEntryResult =
 
 /**
  * Client-safe pre-check before navigating to lineup builder or opening the enter flow.
- * Uses the same rules as `assertContestEntryCapacityOk` (`contests.status`/`contest_status` = filling, capacity, per-user caps).
+ * Uses the same rules as `assertContestEntryCapacityOk` (`contests.status` = filling, capacity, per-user caps).
  */
 export async function precheckContestEntryCapacity(
   contestId: string,

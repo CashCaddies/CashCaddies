@@ -6,7 +6,7 @@ import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 function phaseToUserLabel(phase: ContestLifecyclePhase): string {
-  if (phase === "upcoming") return "Open";
+  if (phase === "upcoming") return "Upcoming";
   if (phase === "live") return "Live";
   return "Ended";
 }

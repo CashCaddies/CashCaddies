@@ -1,10 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import {
-  legacyContestsStatusText,
-  normalizeContestStateForInsert,
-} from "@/lib/contest-admin-state";
+import { normalizeContestStateForInsert } from "@/lib/contest-admin-state";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export type CreateContestInput = {
@@ -60,8 +57,7 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
     max_entries: maxEntries,
     entry_count: 0,
     start_time: startsAt,
-    status: legacyContestsStatusText(contestState),
-    contest_status: contestState,
+    status: contestState,
     entries_open_at: createdAt,
     max_entries_per_user: 1,
     starts_at: startsAt,

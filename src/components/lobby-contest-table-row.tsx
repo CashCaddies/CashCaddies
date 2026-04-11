@@ -53,14 +53,13 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const fillPct = Math.min(100, (current / max) * 100);
   const perUserLabel = formatPerUserEntryLimit(contest.max_entries_per_user);
   const lifecycle = resolveEffectiveContestLifecycle({
-    contest_status: contest.contest_status,
-    status: contest.contests_row_status ?? contest.status,
+    status: contest.status,
     starts_at: contest.starts_at,
     entries_open_at: contest.entries_open_at,
     created_at: contest.created_at,
     has_settlement: contest.has_settlement,
   });
-  const isFillingPhase = contestStatusIsFilling(contest.contests_row_status ?? contest.status);
+  const isFillingPhase = contestStatusIsFilling(contest.status);
   const joinAllowedForEntry = isFillingPhase && !isFull;
   const entryFeeUsd =
     typeof contest.entry_fee_usd === "string"
@@ -142,7 +141,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
       <td className="px-4 py-3.5 pl-5 align-middle sm:px-5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-white">{contest.name}</span>
-          <ContestLifecycleStatusBadge status={contest.contests_row_status ?? contest.status} />
+          <ContestLifecycleStatusBadge status={contest.status} />
           <ContestLifecycleBadge lifecycle={lifecycle} />
           {isFull ? <ContestFullBadge /> : null}
           <ContestLockCountdown lifecycle={lifecycle} startsAtIso={contest.starts_at} />
@@ -206,6 +205,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
             <AdminContestControls
               contestId={contest.id}
               lifecycle={lifecycle}
+              dbStatus={contest.status}
               lateSwapEnabled={contest.late_swap_enabled !== false}
             />
           ) : null}

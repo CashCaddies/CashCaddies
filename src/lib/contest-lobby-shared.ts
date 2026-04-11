@@ -14,11 +14,7 @@ export type LobbyContestRow = {
   /** Same instant as `starts_at` when migration 036 applied (derived; `starts_at` is authoritative). */
   start_time?: string | null;
   /** `contests.status` from DB only. Capacity "full" is UI-only (use `entry_count` vs `max_entries`). */
-  status?: "open" | "live" | "completed" | "cancelled" | string | null;
-  /** Raw `contests.status` from DB (not derived from dates). */
-  contests_row_status?: string | null;
-  /** DFS lifecycle (`contests.contest_status`). */
-  contest_status?: string | null;
+  status?: string | null;
   entries_open_at?: string | null;
   created_at?: string | null;
   /** True when a row exists in `contest_settlements`. */

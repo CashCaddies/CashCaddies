@@ -3,7 +3,7 @@ export function DashboardStatusBadge({ status }: { status: string }) {
   const cls =
     normalized === "live"
       ? "bg-amber-500/20 text-amber-300 ring-amber-500/30"
-      : normalized === "open"
+      : normalized === "upcoming" || normalized === "filling"
         ? "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30"
         : normalized === "locked"
           ? "bg-slate-600/50 text-slate-200 ring-slate-500/30"

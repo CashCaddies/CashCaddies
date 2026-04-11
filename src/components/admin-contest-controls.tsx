@@ -15,11 +15,13 @@ import type { ContestLifecycle } from "@/lib/contest-state";
 type Props = {
   contestId: string;
   lifecycle: ContestLifecycle;
+  /** Raw `contests.status` — used to offer "Open entries" when lifecycle is still `locked` in the DB. */
+  dbStatus?: string | null;
   /** When false, late swap is disabled for this contest (default true). */
   lateSwapEnabled?: boolean;
 };
 
-export function AdminContestControls({ contestId, lifecycle, lateSwapEnabled = true }: Props) {
+export function AdminContestControls({ contestId, lifecycle, dbStatus, lateSwapEnabled = true }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -45,17 +47,17 @@ export function AdminContestControls({ contestId, lifecycle, lateSwapEnabled = t
   return (
     <div className="mt-1 flex max-w-[14rem] flex-col items-end gap-1">
       <div className="flex flex-wrap justify-end gap-1">
-        {lifecycle === "upcoming" || lifecycle === "draft" ? (
+        {lifecycle === "upcoming" || String(dbStatus ?? "").trim().toLowerCase() === "locked" ? (
           <button
             type="button"
             className={btn}
             disabled={busy !== null}
             onClick={(e) => {
               e.stopPropagation();
-              void run("open", () => adminOpenContestForEntries(contestId));
+              void run("openEntries", () => adminOpenContestForEntries(contestId));
             }}
           >
-            {busy === "open" ? "…" : "Open entries"}
+            {busy === "openEntries" ? "…" : "Open entries"}
           </button>
         ) : null}
         <button

@@ -10,7 +10,7 @@ export async function createContest(contest: any) {
       entry_fee: contest.entry_fee,
       max_entries: contest.max_entries,
       start_time: contest.start_time,
-      status: "open",
+      status: "filling",
       entry_count: 0,
     })
     .select();

@@ -505,14 +505,14 @@ export async function editContestEntryLineup(payload: {
 
   const { data: contestMeta } = await supabase
     .from("contests")
-    .select("starts_at, late_swap_enabled, contest_status")
+    .select("starts_at, late_swap_enabled, status")
     .eq("id", contestId)
     .maybeSingle();
 
   const lateSwapOpen = lateSwapWindowOpenForContest({
     startsAtIso: contestMeta?.starts_at ?? startsAtIso,
     lateSwapEnabled: contestMeta?.late_swap_enabled,
-    contestStatus: contestMeta?.contest_status,
+    status: contestMeta?.status,
   });
 
   if (contestLocked && !lateSwapOpen) {

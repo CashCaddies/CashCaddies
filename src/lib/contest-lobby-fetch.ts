@@ -23,7 +23,6 @@ const CONTEST_CARD_SELECT = `
   starts_at,
   status,
   created_at,
-  contest_status,
   entries_open_at,
   late_swap_enabled,
   contest_entries ( id )
@@ -106,8 +105,6 @@ export async function fetchLobbyContests(): Promise<{
           starts_at: startsAt,
           start_time: startsAt,
           status: rawStatusStr,
-          contests_row_status: rawStatusStr,
-          contest_status: row.contest_status != null ? String(row.contest_status) : null,
           entries_open_at: row.entries_open_at != null ? String(row.entries_open_at) : null,
           created_at: createdAt,
           has_settlement: settledIds.has(id),
@@ -152,7 +149,7 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     const { data: st } = await supabase.from("contest_settlements").select("contest_id").eq("contest_id", id).maybeSingle();
     const maxEntries = Math.max(1, Number(data.max_entries ?? 100));
     const entryCount = entryCountFromContestEntriesRelation(data as Record<string, unknown>);
-    const rawStatusStr = String(data.status ?? "open");
+    const rawStatusStr = String(data.status ?? "filling");
     const startsAt = String(data.start_time ?? data.starts_at ?? data.created_at ?? new Date().toISOString());
     const entryFee = Number(data.entry_fee ?? data.entry_fee_usd ?? 0);
     const createdAt = data.created_at != null ? String(data.created_at) : undefined;
@@ -167,8 +164,6 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
       starts_at: startsAt,
       start_time: startsAt,
       status: rawStatusStr,
-      contests_row_status: rawStatusStr,
-      contest_status: data.contest_status != null ? String(data.contest_status) : null,
       entries_open_at: data.entries_open_at != null ? String(data.entries_open_at) : null,
       created_at: createdAt,
       has_settlement: Boolean(st?.contest_id),

@@ -26,7 +26,7 @@ type Props = {
   contestMaxEntries: number;
   /** Current total entries for this contest (e.g. from lobby row). */
   contestEntryCount: number;
-  /** Only published contests (`contest_status` open / resolved `open` lifecycle) allow paid entry. */
+  /** Only when lobby passes `joinAllowed` (e.g. `contests.status === 'filling'` and not at capacity). */
   joinAllowed?: boolean;
   /** Shown when `joinAllowed` is false (tooltip + disabled state). */
   joinBlockedTitle?: string;

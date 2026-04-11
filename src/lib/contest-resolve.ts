@@ -47,7 +47,7 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
     const supabase = await createClient();
     const { data } = await supabase
       .from("contests")
-      .select("id, name, entry_fee_usd, starts_at, late_swap_enabled, contest_status")
+      .select("id, name, entry_fee_usd, starts_at, late_swap_enabled, status")
       .eq("id", contestId)
       .maybeSingle();
 
@@ -58,11 +58,11 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
       const t = startIso ? Date.parse(startIso) : NaN;
       const lineupLocked = Number.isFinite(t) && Date.now() >= t;
       const lateSwapEnabled = (data as { late_swap_enabled?: boolean }).late_swap_enabled !== false;
-      const contestStatus = (data as { contest_status?: string | null }).contest_status ?? null;
+      const status = (data as { status?: string | null }).status ?? null;
       const lateSwapWindowOpen = lateSwapWindowOpenForContest({
         startsAtIso: startIso,
         lateSwapEnabled,
-        contestStatus,
+        status,
       });
       const allowEntryLineupEdit = !lineupLocked || lateSwapWindowOpen;
       return {

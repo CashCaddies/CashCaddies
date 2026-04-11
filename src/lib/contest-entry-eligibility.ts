@@ -21,7 +21,7 @@ export const ENTRY_LIMIT_PER_USER_MESSAGE =
 export const CONTEST_LOCKED_MESSAGE =
   "This contest has locked — entries are closed and lineups can no longer be changed.";
 
-/** Contest is draft, not yet published, or `contest_status` is not `open` for entry. */
+/** Contest is not in `filling` status (or is cancelled / at capacity). */
 export const CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE = "Contest not open for entries";
 
 export const CONTEST_ENTRIES_CLOSED_MESSAGE = "Contest entries are closed.";
@@ -129,14 +129,6 @@ export function contestStatusIsFilling(status: string | null | undefined): boole
   return String(status ?? "").trim().toLowerCase() === "filling";
 }
 
-/** @deprecated Use `contestStatusIsFilling(contests.status)` */
-export function contestIsFillingForEntry(
-  contestsRowStatus: string | null | undefined,
-  _contestStatus?: string | null | undefined,
-): boolean {
-  return contestStatusIsFilling(contestsRowStatus);
-}
-
 export type EntryEligibilityContext = {
   contestId: string;
   userId: string;
@@ -160,7 +152,7 @@ export async function assertContestEntryCapacityOk(
 
   const { data: c, error: cErr } = await supabase
     .from("contests")
-    .select("id, max_entries, max_entries_per_user, contest_status, status")
+    .select("id, max_entries, max_entries_per_user, status")
     .eq("id", contestId)
     .maybeSingle();
 
@@ -169,10 +161,9 @@ export async function assertContestEntryCapacityOk(
   }
 
   const row = c as {
-    contest_status?: string | null;
     status?: string | null;
   };
-  if (isContestCancelled(row.contest_status, row.status)) {
+  if (isContestCancelled(row.status)) {
     return { ok: false, error: CONTEST_CANCELLED_ENTRIES_MESSAGE };
   }
 

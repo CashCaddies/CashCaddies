@@ -1,26 +1,21 @@
 /**
  * Effective DFS lifecycle for display and client-side gating.
- * DB columns: `contest_status`, `entries_open_at`; settlement row → settled.
+ * DB column: `contests.status`; optional `contest_settlements` row → settled via `has_settlement`.
  */
 
 /** Time after `starts_at` before the contest is treated as Live (late swap, live UI). */
 export const CONTEST_LIVE_AFTER_START_MS = 5 * 60 * 1000;
 
 export type ContestLifecycle =
-  | "draft"
   | "upcoming"
-  | "open"
-  /** Legacy DB value; treated like `open` for join + badges. */
   | "filling"
   | "locked"
   | "live"
-  | "completed"
+  | "complete"
   | "settled"
   | "cancelled";
 
 export type ContestLifecycleInput = {
-  contest_status?: string | null;
-  /** Legacy `contests.status` when `contest_status` absent */
   status?: string | null;
   starts_at: string;
   entries_open_at?: string | null;
@@ -35,58 +30,39 @@ function parseMs(iso: string | null | undefined): number {
   return Number.isFinite(t) ? t : NaN;
 }
 
-/** Normalize DB + legacy status to canonical lifecycle bucket (pre–time overlay). */
-export function normalizeDbContestStatus(
-  contestStatus: string | null | undefined,
-  legacyStatus: string | null | undefined,
-): ContestLifecycle | null {
-  const raw = String(contestStatus ?? "").trim().toLowerCase();
-  if (raw === "draft") return "draft";
-  if (raw === "open" || raw === "filling") return "open";
-  if (
-    raw === "upcoming" ||
-    raw === "locked" ||
-    raw === "live" ||
-    raw === "completed" ||
-    raw === "settled" ||
-    raw === "cancelled" ||
-    raw === "canceled"
-  ) {
-    return raw === "canceled" ? "cancelled" : (raw as ContestLifecycle);
-  }
-  const leg = String(legacyStatus ?? "").trim().toLowerCase();
-  if (leg === "paid") return "settled";
-  /** `full` should not be stored on `contests.status`; tolerate legacy reads only. */
-  if (leg === "open" || leg === "full") return "open";
-  if (leg === "locked" || leg === "live" || leg === "completed" || leg === "cancelled" || leg === "canceled") {
-    return leg === "canceled" ? "cancelled" : (leg as ContestLifecycle);
-  }
+/** Map `contests.status` to a canonical lifecycle bucket (before time overlay). */
+export function normalizeDbContestStatus(status: string | null | undefined): ContestLifecycle | null {
+  const s = String(status ?? "").trim().toLowerCase();
+  if (!s) return null;
+  if (s === "cancelled" || s === "canceled") return "cancelled";
+  if (s === "settled") return "settled";
+  if (s === "complete") return "complete";
+  if (s === "live") return "live";
+  if (s === "locked") return "locked";
+  if (s === "filling") return "filling";
   return null;
 }
 
 /**
- * Resolved lifecycle for UI and join eligibility (`open` / legacy `filling` only).
- * Time rules: locked from `starts_at` until `starts_at + 5m` (display); live after that until completed/settled.
+ * Resolved lifecycle for UI and related gating.
+ * Time rules: after `starts_at` until `starts_at + 5m` → locked display when status is still filling;
+ * after that window → live when DB has not yet advanced.
  */
 export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): ContestLifecycle {
   const now = input.nowMs ?? Date.now();
+  const db = normalizeDbContestStatus(input.status);
 
-  if (input.has_settlement) {
-    return "settled";
-  }
-
-  const db = normalizeDbContestStatus(input.contest_status, input.status);
-  if (db === "draft") {
-    return "draft";
-  }
   if (db === "cancelled") {
     return "cancelled";
   }
-  if (db === "settled" || String(input.status ?? "").toLowerCase() === "paid") {
+  if (input.has_settlement) {
     return "settled";
   }
-  if (db === "completed") {
-    return "completed";
+  if (db === "settled") {
+    return "settled";
+  }
+  if (db === "complete") {
+    return "complete";
   }
 
   const startMs = parseMs(input.starts_at);
@@ -97,62 +73,48 @@ export function resolveEffectiveContestLifecycle(input: ContestLifecycleInput): 
     return "live";
   }
 
-  if (Number.isFinite(startMs) && Number.isFinite(liveGateMs) && now >= liveGateMs) {
+  if (
+    (db === "filling" || db === "locked" || db == null) &&
+    Number.isFinite(liveGateMs) &&
+    now >= liveGateMs
+  ) {
     return "live";
   }
 
-  if (Number.isFinite(startMs) && now >= startMs && now < liveGateMs) {
+  if (db === "locked") {
     return "locked";
   }
 
-  if (db === "locked" && Number.isFinite(startMs) && now < startMs) {
-    return "locked";
-  }
-
-  if (db === "open" || db === "filling") {
-    if (!Number.isFinite(startMs) || now >= startMs) {
+  if (db === "filling" || db == null) {
+    if (Number.isFinite(startMs) && now >= startMs && Number.isFinite(liveGateMs) && now < liveGateMs) {
       return "locked";
     }
     const open = Number.isFinite(openMs) ? openMs : 0;
-    if (now < open) {
+    if (Number.isFinite(open) && now < open) {
       return "upcoming";
     }
-    return "open";
+    return "filling";
   }
 
-  if (db === "upcoming") {
-    return "upcoming";
-  }
-
-  if (db == null) {
-    if (!Number.isFinite(startMs) || now >= startMs) {
-      return Number.isFinite(liveGateMs) && now >= liveGateMs ? "live" : "locked";
-    }
-    return "open";
-  }
-
-  return db;
+  return "filling";
 }
 
 export function canJoinContestInLifecycle(lifecycle: ContestLifecycle): boolean {
-  return lifecycle === "open" || lifecycle === "filling";
+  return lifecycle === "filling";
 }
 
 export function contestLifecycleBadgeLabel(lifecycle: ContestLifecycle): string {
   switch (lifecycle) {
-    case "draft":
-      return "Draft";
     case "upcoming":
       return "Upcoming";
-    case "open":
     case "filling":
       return "Filling";
     case "locked":
       return "Locked";
     case "live":
       return "Live";
-    case "completed":
-      return "Completed";
+    case "complete":
+      return "Complete";
     case "settled":
       return "Settled";
     case "cancelled":
@@ -164,18 +126,15 @@ export function contestLifecycleBadgeLabel(lifecycle: ContestLifecycle): string 
 
 export function contestLifecycleBadgeClassName(lifecycle: ContestLifecycle): string {
   switch (lifecycle) {
-    case "draft":
-      return "bg-[#252a32] text-[#8b98a5] border-[#3d4550]";
     case "upcoming":
       return "bg-[#2a3039] text-[#9ca8b4] border-[#3d4550]";
-    case "open":
     case "filling":
       return "bg-[#1a2f4a] text-[#7ab8ff] border-[#3d6a9e]";
     case "locked":
       return "bg-[#3d2a1a] text-[#ffb14a] border-[#8b5a2b]";
     case "live":
       return "livePulseBadge border-[#2d7a3a] bg-[#142e1c] text-[#53d769]";
-    case "completed":
+    case "complete":
       return "bg-[#2a1f3d] text-[#c4a8ff] border-[#5c4a7a]";
     case "settled":
       return "bg-[#3d3420] text-[#e8c96a] border-[#8a7630]";
@@ -186,13 +145,13 @@ export function contestLifecycleBadgeClassName(lifecycle: ContestLifecycle): str
   }
 }
 
-/** Countdown target: seconds until lineup lock (`starts_at`) while join window (open) or pre-open (upcoming). */
+/** Countdown target: seconds until lineup lock (`starts_at`) while join window (filling) or pre-open (upcoming). */
 export function contestLockCountdownLabel(
   lifecycle: ContestLifecycle,
   startsAtIso: string,
   nowMs?: number,
 ): string | null {
-  if (lifecycle !== "open" && lifecycle !== "filling" && lifecycle !== "upcoming") {
+  if (lifecycle !== "filling" && lifecycle !== "upcoming") {
     return null;
   }
   const start = parseMs(startsAtIso);

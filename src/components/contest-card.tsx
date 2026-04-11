@@ -87,7 +87,7 @@ export function ContestFullBadge() {
   );
 }
 
-/** Updates every second while mounted (open / upcoming lock countdown). */
+/** Updates every second while mounted (filling / upcoming lock countdown). */
 export function ContestLockCountdown({
   lifecycle,
   startsAtIso,

@@ -34,7 +34,6 @@ export default async function ContestDetailPage({ params }: Props) {
   const maxEntries = Math.max(1, Number(row.max_entries ?? 100));
   const entryCount = Math.max(0, Number(row.entry_count ?? 0));
   const lifecycle = resolveEffectiveContestLifecycle({
-    contest_status: row.contest_status,
     status: row.status,
     starts_at: row.starts_at,
     entries_open_at: row.entries_open_at,

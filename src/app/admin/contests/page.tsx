@@ -6,11 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserRole } from "@/lib/getUserRole";
 import { isAdmin as isAdminRole } from "@/lib/permissions";
-import {
-  contestStatusBadgeClassName,
-  contestStatusBadgeLabel,
-  legacyContestsStatusText,
-} from "@/lib/contest-admin-state";
+import { contestStatusBadgeClassName, contestStatusBadgeLabel } from "@/lib/contest-admin-state";
 import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
@@ -22,15 +18,14 @@ type ContestRow = {
   entry_count: number | null;
   starts_at: string | null;
   start_time: string | null;
-  contest_status: string | null;
+  status: string | null;
   created_by?: string | null;
 };
 
-/** Show Publish for draft (or unset `contest_status`); hide when already `open`. */
+/** Show Publish when contest is `locked` (not yet open for lobby entries). */
 function canShowPublishForRow(row: ContestRow): boolean {
-  const cs = String(row.contest_status ?? "").trim().toLowerCase();
-  if (cs === "open") return false;
-  return cs === "" || cs === "draft";
+  const cs = String(row.status ?? "").trim().toLowerCase();
+  return cs === "locked";
 }
 
 function formatMoney(n: number | string | null): string {
@@ -63,7 +58,7 @@ export default function AdminContestsPage() {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from("contests")
-      .select("id,name,entry_fee_usd,starts_at,start_time,contest_status,created_at,created_by, contest_entries ( id )")
+      .select("id,name,entry_fee_usd,starts_at,start_time,status,created_at,created_by, contest_entries ( id )")
       .order("created_at", { ascending: false });
     if (error) {
       console.error("Contest fetch error:", error);
@@ -76,7 +71,7 @@ export default function AdminContestsPage() {
       entry_count: entryCountFromContestEntriesRelation(row),
       starts_at: typeof row.starts_at === "string" ? row.starts_at : null,
       start_time: typeof row.start_time === "string" ? row.start_time : null,
-      contest_status: row.contest_status != null ? String(row.contest_status) : null,
+      status: row.status != null ? String(row.status) : null,
       created_by: typeof row.created_by === "string" ? row.created_by : null,
     }));
   }
@@ -140,13 +135,7 @@ export default function AdminContestsPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("contests")
-        .update({
-          contest_status: "open",
-          status: legacyContestsStatusText("open"),
-        })
-        .eq("id", row.id);
+      const { error } = await supabase.from("contests").update({ status: "filling" }).eq("id", row.id);
 
       if (error) {
         console.error(error);
@@ -212,13 +201,11 @@ export default function AdminContestsPage() {
                 }
 
                 const createdAt = new Date().toISOString();
-                const contestState = "draft" as const;
                 const payload = {
                   id: crypto.randomUUID(),
                   name,
                   start_time: new Date(startDate).toISOString(),
-                  status: legacyContestsStatusText(contestState),
-                  contest_status: contestState,
+                  status: "locked",
                   entries_open_at: createdAt,
                   entry_count: 0,
                   created_by: authUser.id,
@@ -359,9 +346,9 @@ export default function AdminContestsPage() {
                   <td className="px-3 py-3 text-slate-100">{row.name}</td>
                   <td className="px-3 py-3">
                     <span
-                      className={`inline-flex shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide ${contestStatusBadgeClassName(row.contest_status)}`}
+                      className={`inline-flex shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide ${contestStatusBadgeClassName(row.status)}`}
                     >
-                      {contestStatusBadgeLabel(row.contest_status)}
+                      {contestStatusBadgeLabel(row.status)}
                     </span>
                   </td>
                   <td className="px-3 py-3 text-slate-200">{formatMoney(row.entry_fee_usd)}</td>
