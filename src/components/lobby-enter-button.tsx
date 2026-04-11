@@ -26,12 +26,8 @@ type Props = {
   contestMaxEntries: number;
   /** Current total entries for this contest (e.g. from lobby row). */
   contestEntryCount: number;
-  /** Only when lobby passes `joinAllowed` (e.g. `contests.status === 'filling'` and not at capacity). */
-  joinAllowed?: boolean;
-  /** Shown when `joinAllowed` is false (tooltip + disabled state). */
-  joinBlockedTitle?: string;
-  /** @deprecated Use `joinAllowed` / `joinBlockedTitle` from contest lifecycle. */
-  lineupLocked?: boolean;
+  /** `contests.status` — Enter is only active when `"filling"` and below global capacity. */
+  contestStatus: string | null | undefined;
   /** From `contests.max_entries_per_user`; null means effectively unlimited (matches eligibility). */
   maxEntriesPerUser?: number | null;
 };
@@ -65,15 +61,32 @@ function effectiveMaxPerUser(maxEntriesPerUser: number | null | undefined): numb
   return Number.isFinite(n) && n >= 0 ? n : 999999;
 }
 
+function labelForClosedContestStatus(status: string): string {
+  const s = status.trim().toLowerCase();
+  switch (s) {
+    case "locked":
+      return "LOCKED";
+    case "live":
+      return "LIVE";
+    case "complete":
+      return "COMPLETE";
+    case "settled":
+      return "SETTLED";
+    case "cancelled":
+    case "canceled":
+      return "CANCELLED";
+    default:
+      return s ? s.toUpperCase() : "—";
+  }
+}
+
 export function LobbyEnterButton({
   contestId,
   contestName,
   entryFeeUsd,
   contestMaxEntries,
   contestEntryCount,
-  joinAllowed = true,
-  joinBlockedTitle,
-  lineupLocked = false,
+  contestStatus,
   maxEntriesPerUser = null,
 }: Props) {
   const router = useRouter();
@@ -103,7 +116,12 @@ export function LobbyEnterButton({
     return totalContestEntryChargeUsd(entryFeeUsd, Number(wallet.loyalty_points ?? 0));
   }, [wallet, entryFeeUsd]);
   const maxGlobal = Math.max(1, Math.floor(Number(contestMaxEntries)));
-  const isFull = contestEntryCount >= maxGlobal;
+  const normalizedStatus = String(contestStatus ?? "")
+    .trim()
+    .toLowerCase();
+  const isFilling = normalizedStatus === "filling";
+  const atGlobalCapacity = contestEntryCount >= maxGlobal;
+  const canEnter = isFilling && contestEntryCount < maxGlobal;
 
   const userAtLimit =
     authUser != null &&
@@ -149,24 +167,15 @@ export function LobbyEnterButton({
       })}`
     : "—";
 
-  const blocked = !joinAllowed;
-  const blockedTitle = joinBlockedTitle ?? "Entries are not open for this contest.";
-
   const countBusy = Boolean(authUser && !entryCountReady);
 
   const onEnterContest = useCallback(async () => {
-    if (isFull) {
+    if (!canEnter) {
       setLoading(false);
       enterFlowInFlight.current = false;
       return;
     }
     if (userAtLimit) {
-      setLoading(false);
-      enterFlowInFlight.current = false;
-      return;
-    }
-    if (blocked) {
-      setError(blockedTitle);
       setLoading(false);
       enterFlowInFlight.current = false;
       return;
@@ -238,7 +247,7 @@ export function LobbyEnterButton({
       setLoading(false);
       enterFlowInFlight.current = false;
     }
-  }, [authUser, blocked, blockedTitle, contestId, isFull, isReady, router, userAtLimit]);
+  }, [authUser, canEnter, contestId, isReady, router, userAtLimit]);
 
   function handleEnterClick(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -246,7 +255,7 @@ export function LobbyEnterButton({
     if (loading || enterFlowInFlight.current) {
       return;
     }
-    if (blocked || isFull || userAtLimit || countBusy) {
+    if (!canEnter || userAtLimit || countBusy) {
       return;
     }
     enterFlowInFlight.current = true;
@@ -300,15 +309,18 @@ export function LobbyEnterButton({
     setPending(false);
   }
 
-  const buttonDisabled = loading || blocked || isFull || userAtLimit || countBusy;
-  const mutedAppearance = isFull || userAtLimit;
-  const buttonLabel = isFull
-    ? "FULL"
-    : userAtLimit
-      ? "ENTERED"
-      : loading || countBusy
-        ? "Loading…"
-        : "ENTER CONTEST";
+  const buttonDisabled = loading || !canEnter || userAtLimit || countBusy;
+  const mutedAppearance = !canEnter || userAtLimit;
+  const buttonLabel =
+    loading || countBusy
+      ? "Loading…"
+      : atGlobalCapacity
+        ? "FULL"
+        : userAtLimit && isFilling
+          ? "ENTERED"
+          : !canEnter
+            ? labelForClosedContestStatus(normalizedStatus)
+            : "ENTER CONTEST";
 
   return (
     <div className="relative z-10 flex flex-col items-end gap-1">
@@ -322,10 +334,10 @@ export function LobbyEnterButton({
         }}
         disabled={buttonDisabled}
         title={
-          blocked
-            ? blockedTitle
-            : isFull
-              ? "Contest is full"
+          atGlobalCapacity
+            ? "Contest is full"
+            : !canEnter
+              ? "Contest is not open for entries."
               : userAtLimit
                 ? "Already entered"
                 : undefined
@@ -336,7 +348,7 @@ export function LobbyEnterButton({
             : "cursor-pointer border-[#2d7a3a] bg-[#1f8a3b] text-white hover:bg-[#249544] active:bg-[#1c7a34] disabled:cursor-not-allowed disabled:opacity-50"
         }`}
       >
-        {(loading || countBusy) && !mutedAppearance ? <InlineSpinner /> : null}
+        {(loading || countBusy) && canEnter && !userAtLimit ? <InlineSpinner /> : null}
         {buttonLabel}
       </button>
       {error && !modalOpen && !capacityModalOpen && (

@@ -8,11 +8,25 @@ import {
   contestLockCountdownLabel,
 } from "@/lib/contest-state";
 
-/** Maps `contests.status` (DB) to lobby badge label — no date inference. */
-export function contestLifecycleStatusBadgeClassName(status: string): string {
+/**
+ * Single lifecycle label for the status badge: one of live | locked | complete | settled | filling
+ * (plus cancelled when present). Priority matches `contests.status` — not time-resolved lifecycle.
+ */
+export function effectiveContestStatusForBadge(status: string | null | undefined): string {
   const s = String(status ?? "")
     .trim()
     .toLowerCase();
+  if (s === "live") return "live";
+  if (s === "locked") return "locked";
+  if (s === "complete") return "complete";
+  if (s === "settled") return "settled";
+  if (s === "cancelled" || s === "canceled") return "cancelled";
+  return "filling";
+}
+
+/** Maps `contests.status` (DB) to lobby badge label — no date inference. */
+export function contestLifecycleStatusBadgeClassName(status: string): string {
+  const s = effectiveContestStatusForBadge(status);
   switch (s) {
     case "filling":
       return "border-emerald-500/40 bg-emerald-950/40 text-emerald-200";
@@ -32,9 +46,7 @@ export function contestLifecycleStatusBadgeClassName(status: string): string {
 }
 
 export function contestLifecycleStatusBadgeLabel(status: string): string {
-  const s = String(status ?? "")
-    .trim()
-    .toLowerCase();
+  const s = effectiveContestStatusForBadge(status);
   switch (s) {
     case "filling":
       return "FILLING";
@@ -53,7 +65,7 @@ export function contestLifecycleStatusBadgeLabel(status: string): string {
   }
 }
 
-/** Badge driven only by `contests.status` from Supabase. */
+/** Single lifecycle badge from `contests.status` (priority: live → locked → complete → settled → filling). */
 export function ContestLifecycleStatusBadge({ status }: { status: string | null | undefined }) {
   const raw = String(status ?? "").trim();
   if (!raw) {

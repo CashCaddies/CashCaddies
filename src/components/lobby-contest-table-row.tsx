@@ -12,16 +12,10 @@ import {
   formatPerUserEntryLimit,
   formatProtectedEntriesPercent,
 } from "@/lib/contest-lobby-shared";
-import { contestStatusIsFilling } from "@/lib/contest-entry-eligibility";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
 import { deleteContest } from "@/lib/deleteContest";
 import { AdminContestControls } from "@/components/admin-contest-controls";
-import {
-  ContestFullBadge,
-  ContestLifecycleBadge,
-  ContestLifecycleStatusBadge,
-  ContestLockCountdown,
-} from "@/components/contest-card";
+import { ContestFullBadge, ContestLifecycleStatusBadge, ContestLockCountdown } from "@/components/contest-card";
 import { EnterContestButton } from "@/components/enter-contest-button";
 
 type Props = {
@@ -59,8 +53,6 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
     created_at: contest.created_at,
     has_settlement: contest.has_settlement,
   });
-  const isFillingPhase = contestStatusIsFilling(contest.status);
-  const joinAllowedForEntry = isFillingPhase && !isFull;
   const entryFeeUsd =
     typeof contest.entry_fee_usd === "string"
       ? Number.parseFloat(contest.entry_fee_usd)
@@ -142,7 +134,6 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-white">{contest.name}</span>
           <ContestLifecycleStatusBadge status={contest.status} />
-          <ContestLifecycleBadge lifecycle={lifecycle} />
           {isFull ? <ContestFullBadge /> : null}
           <ContestLockCountdown lifecycle={lifecycle} startsAtIso={contest.starts_at} />
           {perUserLabel ? (
@@ -197,8 +188,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
             entryFeeUsd={entryFeeUsd}
             contestMaxEntries={max}
             contestEntryCount={current}
-            joinAllowed={joinAllowedForEntry}
-            joinBlockedTitle={!isFillingPhase ? "Contest not open for entries." : undefined}
+            contestStatus={contest.status}
             maxEntriesPerUser={contest.max_entries_per_user}
           />
           {admin ? (
