@@ -1,3 +1,6 @@
+-- contest_settlements.contest_id and contest_payouts.contest_id are TEXT: compare with v_cid only.
+-- contests.id and contest_entries.contest_id are UUID: use v_cid::uuid.
+
 create or replace function public.settle_contest_prizes(p_contest_id text)
 returns jsonb
 language plpgsql
@@ -35,7 +38,7 @@ begin
     raise exception 'Contest already settled';
   end if;
 
-  if exists (select 1 from public.contest_settlements s where s.contest_id = v_cid::uuid) then
+  if exists (select 1 from public.contest_settlements s where s.contest_id = v_cid) then
     return jsonb_build_object('ok', false, 'error', 'Contest already settled.');
   end if;
 
@@ -55,7 +58,7 @@ begin
     where id = v_cid::uuid;
 
     insert into public.contest_settlements (contest_id, prize_pool_usd, entry_count, distributed_usd)
-    values (v_cid::uuid, 0, 0, 0);
+    values (v_cid, 0, 0, 0);
 
     return jsonb_build_object(
       'ok', true,
@@ -67,14 +70,14 @@ begin
     );
   end if;
 
-  if not exists (select 1 from public.contest_payouts pp where pp.contest_id = v_cid::uuid) then
+  if not exists (select 1 from public.contest_payouts pp where pp.contest_id = v_cid) then
     return jsonb_build_object('ok', false, 'error', 'No payout structure for this contest (contest_payouts).');
   end if;
 
   select coalesce(sum(payout_amount), 0)
   into total_payouts
   from public.contest_payouts
-  where contest_id = v_cid::uuid;
+  where contest_id = v_cid;
 
   select (coalesce(c.entry_fee, c.entry_fee_usd, 0)::numeric * v_entry_count * 0.90)
   into expected_pool
@@ -110,7 +113,7 @@ begin
   for r_payout in
     select pp.rank_place, pp.payout_pct
     from public.contest_payouts pp
-    where pp.contest_id = v_cid::uuid
+    where pp.contest_id = v_cid
     order by pp.rank_place
   loop
     if r_payout.rank_place < 1 or r_payout.rank_place > v_len then
@@ -158,7 +161,7 @@ begin
   end loop;
 
   insert into public.contest_settlements (contest_id, prize_pool_usd, entry_count, distributed_usd)
-  values (v_cid::uuid, v_prize_pool, v_entry_count, v_total_out);
+  values (v_cid, v_prize_pool, v_entry_count, v_total_out);
 
   return jsonb_build_object(
     'ok', true,

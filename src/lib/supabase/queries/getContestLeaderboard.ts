@@ -9,6 +9,8 @@ import {
 
 export type ContestLeaderboardRow = {
   rank: number;
+  /** 1-based position in the sorted leaderboard (unique per row; multiple entries per user get Entry 1, 2, …). */
+  entryNumber: number;
   user_id: string;
   username: string;
   score: number;
@@ -202,6 +204,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
     const rows: ContestLeaderboardRow[] = [];
 
+    let entryNumber = 1;
     let i = 0;
     while (i < scored.length) {
       const score = scored[i]!.score;
@@ -220,6 +223,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
         const computed = eachUsd;
         rows.push({
           rank: startRank,
+          entryNumber: entryNumber++,
           user_id: ent.user_id,
           username: ent.username,
           score: ent.score,
