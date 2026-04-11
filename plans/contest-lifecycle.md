@@ -4,6 +4,14 @@
 
 Introduce a clear, explicit **contest state** model (backed by `contests.status`) so product behavior—who can enter, what admins can do, and what the UI shows—follows one set of rules. Start with **manual** transitions (admin buttons); no scheduling or automation in scope.
 
+### Single source of truth (non-negotiable)
+
+- **Lifecycle status** is **only** `contests.status` as stored in Supabase.
+- **Do not** infer lifecycle from `starts_at`, `ends_at`, “now”, or any other dates.
+- **Do not** derive lifecycle in the frontend from heuristics (e.g. comparing `Date.now()` to start time). The client may **read and display** `contests.status` and **disable actions** based on that value, but it must not **recompute** a different lifecycle because the clock moved.
+- **Backend** (RLS, RPCs, server actions) must use **`contests.status`** (or the same column via joins)—not date math—to decide whether entry or admin transitions are allowed.
+- Dates may still be used for **display** (“Starts at …”) or **non-lifecycle** features, but they **must not** replace or override `contests.status` for the state machine above.
+
 ---
 
 ## 1. Supabase table changes
@@ -75,8 +83,8 @@ Introduce a clear, explicit **contest state** model (backed by `contests.status`
 
 ## 5. UI behavior
 
-- Show a **status badge** on contest surfaces (lobby row, card, detail): **FILLING**, **LOCKED**, **LIVE**, **COMPLETE**, **SETTLED** (labels can be title-cased; keep consistent with design).
-- **Disable** primary entry actions when `status !== 'filling'` (in addition to full / user limits).
+- Show a **status badge** on contest surfaces (lobby row, card, detail) by **mapping the string from `contests.status`** to label/copy: **FILLING**, **LOCKED**, **LIVE**, **COMPLETE**, **SETTLED** (labels can be title-cased; keep consistent with design). Same row may also show **FULL** from entry count—that is capacity, not a substitute for `status`.
+- **Disable** primary entry actions when `status !== 'filling'` (in addition to full / user limits), using the **fetched** `contests.status`, not inferred phase from dates.
 - Admin: show **Lock / Start / Complete / Settle** only where role allows; disable or hide transitions that are invalid for the current `status` once rules are defined.
 
 ---
@@ -84,7 +92,7 @@ Introduce a clear, explicit **contest state** model (backed by `contests.status`
 ## 6. Out of scope (keep simple)
 
 - No **cron jobs** or scheduled flips of `status`.
-- No **automation** of Lock / Start / Complete / Settle from wall-clock time (manual buttons only for now).
+- No **automation** of Lock / Start / Complete / Settle from wall-clock time (manual buttons only for now). That keeps **`status` authoritative**; optional future automation would **write** `contests.status`, not replace it with client-side date rules.
 - No **background workers** for lifecycle.
 
 Optional follow-ups (not in this plan): webhooks, audit log of `status` changes, Realtime subscriptions for lobby freshness.

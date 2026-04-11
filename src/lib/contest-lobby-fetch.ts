@@ -63,7 +63,11 @@ export async function fetchLobbyContests(): Promise<{
     }
     const { usd: safetyPoolFinite } = await fetchInsurancePoolBalanceUsd(supabase);
 
-    const q = await supabase.from("contests").select(CONTEST_CARD_SELECT).eq("contest_status", "open").order("start_time", { ascending: true });
+    const q = await supabase
+      .from("contests")
+      .select(CONTEST_CARD_SELECT)
+      .in("status", ["filling", "locked", "live", "complete"])
+      .order("start_time", { ascending: true });
 
     const data = q.data as Array<Record<string, unknown>> | null;
     if (q.error) {
@@ -86,7 +90,7 @@ export async function fetchLobbyContests(): Promise<{
         }
         const maxEntries = Math.max(1, Number(row.max_entries ?? 100));
         const entryCount = entryCountFromContestEntriesRelation(row as Record<string, unknown>);
-        const computedStatus = entryCount >= maxEntries ? "full" : String(row.status ?? "open");
+        const rawStatusStr = String(row.status ?? "");
         const startsAt =
           String(row.start_time ?? row.starts_at ?? row.created_at ?? new Date().toISOString());
         const entryFee = Number(row.entry_fee ?? row.entry_fee_usd ?? 0);
@@ -101,7 +105,8 @@ export async function fetchLobbyContests(): Promise<{
           entry_count: entryCount,
           starts_at: startsAt,
           start_time: startsAt,
-          status: computedStatus,
+          status: rawStatusStr,
+          contests_row_status: rawStatusStr,
           contest_status: row.contest_status != null ? String(row.contest_status) : null,
           entries_open_at: row.entries_open_at != null ? String(row.entries_open_at) : null,
           created_at: createdAt,
@@ -147,7 +152,7 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     const { data: st } = await supabase.from("contest_settlements").select("contest_id").eq("contest_id", id).maybeSingle();
     const maxEntries = Math.max(1, Number(data.max_entries ?? 100));
     const entryCount = entryCountFromContestEntriesRelation(data as Record<string, unknown>);
-    const computedStatus = entryCount >= maxEntries ? "full" : String(data.status ?? "open");
+    const rawStatusStr = String(data.status ?? "open");
     const startsAt = String(data.start_time ?? data.starts_at ?? data.created_at ?? new Date().toISOString());
     const entryFee = Number(data.entry_fee ?? data.entry_fee_usd ?? 0);
     const createdAt = data.created_at != null ? String(data.created_at) : undefined;
@@ -161,7 +166,8 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
       entry_count: entryCount,
       starts_at: startsAt,
       start_time: startsAt,
-      status: computedStatus,
+      status: rawStatusStr,
+      contests_row_status: rawStatusStr,
       contest_status: data.contest_status != null ? String(data.contest_status) : null,
       entries_open_at: data.entries_open_at != null ? String(data.entries_open_at) : null,
       created_at: createdAt,

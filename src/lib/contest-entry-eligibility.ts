@@ -122,6 +122,21 @@ export async function getPayEntryBlockedBannerForUser(
   return lineupBannerMessageForCapacityError(r.error);
 }
 
+/**
+ * Entry allowed only when `contests.status` is `filling` (DB value only; no date inference).
+ */
+export function contestStatusIsFilling(status: string | null | undefined): boolean {
+  return String(status ?? "").trim().toLowerCase() === "filling";
+}
+
+/** @deprecated Use `contestStatusIsFilling(contests.status)` */
+export function contestIsFillingForEntry(
+  contestsRowStatus: string | null | undefined,
+  _contestStatus?: string | null | undefined,
+): boolean {
+  return contestStatusIsFilling(contestsRowStatus);
+}
+
 export type EntryEligibilityContext = {
   contestId: string;
   userId: string;
@@ -132,8 +147,7 @@ export type EntryEligibilityContext = {
 };
 
 /**
- * Contest timing + global / per-user capacity only (no wallet, no duplicate-lineup).
- * Use before creating a new draft lineup tied to a contest when the user cannot enter again.
+ * Global + per-user capacity and `contests.status === 'filling'` (no date-based lifecycle here).
  */
 export async function assertContestEntryCapacityOk(
   supabase: SupabaseClient,
@@ -146,9 +160,7 @@ export async function assertContestEntryCapacityOk(
 
   const { data: c, error: cErr } = await supabase
     .from("contests")
-    .select(
-      "id, max_entries, max_entries_per_user, starts_at, ends_at, entry_fee_usd, contest_status, entries_open_at, created_at, status",
-    )
+    .select("id, max_entries, max_entries_per_user, contest_status, status")
     .eq("id", contestId)
     .maybeSingle();
 
@@ -157,62 +169,14 @@ export async function assertContestEntryCapacityOk(
   }
 
   const row = c as {
-    starts_at?: string | null;
-    ends_at?: string | null;
     contest_status?: string | null;
-    entries_open_at?: string | null;
-    created_at?: string | null;
     status?: string | null;
   };
   if (isContestCancelled(row.contest_status, row.status)) {
     return { ok: false, error: CONTEST_CANCELLED_ENTRIES_MESSAGE };
   }
-  const end = row.ends_at != null ? Date.parse(String(row.ends_at)) : NaN;
-  if (Number.isFinite(end) && Date.now() > end) {
-    return { ok: false, error: CONTEST_ENDED_MESSAGE };
-  }
 
-  const cs = String(row.contest_status ?? "").trim().toLowerCase();
-  const legacy = String(row.status ?? "").trim().toLowerCase();
-  let effectiveCs =
-    cs ||
-    (legacy === "open" || legacy === "full"
-      ? "open"
-      : legacy === "paid"
-        ? "settled"
-        : legacy);
-  if (effectiveCs === "filling") {
-    effectiveCs = "open";
-  }
-
-  if (effectiveCs === "draft" || effectiveCs === "upcoming") {
-    return { ok: false, error: CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE };
-  }
-  if (
-    effectiveCs === "settled" ||
-    effectiveCs === "completed" ||
-    effectiveCs === "cancelled" ||
-    effectiveCs === "canceled" ||
-    effectiveCs === "live"
-  ) {
-    return { ok: false, error: CONTEST_ENTRIES_CLOSED_MESSAGE };
-  }
-  if (effectiveCs === "locked") {
-    return { ok: false, error: CONTEST_LOCKED_MESSAGE };
-  }
-
-  const openAtRaw = row.entries_open_at ?? row.created_at;
-  const openMs = openAtRaw != null ? Date.parse(String(openAtRaw)) : NaN;
-  if (Number.isFinite(openMs) && Date.now() < openMs) {
-    return { ok: false, error: CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE };
-  }
-
-  const start = row.starts_at != null ? Date.parse(String(row.starts_at)) : NaN;
-  if (Number.isFinite(start) && Date.now() >= start) {
-    return { ok: false, error: CONTEST_LOCKED_MESSAGE };
-  }
-
-  if (effectiveCs !== "open") {
+  if (!contestStatusIsFilling(row.status)) {
     return { ok: false, error: CONTEST_NOT_OPEN_FOR_ENTRIES_MESSAGE };
   }
 

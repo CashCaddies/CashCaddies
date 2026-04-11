@@ -4,6 +4,8 @@
 
 Treat a contest as **full** when its entry count reaches `max_entries`, then reflect that in the UI (no Enter) and enforce the same rule on the backend for safety.
 
+**Lifecycle vs full:** Whether the contest is open for entries by **phase** (filling, locked, live, …) is defined only by `contests.status`—see `contest-lifecycle.md`. **Full** is strictly **capacity** (`COUNT(entries) >= max_entries`) and must not be inferred from dates; do not use dates to infer lifecycle either.
+
 ## 1. Supabase tables involved
 
 | Table | Role |

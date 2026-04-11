@@ -11,15 +11,17 @@ import {
   formatLobbyEntryFeeUsd,
   formatPerUserEntryLimit,
   formatProtectedEntriesPercent,
-  isContestLineupLocked,
 } from "@/lib/contest-lobby-shared";
-import {
-  canJoinContestInLifecycle,
-  resolveEffectiveContestLifecycle,
-} from "@/lib/contest-state";
+import { contestStatusIsFilling } from "@/lib/contest-entry-eligibility";
+import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
 import { deleteContest } from "@/lib/deleteContest";
 import { AdminContestControls } from "@/components/admin-contest-controls";
-import { ContestFullBadge, ContestLifecycleBadge, ContestLockCountdown } from "@/components/contest-card";
+import {
+  ContestFullBadge,
+  ContestLifecycleBadge,
+  ContestLifecycleStatusBadge,
+  ContestLockCountdown,
+} from "@/components/contest-card";
 import { EnterContestButton } from "@/components/enter-contest-button";
 
 type Props = {
@@ -50,17 +52,16 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const safetyPoolUsd = contest.safety_pool_usd ?? 0;
   const fillPct = Math.min(100, (current / max) * 100);
   const perUserLabel = formatPerUserEntryLimit(contest.max_entries_per_user);
-  const lineupLocked = isContestLineupLocked(contest);
   const lifecycle = resolveEffectiveContestLifecycle({
     contest_status: contest.contest_status,
-    status: contest.status,
+    status: contest.contests_row_status ?? contest.status,
     starts_at: contest.starts_at,
     entries_open_at: contest.entries_open_at,
     created_at: contest.created_at,
     has_settlement: contest.has_settlement,
   });
-  const joinAllowed = canJoinContestInLifecycle(lifecycle);
-  const status = String(contest.status ?? "").toLowerCase();
+  const isFillingPhase = contestStatusIsFilling(contest.contests_row_status ?? contest.status);
+  const joinAllowedForEntry = isFillingPhase && !isFull;
   const entryFeeUsd =
     typeof contest.entry_fee_usd === "string"
       ? Number.parseFloat(contest.entry_fee_usd)
@@ -141,8 +142,9 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
       <td className="px-4 py-3.5 pl-5 align-middle sm:px-5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-white">{contest.name}</span>
+          <ContestLifecycleStatusBadge status={contest.contests_row_status ?? contest.status} />
           <ContestLifecycleBadge lifecycle={lifecycle} />
-          {isFull || status === "full" ? <ContestFullBadge /> : null}
+          {isFull ? <ContestFullBadge /> : null}
           <ContestLockCountdown lifecycle={lifecycle} startsAtIso={contest.starts_at} />
           {perUserLabel ? (
             <span className="shrink-0 rounded border border-[#3d4550] bg-[#1a1f26] px-2 py-0.5 text-[11px] font-semibold tracking-wide text-[#a8b4c0]">
@@ -196,16 +198,8 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
             entryFeeUsd={entryFeeUsd}
             contestMaxEntries={max}
             contestEntryCount={current}
-            joinAllowed={joinAllowed && !lineupLocked}
-            joinBlockedTitle={
-              !joinAllowed
-                ? lifecycle === "upcoming" || lifecycle === "draft"
-                  ? "Contest not open for entries"
-                  : "Entries are closed for this contest."
-                : lineupLocked
-                  ? "Contest started — lineups locked"
-                  : undefined
-            }
+            joinAllowed={joinAllowedForEntry}
+            joinBlockedTitle={!isFillingPhase ? "Contest not open for entries." : undefined}
             maxEntriesPerUser={contest.max_entries_per_user}
           />
           {admin ? (

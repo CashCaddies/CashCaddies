@@ -1,8 +1,8 @@
 "use server";
 
 /**
- * Contest lifecycle updates (open/lock/live/complete). Do not set `contest_status` to
- * `cancelled` here — cancellation belongs only in an admin flow that refunds entries first.
+ * Contest lifecycle: updates `contests.status` only (filling → locked → live → complete → settled).
+ * Do not set `cancelled` here — use the dedicated refund/cancel flow.
  */
 
 import { revalidatePath } from "next/cache";
@@ -13,24 +13,14 @@ import { settleContestPrizes } from "@/lib/contest-payout-engine";
 
 export type ContestLifecycleActionResult = { ok: true } | { ok: false; error: string };
 
-type DbLifecycle = "upcoming" | "filling" | "locked" | "live" | "completed";
-
-function legacyStatusFor(contestStatus: DbLifecycle): string {
-  switch (contestStatus) {
-    case "upcoming":
-      return "open";
-    case "filling":
-      return "open";
-    case "locked":
-      return "locked";
-    case "live":
-      return "live";
-    case "completed":
-      return "completed";
-    default:
-      return "open";
-  }
-}
+/** Canonical `contests.status` values (see migration `contests_status_lifecycle_check`). */
+export type ContestDbLifecycleStatus =
+  | "filling"
+  | "locked"
+  | "live"
+  | "complete"
+  | "settled"
+  | "upcoming";
 
 async function assertAdminAndServiceRole(): Promise<
   { ok: true; admin: NonNullable<ReturnType<typeof createServiceRoleClient>> } | { ok: false; error: string }
@@ -58,9 +48,28 @@ async function assertAdminAndServiceRole(): Promise<
   return { ok: true, admin };
 }
 
-async function updateContestLifecycle(
+function mapActionToStatus(phase: ContestDbLifecycleStatus): string {
+  switch (phase) {
+    case "upcoming":
+      return "filling";
+    case "filling":
+      return "filling";
+    case "locked":
+      return "locked";
+    case "live":
+      return "live";
+    case "complete":
+      return "complete";
+    case "settled":
+      return "settled";
+    default:
+      return "filling";
+  }
+}
+
+async function updateContestStatus(
   contestId: string,
-  contestStatus: DbLifecycle,
+  phase: ContestDbLifecycleStatus,
 ): Promise<ContestLifecycleActionResult> {
   const id = contestId.trim();
   if (!id) {
@@ -70,13 +79,8 @@ async function updateContestLifecycle(
   if (!gate.ok) {
     return gate;
   }
-  const { error } = await gate.admin
-    .from("contests")
-    .update({
-      contest_status: contestStatus,
-      status: legacyStatusFor(contestStatus),
-    })
-    .eq("id", id);
+  const status = mapActionToStatus(phase);
+  const { error } = await gate.admin.from("contests").update({ status }).eq("id", id);
 
   if (error) {
     return { ok: false, error: error.message };
@@ -88,23 +92,23 @@ async function updateContestLifecycle(
 }
 
 export async function adminLockContest(contestId: string): Promise<ContestLifecycleActionResult> {
-  return updateContestLifecycle(contestId, "locked");
+  return updateContestStatus(contestId, "locked");
 }
 
 export async function adminStartContest(contestId: string): Promise<ContestLifecycleActionResult> {
-  return updateContestLifecycle(contestId, "live");
+  return updateContestStatus(contestId, "live");
 }
 
 export async function adminOpenContestForEntries(contestId: string): Promise<ContestLifecycleActionResult> {
-  return updateContestLifecycle(contestId, "filling");
+  return updateContestStatus(contestId, "filling");
 }
 
 export async function adminMarkContestUpcoming(contestId: string): Promise<ContestLifecycleActionResult> {
-  return updateContestLifecycle(contestId, "upcoming");
+  return updateContestStatus(contestId, "upcoming");
 }
 
 export async function adminCompleteContest(contestId: string): Promise<ContestLifecycleActionResult> {
-  return updateContestLifecycle(contestId, "completed");
+  return updateContestStatus(contestId, "complete");
 }
 
 export async function adminSettleContest(contestId: string): Promise<ContestLifecycleActionResult> {
@@ -119,6 +123,10 @@ export async function adminSettleContest(contestId: string): Promise<ContestLife
   const result = await settleContestPrizes(id);
   if (!result.ok) {
     return { ok: false, error: result.error };
+  }
+  const { error } = await gate.admin.from("contests").update({ status: "settled" }).eq("id", id);
+  if (error) {
+    return { ok: false, error: error.message };
   }
   revalidatePath("/lobby");
   revalidatePath("/admin/contests");

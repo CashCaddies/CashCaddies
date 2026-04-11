@@ -56,6 +56,7 @@ export function normalizeDbContestStatus(
   }
   const leg = String(legacyStatus ?? "").trim().toLowerCase();
   if (leg === "paid") return "settled";
+  /** `full` should not be stored on `contests.status`; tolerate legacy reads only. */
   if (leg === "open" || leg === "full") return "open";
   if (leg === "locked" || leg === "live" || leg === "completed" || leg === "cancelled" || leg === "canceled") {
     return leg === "canceled" ? "cancelled" : (leg as ContestLifecycle);

@@ -149,10 +149,8 @@ export function LobbyEnterButton({
       })}`
     : "—";
 
-  const blocked = !joinAllowed || lineupLocked;
-  const blockedTitle =
-    joinBlockedTitle ??
-    (lineupLocked ? "Contest started — lineups locked" : "Entries are not open for this contest.");
+  const blocked = !joinAllowed;
+  const blockedTitle = joinBlockedTitle ?? "Entries are not open for this contest.";
 
   const countBusy = Boolean(authUser && !entryCountReady);
 
