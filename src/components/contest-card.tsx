@@ -18,6 +18,15 @@ export function ContestLifecycleBadge({ lifecycle }: { lifecycle: ContestLifecyc
   );
 }
 
+/** Capacity full: entries >= max_entries (lobby / contest list). */
+export function ContestFullBadge() {
+  return (
+    <span className="shrink-0 rounded border border-[#ef4444]/40 bg-[#2a1515] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#f87171]">
+      FULL
+    </span>
+  );
+}
+
 /** Updates every second while mounted (open / upcoming lock countdown). */
 export function ContestLockCountdown({
   lifecycle,

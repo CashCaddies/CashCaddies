@@ -22,6 +22,10 @@ type Props = {
   contestId: string;
   contestName: string;
   entryFeeUsd: number;
+  /** `contests.max_entries` (global cap). */
+  contestMaxEntries: number;
+  /** Current total entries for this contest (e.g. from lobby row). */
+  contestEntryCount: number;
   /** Only published contests (`contest_status` open / resolved `open` lifecycle) allow paid entry. */
   joinAllowed?: boolean;
   /** Shown when `joinAllowed` is false (tooltip + disabled state). */
@@ -65,6 +69,8 @@ export function LobbyEnterButton({
   contestId,
   contestName,
   entryFeeUsd,
+  contestMaxEntries,
+  contestEntryCount,
   joinAllowed = true,
   joinBlockedTitle,
   lineupLocked = false,
@@ -96,7 +102,10 @@ export function LobbyEnterButton({
     if (!wallet) return null;
     return totalContestEntryChargeUsd(entryFeeUsd, Number(wallet.loyalty_points ?? 0));
   }, [wallet, entryFeeUsd]);
-  const atMaxPerUser =
+  const maxGlobal = Math.max(1, Math.floor(Number(contestMaxEntries)));
+  const isFull = contestEntryCount >= maxGlobal;
+
+  const userAtLimit =
     authUser != null &&
     entryCountReady &&
     userEntryCount != null &&
@@ -148,13 +157,18 @@ export function LobbyEnterButton({
   const countBusy = Boolean(authUser && !entryCountReady);
 
   const onEnterContest = useCallback(async () => {
-    if (blocked) {
-      setError(blockedTitle);
+    if (isFull) {
       setLoading(false);
       enterFlowInFlight.current = false;
       return;
     }
-    if (atMaxPerUser) {
+    if (userAtLimit) {
+      setLoading(false);
+      enterFlowInFlight.current = false;
+      return;
+    }
+    if (blocked) {
+      setError(blockedTitle);
       setLoading(false);
       enterFlowInFlight.current = false;
       return;
@@ -226,7 +240,7 @@ export function LobbyEnterButton({
       setLoading(false);
       enterFlowInFlight.current = false;
     }
-  }, [atMaxPerUser, authUser, blocked, blockedTitle, contestId, isReady, router]);
+  }, [authUser, blocked, blockedTitle, contestId, isFull, isReady, router, userAtLimit]);
 
   function handleEnterClick(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -234,7 +248,7 @@ export function LobbyEnterButton({
     if (loading || enterFlowInFlight.current) {
       return;
     }
-    if (blocked || atMaxPerUser || countBusy) {
+    if (blocked || isFull || userAtLimit || countBusy) {
       return;
     }
     enterFlowInFlight.current = true;
@@ -288,12 +302,15 @@ export function LobbyEnterButton({
     setPending(false);
   }
 
-  const buttonDisabled = loading || blocked || atMaxPerUser || countBusy;
-  const buttonLabel = atMaxPerUser
-    ? "Max entries reached"
-    : loading || countBusy
-      ? "Loading…"
-      : "Enter Contest";
+  const buttonDisabled = loading || blocked || isFull || userAtLimit || countBusy;
+  const mutedAppearance = isFull || userAtLimit;
+  const buttonLabel = isFull
+    ? "FULL"
+    : userAtLimit
+      ? "ENTERED"
+      : loading || countBusy
+        ? "Loading…"
+        : "ENTER CONTEST";
 
   return (
     <div className="relative z-10 flex flex-col items-end gap-1">
@@ -309,17 +326,19 @@ export function LobbyEnterButton({
         title={
           blocked
             ? blockedTitle
-            : atMaxPerUser
-              ? "Max entries reached"
-              : undefined
+            : isFull
+              ? "Contest is full"
+              : userAtLimit
+                ? "Already entered"
+                : undefined
         }
         className={`relative z-10 inline-flex min-w-[7rem] items-center justify-center gap-2 rounded border px-3 py-2 text-[11px] font-bold uppercase tracking-wide shadow-sm sm:min-w-[8.5rem] sm:text-xs ${
-          atMaxPerUser
+          mutedAppearance
             ? "cursor-not-allowed border-[#3d4550] bg-[#2a3039] text-[#8b98a5]"
             : "cursor-pointer border-[#2d7a3a] bg-[#1f8a3b] text-white hover:bg-[#249544] active:bg-[#1c7a34] disabled:cursor-not-allowed disabled:opacity-50"
         }`}
       >
-        {(loading || countBusy) && !atMaxPerUser ? <InlineSpinner /> : null}
+        {(loading || countBusy) && !mutedAppearance ? <InlineSpinner /> : null}
         {buttonLabel}
       </button>
       {error && !modalOpen && !capacityModalOpen && (

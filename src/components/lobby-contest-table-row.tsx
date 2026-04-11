@@ -19,8 +19,8 @@ import {
 } from "@/lib/contest-state";
 import { deleteContest } from "@/lib/deleteContest";
 import { AdminContestControls } from "@/components/admin-contest-controls";
-import { ContestLifecycleBadge, ContestLockCountdown } from "@/components/contest-card";
-import { LobbyEnterButton } from "@/components/lobby-enter-button";
+import { ContestFullBadge, ContestLifecycleBadge, ContestLockCountdown } from "@/components/contest-card";
+import { EnterContestButton } from "@/components/enter-contest-button";
 
 type Props = {
   contest: LobbyContestRow;
@@ -44,6 +44,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const href = `/contest/${encodeURIComponent(contest.id)}`;
   const max = Math.max(1, contest.max_entries);
   const current = Math.min(contest.entry_count || 0, max);
+  const isFull = current >= max;
   const protectedCount = Math.max(0, Math.trunc(Number(contest.protected_entries_count ?? 0)));
   const protectedPctLabel = formatProtectedEntriesPercent(contest.entry_count || 0, protectedCount);
   const safetyPoolUsd = contest.safety_pool_usd ?? 0;
@@ -141,11 +142,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-white">{contest.name}</span>
           <ContestLifecycleBadge lifecycle={lifecycle} />
-          {status === "full" ? (
-            <span className="shrink-0 rounded border border-[#ef4444]/40 bg-[#2a1515] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#f87171]">
-              FULL
-            </span>
-          ) : null}
+          {isFull || status === "full" ? <ContestFullBadge /> : null}
           <ContestLockCountdown lifecycle={lifecycle} startsAtIso={contest.starts_at} />
           {perUserLabel ? (
             <span className="shrink-0 rounded border border-[#3d4550] bg-[#1a1f26] px-2 py-0.5 text-[11px] font-semibold tracking-wide text-[#a8b4c0]">
@@ -193,10 +190,12 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
           >
             View Contest
           </Link>
-          <LobbyEnterButton
+          <EnterContestButton
             contestId={contest.id}
             contestName={contest.name}
             entryFeeUsd={entryFeeUsd}
+            contestMaxEntries={max}
+            contestEntryCount={current}
             joinAllowed={joinAllowed && !lineupLocked}
             joinBlockedTitle={
               !joinAllowed
