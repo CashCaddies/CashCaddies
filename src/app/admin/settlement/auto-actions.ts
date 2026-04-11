@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { CONTEST_SETTLEMENT_AFTER_START_MS, settleContestPrizes } from "@/lib/contest-payout-engine";
+import { settleContestPrizes } from "@/lib/contest-payout-engine";
 
 export type TriggerAutoContestSettlementResult =
   | {
@@ -17,7 +17,7 @@ export type TriggerAutoContestSettlementResult =
   | { ok: false; error: string };
 
 /**
- * Picks the earliest contest that is past the settlement window, not yet settled, and runs prize settlement.
+ * Picks the earliest contest with status complete, not yet settled, and runs prize settlement.
  * For admin testing / ops (same RPC as manual settlement form).
  */
 export async function triggerAutoContestSettlement(adminSecret: string): Promise<TriggerAutoContestSettlementResult> {
@@ -39,19 +39,16 @@ export async function triggerAutoContestSettlement(adminSecret: string): Promise
 
   const { data: contests, error: cErr } = await admin
     .from("contests")
-    .select("id, name, starts_at")
+    .select("id, name, starts_at, status")
     .order("starts_at", { ascending: true });
 
   if (cErr) {
     return { ok: false, error: cErr.message };
   }
 
-  const now = Date.now();
   const eligible = (contests ?? []).filter((c) => {
     if (!c.id || settled.has(String(c.id))) return false;
-    const start = c.starts_at ? new Date(c.starts_at).getTime() : NaN;
-    if (!Number.isFinite(start)) return false;
-    return now >= start + CONTEST_SETTLEMENT_AFTER_START_MS;
+    return String(c.status ?? "").trim().toLowerCase() === "complete";
   });
 
   const pick = eligible[0];
@@ -59,7 +56,7 @@ export async function triggerAutoContestSettlement(adminSecret: string): Promise
     return {
       ok: false,
       error:
-        "No eligible contest found. Need: not yet settled, and at least 3 days after contest start (or use manual settlement for a specific contest).",
+        "No eligible contest found. Need: status complete, not yet settled (or use manual settlement for a specific contest).",
     };
   }
 
@@ -71,6 +68,11 @@ export async function triggerAutoContestSettlement(adminSecret: string): Promise
   }
 
   const { data } = result;
+  const { error: statusErr } = await admin.from("contests").update({ status: "settled" }).eq("id", data.contest_id);
+  if (statusErr) {
+    return { ok: false, error: statusErr.message };
+  }
+
   revalidatePath("/admin/settlement");
   revalidatePath("/admin");
   revalidatePath("/lobby", "layout");

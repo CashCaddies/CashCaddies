@@ -1,6 +1,6 @@
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
-/** Matches SQL `settle_contest_prizes`: settlement runs when `now() >= starts_at + 3 days`. */
+/** Legacy hint for auto-settlement UI (prefer filtering by `contests.status === 'complete'`). */
 export const CONTEST_SETTLEMENT_AFTER_START_MS = 3 * 24 * 60 * 60 * 1000;
 
 export type ContestPayoutLine = {
@@ -47,8 +47,9 @@ function parsePayoutLines(raw: unknown): ContestPayoutLine[] {
 }
 
 /**
- * Runs DB `settle_contest_prizes`: sorted leaderboard, `contest_payouts` percentages of prize pool,
- * credits `profiles.account_balance` and `transactions` (type `contest_prize`). Idempotent per contest.
+ * Runs DB `settle_contest_prizes`: requires `contests.status = 'complete'`; sorted leaderboard by
+ * `lineups.total_score`; `contest_payouts` percentages of prize pool (90% of gross entry fees);
+ * credits `profiles.account_balance` and `transactions` (`contest_prize`). Idempotent via `contest_settlements`.
  */
 export async function settleContestPrizes(
   contestId: string,

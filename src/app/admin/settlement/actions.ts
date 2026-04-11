@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { settleContestPrizes } from "@/lib/contest-payout-engine";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export type RunContestSettlementResult =
   | {
@@ -31,6 +32,15 @@ export async function runContestSettlement(formData: FormData): Promise<RunConte
   }
 
   const { data } = result;
+  const admin = createServiceRoleClient();
+  if (!admin) {
+    return { ok: false, error: "Prizes distributed but server role is not configured to mark contest settled." };
+  }
+  const { error: statusErr } = await admin.from("contests").update({ status: "settled" }).eq("id", data.contest_id);
+  if (statusErr) {
+    return { ok: false, error: statusErr.message };
+  }
+
   revalidatePath("/admin/settlement");
   revalidatePath("/lobby", "layout");
   revalidatePath("/dashboard");
