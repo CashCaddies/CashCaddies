@@ -29,19 +29,53 @@ const CONTEST_CARD_SELECT = `
 `;
 
 export async function fetchContestPayoutsForContest(contestId: string): Promise<ContestPayoutRow[]> {
-  const id = contestId?.trim();
+  const id = String(contestId ?? "").trim();
   if (!id) return [];
   try {
     const supabase = await createClient();
     const hasAccess = await currentUserHasContestAccess(supabase);
-    if (!hasAccess) return [];
+    // Match fetchLobbyContestById: do not hide payout rows in dev when server auth/beta gate is flaky.
+    if (!hasAccess && process.env.NODE_ENV !== "development") {
+      return [];
+    }
+    if (!hasAccess && process.env.NODE_ENV === "development") {
+      console.log("fetchContestPayoutsForContest: bypassing server-side beta gate during stabilization.");
+    }
+
+    const idCandidates = [...new Set([id, id.toLowerCase(), id.toUpperCase()])].filter((c) => c.length > 0);
+
     const { data, error } = await supabase
       .from("contest_payouts")
-      .select("rank_place, payout_pct")
-      .eq("contest_id", id)
+      .select("*")
+      .in("contest_id", idCandidates)
       .order("rank_place", { ascending: true });
-    if (error) return [];
-    return (data ?? []) as ContestPayoutRow[];
+
+    // TEMP debug (remove when stable)
+    if (process.env.NODE_ENV === "development") {
+      console.log("contest.id", id);
+      console.log("payouts", data, "error", error);
+    }
+
+    if (error) {
+      return [];
+    }
+
+    const rows = data ?? [];
+    if (!rows.length) {
+      return [];
+    }
+
+    const mapped: ContestPayoutRow[] = rows
+      .map((r) => {
+        const row = r as { rank_place?: unknown; payout_pct?: unknown };
+        return {
+          rank_place: Number(row.rank_place),
+          payout_pct: Number(row.payout_pct),
+        };
+      })
+      .filter((r) => Number.isFinite(r.rank_place) && r.rank_place >= 1 && Number.isFinite(r.payout_pct));
+
+    return mapped;
   } catch {
     return [];
   }

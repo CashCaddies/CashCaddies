@@ -75,7 +75,12 @@ export function ContestDbDetail({ contestId, row, payouts }: Props) {
         </div>
       </div>
 
-      {payouts.length > 0 ? (
+      {payouts.length === 0 ? (
+        <div className="border-x border-[#2a3039] bg-[#0c1015] px-4 py-6 sm:px-8">
+          <h2 className="text-lg font-bold uppercase tracking-wide text-[#c5cdd5]">Prize breakdown</h2>
+          <p className="mt-2 text-sm text-[#6b7684]">No payout structure</p>
+        </div>
+      ) : (
         <div className="border-x border-[#2a3039] bg-[#0c1015] px-4 py-6 sm:px-8">
           <h2 className="text-lg font-bold uppercase tracking-wide text-[#c5cdd5]">Prize breakdown</h2>
           <p className="mt-1 text-sm text-[#6b7684]">Share of prize pool by finish (top {payouts.length}).</p>
@@ -91,7 +96,7 @@ export function ContestDbDetail({ contestId, row, payouts }: Props) {
             ))}
           </ul>
         </div>
-      ) : null}
+      )}
 
       <div className="border-x border-[#2a3039] bg-[#0f1419] px-4 py-6 sm:px-8">
         <h2 className="text-lg font-bold uppercase tracking-wide text-[#c5cdd5]">Rules</h2>
