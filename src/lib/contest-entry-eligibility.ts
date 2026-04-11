@@ -89,6 +89,12 @@ export function normalizeContestEntryErrorMessage(raw: string): string {
   if (/insufficient account balance/i.test(t) || /insufficient funds for contest entry/i.test(t)) {
     return INSUFFICIENT_FUNDS_MESSAGE;
   }
+  if (/duplicate contest entry|same user, contest, and entry slot/i.test(t)) {
+    return "You're already entered in this contest.";
+  }
+  if (/max entries per user for this contest/i.test(t)) {
+    return ENTRY_LIMIT_PER_USER_MESSAGE;
+  }
   return raw;
 }
 

@@ -19,8 +19,8 @@ import {
   assertClosedBetaApprovedForContestActions,
   assertContestEntryCapacityOk,
   assertContestEntryEligible,
-  normalizeContestEntryErrorMessage,
 } from "@/lib/contest-entry-eligibility";
+import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
 
@@ -168,7 +168,7 @@ export async function submitLineup(payload: {
   });
 
   if (atomicErr) {
-    return { ok: false, error: normalizeContestEntryErrorMessage(atomicErr.message) };
+    return { ok: false, error: mapContestEntryFailure(atomicErr.message) };
   }
 
   const atomicRow = atomicData as {
@@ -185,7 +185,7 @@ export async function submitLineup(payload: {
       typeof atomicRow?.error === "string" && atomicRow.error.trim() !== ""
         ? atomicRow.error
         : "Could not create contest entry.";
-    return { ok: false, error: normalizeContestEntryErrorMessage(msg) };
+    return { ok: false, error: mapContestEntryFailure(msg) };
   }
 
   const ceId = atomicRow.contest_entry_id != null ? String(atomicRow.contest_entry_id) : "";
@@ -804,7 +804,7 @@ export async function enterContestWithSavedLineup(payload: {
   });
 
   if (atomicErr) {
-    return { ok: false, error: normalizeContestEntryErrorMessage(atomicErr.message) };
+    return { ok: false, error: mapContestEntryFailure(atomicErr.message) };
   }
 
   const atomicRow = atomicData as {
@@ -821,7 +821,7 @@ export async function enterContestWithSavedLineup(payload: {
       typeof atomicRow?.error === "string" && atomicRow.error.trim() !== ""
         ? atomicRow.error
         : "Could not create contest entry.";
-    return { ok: false, error: normalizeContestEntryErrorMessage(msg) };
+    return { ok: false, error: mapContestEntryFailure(msg) };
   }
 
   const entryIdRaw = atomicRow.contest_entry_id != null ? String(atomicRow.contest_entry_id) : "";

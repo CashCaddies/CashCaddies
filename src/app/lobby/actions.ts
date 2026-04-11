@@ -12,8 +12,8 @@ import {
   assertClosedBetaApprovedForContestActions,
   assertContestEntryCapacityOk,
   assertContestEntryEligible,
-  normalizeContestEntryErrorMessage,
 } from "@/lib/contest-entry-eligibility";
+import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -140,7 +140,7 @@ export async function confirmLobbyContestEntry(payload: {
   });
 
   if (atomicErr) {
-    return { ok: false, error: normalizeContestEntryErrorMessage(atomicErr.message) };
+    return { ok: false, error: mapContestEntryFailure(atomicErr.message) };
   }
 
   const atomicRow = atomicData as {
@@ -159,7 +159,7 @@ export async function confirmLobbyContestEntry(payload: {
         : "Could not create contest entry.";
     return {
       ok: false,
-      error: normalizeContestEntryErrorMessage(raw),
+      error: mapContestEntryFailure(raw),
     };
   }
 

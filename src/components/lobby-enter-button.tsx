@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { confirmLobbyContestEntry, precheckContestEntryCapacity } from "@/app/lobby/actions";
 import { InsufficientFundsModal } from "@/components/insufficient-funds-modal";
 import { useAuth } from "@/contexts/auth-context";
@@ -86,6 +86,7 @@ export function LobbyEnterButton({
   const [capacityModalMessage, setCapacityModalMessage] = useState<string | null>(null);
   const [insufficientOpen, setInsufficientOpen] = useState(false);
   const [insufficientCtx, setInsufficientCtx] = useState<{ balance: number; required: number } | null>(null);
+  const enterFlowInFlight = useRef(false);
 
   const maxPer = useMemo(() => effectiveMaxPerUser(maxEntriesPerUser), [maxEntriesPerUser]);
 
@@ -143,6 +144,9 @@ export function LobbyEnterButton({
     (lineupLocked ? "Contest started — lineups locked" : "Entries are not open for this contest.");
 
   const onEnterContest = useCallback(async () => {
+    if (enterFlowInFlight.current || loading) {
+      return;
+    }
     if (blocked) {
       setError(blockedTitle);
       return;
@@ -150,6 +154,7 @@ export function LobbyEnterButton({
     if (atMaxPerUser) {
       return;
     }
+    enterFlowInFlight.current = true;
     setError(null);
     setSuccess(null);
     setLoading(true);
@@ -218,6 +223,7 @@ export function LobbyEnterButton({
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
+      enterFlowInFlight.current = false;
     }
   }, [atMaxPerUser, authUser, blocked, blockedTitle, contestId, isReady, router]);
 
@@ -228,6 +234,9 @@ export function LobbyEnterButton({
   }
 
   async function onConfirm() {
+    if (pending) {
+      return;
+    }
     if (!selectedId) {
       setError("Select a lineup.");
       return;
