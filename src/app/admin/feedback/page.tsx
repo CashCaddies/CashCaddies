@@ -68,6 +68,10 @@ export default async function AdminFeedbackPage({ searchParams }: PageProps) {
           <Link href="/admin/settlement" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">
             Settlement
           </Link>
+          {" · "}
+          <Link href="/admin/payout-history" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">
+            View Payouts
+          </Link>
           .
         </p>
       </div>

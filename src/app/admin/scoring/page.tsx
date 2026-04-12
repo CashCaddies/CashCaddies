@@ -38,7 +38,11 @@ export default async function AdminScoringPage() {
           <Link href="/admin/settlement" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">
             Contest settlement
           </Link>{" "}
-          distributes prizes after the contest window.
+          distributes prizes after the contest window.{" "}
+          <Link href="/admin/payout-history" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">
+            View Payouts
+          </Link>{" "}
+          for per-entry payout history.
         </p>
       </div>
 

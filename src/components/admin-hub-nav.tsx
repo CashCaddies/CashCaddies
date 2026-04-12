@@ -81,6 +81,14 @@ export function AdminHubNav({
             Stats
           </Link>
         ) : null}
+        {adminUser ? (
+          <Link
+            href="/admin/payout-history"
+            className={linkClass(pathname?.startsWith("/admin/payout-history") ?? false)}
+          >
+            View Payouts
+          </Link>
+        ) : null}
       </nav>
 
       {section === "feedback" && adminUser ? (

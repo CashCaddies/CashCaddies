@@ -1,10 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { AdminInsuranceForm } from "@/components/admin-insurance-form";
+import { AdminPayoutHistoryTable } from "@/components/admin-payout-history";
 import { AdminProtectionEngineForm } from "@/components/admin-protection-engine-form";
 import { AdminSettlementForm } from "@/components/admin-settlement-form";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function AdminSettlementPage() {
+type PageProps = {
+  searchParams: Promise<{ payout?: string }>;
+};
+
+export default async function AdminSettlementPage({ searchParams }: PageProps) {
   let contests: { id: string; name: string }[] = [];
   let loadError: string | null = null;
 
@@ -19,6 +25,9 @@ export default async function AdminSettlementPage() {
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Could not load contests.";
   }
+
+  const sp = await searchParams;
+  const payoutContestId = typeof sp.payout === "string" ? sp.payout.trim() : "";
 
   const hasServiceKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const hasAdminSecret = Boolean(process.env.ADMIN_SCORING_SECRET);
@@ -36,6 +45,17 @@ export default async function AdminSettlementPage() {
           Each contest can be settled at most once.{" "}
           <Link href="/admin/scoring" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">
             Scoring input
+          </Link>
+          {" · "}
+          <Link
+            href={
+              payoutContestId
+                ? `/admin/payout-history?contestId=${encodeURIComponent(payoutContestId)}`
+                : "/admin/payout-history"
+            }
+            className="font-medium text-emerald-400/90 underline hover:text-emerald-300"
+          >
+            View Payouts
           </Link>
         </p>
       </div>
@@ -67,6 +87,49 @@ export default async function AdminSettlementPage() {
               <span className="text-[#c5cdd5]">complete</span>).
             </p>
             <AdminSettlementForm contests={contests} />
+            <hr className="my-10 border-[#2a3039]" />
+            <h2 className="text-lg font-semibold text-white">Payout history</h2>
+            <p className="mb-4 max-w-2xl text-sm text-[#8b98a5]">
+              Read-only rows from <span className="font-mono text-[#c5cdd5]">contest_entry_results</span> (written by{" "}
+              <span className="font-mono text-[#c5cdd5]">run_contest_payouts</span>). Choose a contest and submit to load.
+            </p>
+            <form method="get" className="mb-6 flex max-w-lg flex-wrap items-end gap-3">
+              <div className="min-w-[240px] flex-1">
+                <label htmlFor="payout" className="block text-xs font-semibold uppercase tracking-wide text-[#8b98a5]">
+                  Contest
+                </label>
+                <select
+                  id="payout"
+                  name="payout"
+                  defaultValue={payoutContestId || ""}
+                  className="mt-1 w-full rounded-lg border border-[#2a3039] bg-[#0f1419] px-3 py-2 text-sm text-white"
+                >
+                  <option value="">Choose contest…</option>
+                  {contests.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="rounded-lg border border-[#2a3039] bg-[#141920] px-4 py-2 text-sm font-medium text-white hover:bg-[#1a222c]"
+              >
+                Show history
+              </button>
+            </form>
+            {payoutContestId ? (
+              <Suspense
+                fallback={
+                  <p className="text-sm text-[#8b98a5]">Loading payout history…</p>
+                }
+              >
+                <AdminPayoutHistoryTable contestId={payoutContestId} />
+              </Suspense>
+            ) : (
+              <p className="text-sm text-[#6b7684]">Select a contest to view payout lines.</p>
+            )}
             <hr className="my-10 border-[#2a3039]" />
             <h2 className="text-lg font-semibold text-white">Contest insurance</h2>
             <p className="mb-4 max-w-2xl text-sm text-[#8b98a5]">
