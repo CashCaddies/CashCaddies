@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getAdminNewFeedbackCount } from "@/app/admin/feedback/actions";
 import { AdminHubNav } from "@/components/admin-hub-nav";
+import { AdminDashboardMetricsPanel } from "@/components/admin-dashboard-metrics-panel";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/permissions";
 
@@ -61,9 +62,20 @@ export default async function AdminStatsPage() {
           adminUser={adminUser}
           feedbackUnreadCount={feedbackUnreadCount}
         />
-        <div className="mt-6 rounded-lg border border-dashed border-[#2a3039] bg-[#141920]/40 px-6 py-12 text-center">
-          <p className="text-sm text-[#8b98a5]">Stats dashboard coming soon.</p>
-        </div>
+        {adminUser ? (
+          <div className="mt-6 space-y-3">
+            <h2 className="text-lg font-semibold text-white">Platform metrics</h2>
+            <p className="text-sm text-[#8b98a5]">
+              Totals from <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-xs">admin_dashboard_metrics</code>{" "}
+              (deposits, entry fees, payouts from ledgers).
+            </p>
+            <AdminDashboardMetricsPanel />
+          </div>
+        ) : (
+          <div className="mt-6 rounded-lg border border-dashed border-[#2a3039] bg-[#141920]/40 px-6 py-12 text-center">
+            <p className="text-sm text-[#8b98a5]">Admin metrics require full admin access.</p>
+          </div>
+        )}
       </div>
     </div>
   );
