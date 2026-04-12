@@ -1,0 +1,16 @@
+RBC Heritage Sim — CURRENT STATE
+
+✅ sim_players table created + seeded
+✅ sim_live_state table created + populated
+✅ advance_one_hole() working
+✅ scoring system = birdie/bogey/eagle
+✅ cron running every minute
+
+NEXT:
+- add cut logic (36 holes)
+- leaderboard status (CUT / MADE CUT)
+- final standings
+
+RULES:
+- DO NOT recreate tables
+- ONLY extend existing system
