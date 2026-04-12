@@ -1,0 +1,123 @@
+-- Optional columns on contests for template-spawned rows (idempotent adds).
+alter table public.contests
+  add column if not exists rake_percent numeric;
+
+alter table public.contests
+  add column if not exists payout_structure jsonb default '[]'::jsonb;
+
+alter table public.contests
+  add column if not exists sport text;
+
+alter table public.contests
+  add column if not exists slate_id uuid;
+
+comment on column public.contests.slate_id is 'Optional DFS slate link when spawning from contest_templates.';
+comment on column public.contests.payout_structure is 'JSON payout definition copied from template; settlement still uses contest_payouts + contest_settlements.';
+
+-- Spawn a lobby contest from an active template. Entry/prize template cents → contests integer USD (whole dollars).
+create or replace function public.spawn_contest_from_template(
+  p_template_id uuid,
+  p_slate_id uuid,
+  p_start_time timestamptz
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path to public
+as $$
+declare
+  v_template public.contest_templates;
+  v_contest public.contests;
+  v_fee_usd integer;
+  v_prize_usd integer;
+begin
+  if coalesce((auth.jwt()->>'role'), '') is distinct from 'service_role' then
+    if not exists (
+      select 1
+      from public.profiles p
+      where p.id = auth.uid()
+        and lower(trim(coalesce(p.role, ''))) in ('admin', 'senior_admin', 'founder')
+    ) then
+      return jsonb_build_object('ok', false, 'error', 'forbidden');
+    end if;
+  end if;
+
+  if p_template_id is null then
+    return jsonb_build_object('ok', false, 'error', 'missing_template_id');
+  end if;
+
+  if p_start_time is null then
+    return jsonb_build_object('ok', false, 'error', 'missing_start_time');
+  end if;
+
+  select *
+  into v_template
+  from public.contest_templates t
+  where t.id = p_template_id
+    and t.is_active = true;
+
+  if not found then
+    return jsonb_build_object('ok', false, 'error', 'template_not_found_or_inactive');
+  end if;
+
+  v_fee_usd := greatest(0, round(v_template.entry_fee_cents::numeric / 100.0))::integer;
+  v_prize_usd := greatest(
+    0,
+    round(coalesce(v_template.prize_pool_cents, 0)::numeric / 100.0)
+  )::integer;
+
+  insert into public.contests (
+    name,
+    entry_fee,
+    entry_fee_usd,
+    max_entries,
+    max_entries_per_user,
+    prize_pool,
+    rake_percent,
+    payout_structure,
+    sport,
+    slate_id,
+    starts_at,
+    start_time,
+    entries_open_at,
+    status,
+    entry_count,
+    current_entries,
+    created_by
+  )
+  values (
+    v_template.name,
+    v_fee_usd,
+    v_fee_usd,
+    v_template.max_entries,
+    v_template.max_entries_per_user,
+    v_prize_usd,
+    v_template.rake_percent,
+    coalesce(v_template.payout_structure, '[]'::jsonb),
+    v_template.sport,
+    p_slate_id,
+    p_start_time::timestamp,
+    p_start_time,
+    now(),
+    'filling',
+    0,
+    0,
+    auth.uid()
+  )
+  returning * into v_contest;
+
+  return jsonb_build_object(
+    'ok', true,
+    'contest', to_jsonb(v_contest)
+  );
+end;
+$$;
+
+comment on function public.spawn_contest_from_template(uuid, uuid, timestamptz) is
+  'Insert contests row from contest_templates; status filling. Admin/senior_admin/founder or service_role.';
+
+revoke all on function public.spawn_contest_from_template(uuid, uuid, timestamptz) from public;
+
+grant execute on function public.spawn_contest_from_template(uuid, uuid, timestamptz) to authenticated;
+
+grant execute on function public.spawn_contest_from_template(uuid, uuid, timestamptz) to service_role;
