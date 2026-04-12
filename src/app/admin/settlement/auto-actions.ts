@@ -15,7 +15,7 @@ export type TriggerAutoContestSettlementResult =
   | { ok: false; error: string };
 
 /**
- * Picks the earliest contest with status complete, not yet settled, and runs prize settlement.
+ * Picks the earliest contest with status complete, not yet settled, and runs contest settlement (accounting RPC).
  * For admin testing / ops (same RPC as manual settlement form).
  */
 export async function triggerAutoContestSettlement(adminSecret: string): Promise<TriggerAutoContestSettlementResult> {

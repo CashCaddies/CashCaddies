@@ -1,18 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-/** Leaderboard row for settlement preview / admin (same ordering as `settle_contest_prizes`). */
+/** Entry list in contest join order (by `created_at`), for admin/debug. Not used for prize math. */
 export type ContestResultRow = {
   entryId: string;
   userId: string;
   lineupId: string | null;
-  rank: number;
   /** From lineup when present; informational until scoring exists. */
   score: number | null;
 };
 
 /**
- * Contest results for settlement preview: same order as DB settlement (`contest_entries.created_at` asc, then id).
- * Lineup score is included when available but does not determine rank.
+ * Contest entries ordered like `contest_entries.created_at` asc (then id). No settlement payout fields.
  */
 export async function getContestResults(
   supabase: SupabaseClient,
@@ -64,11 +62,10 @@ export async function getContestResults(
     return a.entryId.localeCompare(b.entryId);
   });
 
-  const rows: ContestResultRow[] = scored.map((r, i) => ({
+  const rows: ContestResultRow[] = scored.map((r) => ({
     entryId: r.entryId,
     userId: r.userId,
     lineupId: r.lineupId,
-    rank: i + 1,
     score: r.score,
   }));
 

@@ -1,7 +1,7 @@
 import { safeWalletNumber } from "@/lib/wallet-persistence";
 import type { WalletTransaction } from "@/lib/wallet-transaction";
 
-/** DB `transactions.type` after `settle_contest_prizes`. */
+/** DB `transactions.type` for contest prize lines when wallet distribution exists (not used by MVP settlement RPC). */
 export const CONTEST_PRIZE_TRANSACTION_TYPE = "contest_prize" as const;
 
 /** DB `transactions.type` for entry fee refunds when `contest_entries.entry_protected`. */
@@ -16,7 +16,7 @@ export type ContestPrizeDbRow = {
 
 /**
  * Mock rule for tests: only first place receives a prize; everyone else $0.
- * (Production settlement uses `contest_payouts` and may pay multiple ranks.)
+ * (Future: prize distribution may use multiple places.)
  */
 export function mockWinningsForRank(rank: number, firstPlacePrizeUsd: number): number {
   if (rank === 1) return round2(Math.max(0, firstPlacePrizeUsd));

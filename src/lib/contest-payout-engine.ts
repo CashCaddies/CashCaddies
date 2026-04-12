@@ -3,7 +3,7 @@ import { createServiceRoleClient } from "@/lib/supabase/admin";
 /** Legacy hint for auto-settlement UI (prefer filtering by `contests.status === 'complete'`). */
 export const CONTEST_SETTLEMENT_AFTER_START_MS = 3 * 24 * 60 * 60 * 1000;
 
-/** Successful `settle_contest_prizes` RPC payload (contest-level row only; no per-user payouts yet). */
+/** Successful `settle_contest_prizes` RPC payload (contest-level accounting row only). */
 export type SettlementResponse = {
   ok: boolean;
   contest_id: string;
@@ -20,7 +20,7 @@ type RpcRow = {
 };
 
 /**
- * Runs DB `settle_contest_prizes` with `{ p_contest_id }`. Writes one `contest_settlements` row; no wallet credits yet.
+ * Runs DB `settle_contest_prizes` with `{ p_contest_id }`. Writes one `contest_settlements` row (accounting only).
  */
 export async function settleContestPrizes(
   contestId: string,
