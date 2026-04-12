@@ -118,7 +118,7 @@ export async function fetchLobbyContests(): Promise<{
     const q = await supabase
       .from("contests")
       .select(CONTEST_CARD_SELECT)
-      .in("status", ["filling", "locked", "live", "complete"])
+      .in("status", ["filling", "full", "locked", "live", "complete"])
       .order("start_time", { ascending: true });
 
     const data = q.data as Array<Record<string, unknown>> | null;

@@ -2,7 +2,7 @@
  * Valid values for `contests.status` (see `contests_status_lifecycle_check`).
  * `cancelled` is omitted from admin create: set only after refunding entries.
  */
-export const CONTEST_STATE_VALUES = ["filling", "locked", "live", "complete", "settled"] as const;
+export const CONTEST_STATE_VALUES = ["filling", "full", "locked", "live", "complete", "settled"] as const;
 
 export type ContestStateValue = (typeof CONTEST_STATE_VALUES)[number];
 
@@ -20,6 +20,7 @@ export function contestStatusBadgeLabel(status: string | null | undefined): stri
   if (s === "") return "—";
   const map: Record<string, string> = {
     filling: "Filling",
+    full: "Full",
     locked: "Locked",
     live: "Live",
     complete: "Complete",
@@ -34,6 +35,8 @@ export function contestStatusBadgeClassName(status: string | null | undefined): 
   switch (String(status ?? "").trim().toLowerCase()) {
     case "filling":
       return "bg-[#1a2f4a] text-[#7ab8ff] border-[#3d6a9e]";
+    case "full":
+      return "bg-[#2a2618] text-[#e0c36a] border-[#6b5a2e]";
     case "locked":
       return "bg-[#3d2a1a] text-[#ffb14a] border-[#8b5a2b]";
     case "live":
