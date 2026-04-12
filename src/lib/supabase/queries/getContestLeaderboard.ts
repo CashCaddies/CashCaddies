@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 import { compareLivePreliminaryScore } from "@/lib/contest/get-live-leaderboard";
 import {
+  contestUsesSimPool,
+  entryLineupSimTotalScore,
+  sumSimFantasyPointsByPlayerId,
+} from "@/lib/contest/sim-results-scoring";
+import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
 } from "@/lib/supabase-missing-column";
@@ -71,10 +76,14 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
     const settled = String(contest.status ?? "").toLowerCase().trim() === "settled";
 
-    const entriesQ = await supabase
-      .from("contest_entries")
-      .select("id, user_id, lineup_id, created_at, entry_number, lineups ( total_score ), profiles ( username )")
-      .eq("contest_id", contestId);
+    const usesSimPool = await contestUsesSimPool(supabase, contestId);
+    const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;
+
+    const lineupSelect = usesSimPool
+      ? "id, user_id, lineup_id, created_at, entry_number, lineups ( total_score, lineup_players ( golfer_id ) ), profiles ( username )"
+      : "id, user_id, lineup_id, created_at, entry_number, lineups ( total_score ), profiles ( username )";
+
+    const entriesQ = await supabase.from("contest_entries").select(lineupSelect).eq("contest_id", contestId);
 
     let entryRows: unknown[] | null = entriesQ.data as unknown[] | null;
     let entriesErr = entriesQ.error;
@@ -84,10 +93,10 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       entriesErr &&
       (isPostgrestRelationshipOrEmbedError(entriesErr) || isMissingColumnOrSchemaError(entriesErr))
     ) {
-      const retry = await supabase
-        .from("contest_entries")
-        .select("id, user_id, lineup_id, created_at, entry_number, lineups ( total_score )")
-        .eq("contest_id", contestId);
+      const retrySelect = usesSimPool
+        ? "id, user_id, lineup_id, created_at, entry_number, lineups ( total_score, lineup_players ( golfer_id ) )"
+        : "id, user_id, lineup_id, created_at, entry_number, lineups ( total_score )";
+      const retry = await supabase.from("contest_entries").select(retrySelect).eq("contest_id", contestId);
       entryRows = retry.data as unknown[] | null;
       entriesErr = retry.error;
       usedMinimalEntrySelect = true;
@@ -103,7 +112,10 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       lineup_id?: string | null;
       created_at?: string | null;
       entry_number?: unknown;
-      lineups?: { total_score?: unknown } | { total_score?: unknown }[] | null;
+      lineups?:
+        | { total_score?: unknown; lineup_players?: { golfer_id?: unknown }[] | null }
+        | { total_score?: unknown; lineup_players?: { golfer_id?: unknown }[] | null }[]
+        | null;
       profiles?: { username?: string | null } | { username?: string | null }[] | null;
     };
 
@@ -122,10 +134,16 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       const lu = firstEmbed(r.lineups ?? null);
       const pr = firstEmbed(r.profiles ?? null);
       const en = Number((r as RawEntry).entry_number);
+      const lps = (lu as { lineup_players?: unknown } | null)?.lineup_players;
+      const hasRosterEmbed = Array.isArray(lps) && lps.length > 0;
+      const simScore =
+        usesSimPool && simByPlayer && hasRosterEmbed
+          ? entryLineupSimTotalScore(r as RawEntry, simByPlayer)
+          : null;
       return {
         id: String(r.id),
         user_id: String(r.user_id ?? ""),
-        score: num(lu?.total_score),
+        score: simScore !== null ? simScore : num(lu?.total_score),
         usernameFromEmbed: trimStr(pr?.username),
         createdAt: typeof r.created_at === "string" ? r.created_at : "",
         entryNumber: Number.isFinite(en) && en >= 1 ? Math.floor(en) : 1,

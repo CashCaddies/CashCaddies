@@ -7,7 +7,11 @@ import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
 } from "@/lib/supabase-missing-column";
-import { compareContestEntriesLiveScoring } from "@/lib/contest/get-live-leaderboard";
+import {
+  compareContestEntriesLiveScoring,
+  lineupLiveScoreFromRow,
+} from "@/lib/contest/get-live-leaderboard";
+import { contestUsesSimPool, sumSimFantasyPointsByPlayerId } from "@/lib/contest/sim-results-scoring";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
 /**
@@ -40,6 +44,7 @@ type LineupsEmbed = {
   id?: string;
   total_score?: number | string | null;
   total_salary?: number | string | null;
+  lineup_players?: { golfer_id?: unknown }[] | null;
 };
 
 type ProfilesEmbed = {
@@ -120,9 +125,18 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
 
     await ensureContestEntryProtection(supabase, id);
 
-    const selectFull = `${CONTEST_ENTRIES_READ_BASE}, lineups ( id, total_score, total_salary ), profiles ( username )`;
+    const usesSimPool = await contestUsesSimPool(supabase, id);
+    const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;
+    const simOpts =
+      usesSimPool && simByPlayer ? { usesSimPool: true as const, simByPlayer } : undefined;
 
-    const selectMinimal = `${CONTEST_ENTRIES_READ_BASE}, lineups ( id, total_score, total_salary )`;
+    const lineupEmbed = usesSimPool
+      ? "lineups ( id, total_score, total_salary, lineup_players ( golfer_id ) )"
+      : "lineups ( id, total_score, total_salary )";
+
+    const selectFull = `${CONTEST_ENTRIES_READ_BASE}, ${lineupEmbed}, profiles ( username )`;
+
+    const selectMinimal = `${CONTEST_ENTRIES_READ_BASE}, ${lineupEmbed}`;
 
     let data: unknown[] | null = null;
     let error: { message: string } | null = null;
@@ -159,7 +173,7 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       });
     }
 
-    const sorted = [...raw].sort(compareContestEntriesLiveScoring);
+    const sorted = [...raw].sort((a, b) => compareContestEntriesLiveScoring(a, b, simOpts));
 
     const rows: LeaderboardDisplayRow[] = sorted.map((row, index) => {
       const rank = index + 1;
@@ -168,8 +182,7 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       const name = trimStr(pr?.username);
       const userLabel = name || "—";
 
-      const rawScore = Number(lu?.total_score ?? 0);
-      const totalScore = Number.isFinite(rawScore) ? rawScore : 0;
+      const totalScore = lineupLiveScoreFromRow(row, simOpts);
       const rawSal = Number(lu?.total_salary ?? 0);
       const totalSalary = Number.isFinite(rawSal) ? rawSal : 0;
 

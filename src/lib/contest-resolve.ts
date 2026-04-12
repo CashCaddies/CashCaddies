@@ -1,12 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 function entryFeeDisplay(usd: number): string {
   if (!Number.isFinite(usd) || usd <= 0) return "$0";
   const rounded = Math.round(usd * 100) / 100;
   return `$${rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2)}`;
 }
+
+const DEFAULT_LINEUP_SALARY_CAP = 50_000;
 
 export type ResolvedContestForLineup = {
   id: string;
@@ -23,6 +26,10 @@ export type ResolvedContestForLineup = {
   lateSwapWindowOpen: boolean;
   /** Editing an entered lineup is allowed (pre-start or late-swap window). */
   allowEntryLineupEdit: boolean;
+  /** Synthetic pool from `sim_players` (mirrored into `golfers` for FK). */
+  usesSimPool: boolean;
+  /** Salary budget for DFS lineups (defaults to 50,000 when unset). */
+  salaryCap: number;
 };
 
 /** Server: contest row for lineup page from `contests`. */
@@ -40,16 +47,28 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
       lateSwapEnabled: true,
       lateSwapWindowOpen: false,
       allowEntryLineupEdit: true,
+      usesSimPool: false,
+      salaryCap: DEFAULT_LINEUP_SALARY_CAP,
     };
   }
 
   try {
     const supabase = await createClient();
-    const { data } = await supabase
+    let { data, error: contestLoadErr } = await supabase
       .from("contests")
-      .select("id, name, entry_fee_usd, starts_at, late_swap_enabled, status")
+      .select("id, name, entry_fee_usd, starts_at, late_swap_enabled, status, uses_sim_pool, salary_cap")
       .eq("id", contestId)
       .maybeSingle();
+
+    if (contestLoadErr && isMissingColumnOrSchemaError(contestLoadErr)) {
+      const retry = await supabase
+        .from("contests")
+        .select("id, name, entry_fee_usd, starts_at, late_swap_enabled, status")
+        .eq("id", contestId)
+        .maybeSingle();
+      data = retry.data as typeof data;
+      contestLoadErr = retry.error;
+    }
 
     if (data) {
       const entryFeeUsd = Number(data.entry_fee_usd);
@@ -65,6 +84,10 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
         status,
       });
       const allowEntryLineupEdit = !lineupLocked || lateSwapWindowOpen;
+      const usesSimPool = Boolean((data as { uses_sim_pool?: boolean | undefined }).uses_sim_pool);
+      const rawCap = Number((data as { salary_cap?: number | null | undefined }).salary_cap);
+      const salaryCap =
+        Number.isFinite(rawCap) && rawCap > 0 ? Math.floor(rawCap) : DEFAULT_LINEUP_SALARY_CAP;
       return {
         id: data.id,
         name: data.name,
@@ -75,6 +98,8 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
         lateSwapEnabled,
         lateSwapWindowOpen,
         allowEntryLineupEdit,
+        usesSimPool,
+        salaryCap,
       };
     }
   } catch {
@@ -91,6 +116,8 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
     lateSwapEnabled: true,
     lateSwapWindowOpen: false,
     allowEntryLineupEdit: true,
+    usesSimPool: false,
+    salaryCap: DEFAULT_LINEUP_SALARY_CAP,
   };
 }
 

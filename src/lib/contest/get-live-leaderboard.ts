@@ -8,16 +8,22 @@ import {
   isPostgrestRelationshipOrEmbedError,
 } from "@/lib/supabase-missing-column";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
+import {
+  contestUsesSimPool,
+  entryLineupSimTotalScore,
+  sumSimFantasyPointsByPlayerId,
+} from "@/lib/contest/sim-results-scoring";
 
 /**
  * Same tie-break order as `run_contest_payouts` (lineups.total_score desc, entry created_at asc, entry id asc).
+ * Sim contests: totals match sum of `sim_results.fantasy_points` per roster player (kept in sync on `lineups.total_score`).
  * Use for any live / in-progress leaderboard — not `contest_entry_results` (post-settlement only).
  */
-/** Per-golfer row for expandable live leaderboard (from `lineup_players` + contest `golfer_scores`). */
+/** Per-golfer row for expandable live leaderboard (from `lineup_players` + contest `golfer_scores` or `sim_results`). */
 export type LiveLineupPlayerBreakdown = {
   golferId: string;
   playerName: string;
-  /** Contest DFS points (`golfer_scores.total_score`), else `golfers.fantasy_points` fallback. */
+  /** Live: `golfer_scores.total_score`, else `golfers.fantasy_points`. Sim pool: sum of `sim_results.fantasy_points` per player. */
   score: number;
 };
 
@@ -76,18 +82,22 @@ type LineupPlayerRaw = {
 function playersForEntryRow(
   row: ContestEntryQueryRow,
   scoreByGolfer: Map<string, number>,
+  simOpts?: { usesSimPool: boolean; simByPlayer: Map<string, number> },
 ): LiveLineupPlayerBreakdown[] {
   const lu = firstEmbed(row.lineups ?? null) as { lineup_players?: LineupPlayerRaw[] | null } | null;
   const lps = lu?.lineup_players;
   if (!Array.isArray(lps) || lps.length === 0) return [];
 
+  const usesSim = Boolean(simOpts?.usesSimPool && simOpts?.simByPlayer);
+
   const withSlots = lps.map((lp, idx) => {
     const gid = String(lp.golfer_id ?? "").trim();
     const g = firstEmbed(lp.golfers ?? null);
     const name = trimStr((g as { name?: unknown } | null)?.name) || "—";
-    const fromGs = gid ? scoreByGolfer.get(gid) : undefined;
+    const fromSim = usesSim && gid ? simOpts!.simByPlayer.get(gid) : undefined;
+    const fromGs = !usesSim && gid ? scoreByGolfer.get(gid) : undefined;
     const fp = num((g as { fantasy_points?: unknown } | null)?.fantasy_points);
-    const score = fromGs !== undefined ? fromGs : fp;
+    const score = usesSim ? (fromSim !== undefined ? fromSim : 0) : fromGs !== undefined ? fromGs : fp;
     const sn = Number(lp.slot_index);
     const slotIndex = Number.isFinite(sn) ? sn : idx;
     return { slotIndex, golferId: gid, playerName: name, score };
@@ -105,12 +115,26 @@ function playersForEntryRow(
   }));
 }
 
+export function lineupLiveScoreFromRow(
+  row: ContestEntryQueryRow,
+  opts?: { usesSimPool: boolean; simByPlayer: Map<string, number> },
+): number {
+  if (opts?.usesSimPool && opts.simByPlayer) {
+    return entryLineupSimTotalScore(row, opts.simByPlayer);
+  }
+  return lineupScoreFromRow(row);
+}
+
 /**
- * Deterministic sort for live DFS standings (contest_entries + lineups.total_score).
+ * Deterministic sort for live DFS standings (contest_entries + lineups.total_score, or sim_results sum for sim contests).
  */
-export function compareContestEntriesLiveScoring(a: ContestEntryQueryRow, b: ContestEntryQueryRow): number {
-  const scoreA = lineupScoreFromRow(a);
-  const scoreB = lineupScoreFromRow(b);
+export function compareContestEntriesLiveScoring(
+  a: ContestEntryQueryRow,
+  b: ContestEntryQueryRow,
+  opts?: { usesSimPool: boolean; simByPlayer: Map<string, number> },
+): number {
+  const scoreA = lineupLiveScoreFromRow(a, opts);
+  const scoreB = lineupLiveScoreFromRow(b, opts);
   if (scoreB !== scoreA) return scoreB - scoreA;
   const ta = Date.parse(a.created_at ?? "") || 0;
   const tb = Date.parse(b.created_at ?? "") || 0;
@@ -154,6 +178,11 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
     }
 
     await ensureContestEntryProtection(supabase, contestId);
+
+    const usesSimPool = await contestUsesSimPool(supabase, contestId);
+    const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;
+    const simOpts =
+      usesSimPool && simByPlayer ? { usesSimPool: true as const, simByPlayer } : undefined;
 
     const selectWithPlayers = `${CONTEST_ENTRIES_READ_BASE}, lineups ( ${LINEUPS_WITH_PLAYERS} ), profiles ( username )`;
     const selectFull = `${CONTEST_ENTRIES_READ_BASE}, lineups ( total_score ), profiles ( username )`;
@@ -199,16 +228,18 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
       });
     }
 
-    const gsRes = await supabase.from("golfer_scores").select("golfer_id, total_score").eq("contest_id", contestId);
     const scoreByGolfer = new Map<string, number>();
-    if (!gsRes.error) {
-      for (const gs of gsRes.data ?? []) {
-        const gid = String((gs as { golfer_id?: string }).golfer_id ?? "");
-        if (gid) scoreByGolfer.set(gid, num((gs as { total_score?: unknown }).total_score));
+    if (!usesSimPool) {
+      const gsRes = await supabase.from("golfer_scores").select("golfer_id, total_score").eq("contest_id", contestId);
+      if (!gsRes.error) {
+        for (const gs of gsRes.data ?? []) {
+          const gid = String((gs as { golfer_id?: string }).golfer_id ?? "");
+          if (gid) scoreByGolfer.set(gid, num((gs as { total_score?: unknown }).total_score));
+        }
       }
     }
 
-    const sorted = [...raw].sort(compareContestEntriesLiveScoring);
+    const sorted = [...raw].sort((a, b) => compareContestEntriesLiveScoring(a, b, simOpts));
 
     const rows: LiveLeaderboardRow[] = sorted.map((row, i) => {
       const pr = firstEmbed(row.profiles ?? null);
@@ -218,9 +249,9 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
         entryId: String(row.id ?? ""),
         userId: String(row.user_id ?? ""),
         username: name || "—",
-        totalScore: lineupScoreFromRow(row),
+        totalScore: lineupLiveScoreFromRow(row, simOpts),
         createdAt: typeof row.created_at === "string" ? row.created_at : null,
-        players: playersForEntryRow(row, scoreByGolfer),
+        players: playersForEntryRow(row, scoreByGolfer, simOpts),
       };
     });
 

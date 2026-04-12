@@ -13,8 +13,13 @@ import type { DraftLineupEditorData } from "@/lib/lineup-draft-load";
 import { supabase } from "@/lib/supabase/client";
 import { LineupPlayerCard } from "@/components/player-card";
 
-const SALARY_CAP = 50_000;
+const DEFAULT_SALARY_CAP = 50_000;
 const ROSTER_MAX = 6;
+
+function num(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
 
 type Props = {
   /** When set, loaded from My Lineups â€” save updates this draft instead of creating a new row. */
@@ -27,6 +32,10 @@ type Props = {
   contestLineupLocked?: boolean;
   /** When set, user cannot add another paid entry (e.g. per-user max); disables pay & shows banner. */
   payEntryBlockedBanner?: string | null;
+  /** Synthetic sim contest: roster from `sim_players` (same ids as mirrored `golfers`). */
+  usesSimPool?: boolean;
+  /** DFS salary budget (defaults to 50,000). */
+  salaryCap?: number;
 };
 
 function formatMoneyUsd(n: number) {
@@ -60,7 +69,13 @@ export function LineupBuilder({
   entryFeeUsd,
   contestLineupLocked = false,
   payEntryBlockedBanner = null,
+  usesSimPool = false,
+  salaryCap: salaryCapProp,
 }: Props) {
+  const salaryCap =
+    salaryCapProp != null && Number.isFinite(salaryCapProp) && salaryCapProp > 0
+      ? Math.floor(salaryCapProp)
+      : DEFAULT_SALARY_CAP;
   const router = useRouter();
   const [golfers, setGolfers] = useState<GolferRow[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -96,6 +111,50 @@ export function LineupBuilder({
       }
 
       if (!cancelled) setLoadingGolfers(true);
+
+      if (usesSimPool) {
+        const { data: players, error: pErr } = await supabase
+          .from("sim_players")
+          .select("id,name,salary,rating")
+          .order("salary", { ascending: false });
+
+        if (cancelled) return;
+
+        if (pErr) {
+          setLoadError(pErr.message);
+          setGolfers([]);
+          setLoadingGolfers(false);
+          return;
+        }
+
+        const ids = (players ?? []).map((p) => p.id).filter(Boolean);
+        const fpById = new Map<string, number>();
+        if (ids.length > 0) {
+          const { data: simRows } = await supabase.from("sim_results").select("player_id, fantasy_points");
+          if (!cancelled && simRows) {
+            for (const r of simRows) {
+              const pid = String((r as { player_id?: string }).player_id ?? "").trim();
+              if (!pid) continue;
+              fpById.set(pid, (fpById.get(pid) ?? 0) + num((r as { fantasy_points?: unknown }).fantasy_points));
+            }
+          }
+        }
+
+        if (cancelled) return;
+
+        const mapped: GolferRow[] = (players ?? []).map((p) => ({
+          id: p.id,
+          name: p.name ?? "",
+          salary: num(p.salary),
+          fantasy_points: fpById.get(p.id) ?? 0,
+          withdrawn: false,
+        }));
+        setLoadError(null);
+        setGolfers(mapped);
+        setLoadingGolfers(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("golfers")
         .select("id,name,salary,fantasy_points,withdrawn")
@@ -117,7 +176,7 @@ export function LineupBuilder({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [usesSimPool]);
 
   useEffect(() => {
     hydratedEditRef.current = false;
@@ -172,10 +231,10 @@ export function LineupBuilder({
   }, [golferById, selectedIds]);
 
   const salaryUsed = selectedGolfers.reduce((sum, g) => sum + g.salary, 0);
-  const remainingSalary = SALARY_CAP - salaryUsed;
+  const remainingSalary = salaryCap - salaryUsed;
   const rosterCount = selectedGolfers.length;
   const rosterFull = rosterCount >= ROSTER_MAX;
-  const salaryCapExceeded = salaryUsed > SALARY_CAP;
+  const salaryCapExceeded = salaryUsed > salaryCap;
 
   const validation = useMemo(() => {
     const errors: string[] = [];
@@ -258,7 +317,7 @@ export function LineupBuilder({
           (sum, id, j) => sum + (j === i ? 0 : (golferById.get(id)?.salary ?? 0)),
           0,
         );
-        if (used + salary > SALARY_CAP) return prev;
+        if (used + salary > salaryCap) return prev;
         const next = [...prev];
         next[i] = golferId;
         return next;
@@ -271,7 +330,7 @@ export function LineupBuilder({
       if (prev.includes(golferId)) return prev;
       if (prev.length >= ROSTER_MAX) return prev;
       const used = prev.reduce((sum, id) => sum + (golferById.get(id)?.salary ?? 0), 0);
-      if (used + salary > SALARY_CAP) return prev;
+      if (used + salary > salaryCap) return prev;
       return [...prev, golferId];
     });
   }
@@ -347,7 +406,7 @@ export function LineupBuilder({
       setEntryStatus("Invalid lineup: select exactly 6 golfers.");
       return;
     }
-    if (salaryUsed > SALARY_CAP) {
+    if (salaryUsed > salaryCap) {
       setEntryStatus("Salary cap exceeded");
       return;
     }
@@ -416,7 +475,7 @@ export function LineupBuilder({
               Salary cap
             </p>
             <p className="mt-1 text-2xl font-black tabular-nums text-white">
-              ${SALARY_CAP.toLocaleString()}
+              ${salaryCap.toLocaleString()}
             </p>
           </div>
           <div className="bg-[#141920] px-4 py-4 sm:px-5">
@@ -455,7 +514,7 @@ export function LineupBuilder({
                 ? "bg-gradient-to-r from-red-700 to-red-500"
                 : "bg-gradient-to-r from-[#1f8a3b] to-[#53d769]"
             }`}
-            style={{ width: `${Math.min(100, (salaryUsed / SALARY_CAP) * 100)}%` }}
+            style={{ width: `${Math.min(100, (salaryUsed / salaryCap) * 100)}%` }}
           />
         </div>
         {salaryCapExceeded && (
@@ -605,7 +664,7 @@ export function LineupBuilder({
                     projectedSalaryUsed = salaryUsed + golfer.salary;
                   }
 
-                  const wouldExceedCap = projectedSalaryUsed > SALARY_CAP;
+                  const wouldExceedCap = projectedSalaryUsed > salaryCap;
                   const addDisabled =
                     (inLineup && !(replaceMode && atReplaceSlot)) ||
                     (!inLineup && rosterFull && !replaceMode) ||
@@ -738,7 +797,7 @@ export function LineupBuilder({
             {canSaveLineup ? (
               <div className="space-y-1.5">
                 <p className="font-medium">
-                  Ready to save â€” 6 players, salary at or under ${SALARY_CAP.toLocaleString()}.
+                  Ready to save â€” 6 players, salary at or under ${salaryCap.toLocaleString()}.
                 </p>
                 {!validation.ok && (
                   <p className="text-[11px] leading-snug text-amber-200/95">

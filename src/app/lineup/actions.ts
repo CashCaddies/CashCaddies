@@ -23,9 +23,34 @@ import {
 import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
+import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
-const SALARY_CAP = 50_000;
+const DEFAULT_LINEUP_SALARY_CAP = 50_000;
 const ROSTER_MAX = 6;
+
+async function getContestLineupConstraints(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  contestId: string | null | undefined,
+): Promise<{ usesSimPool: boolean; salaryCap: number }> {
+  if (!contestId) {
+    return { usesSimPool: false, salaryCap: DEFAULT_LINEUP_SALARY_CAP };
+  }
+  const { data, error } = await supabase
+    .from("contests")
+    .select("uses_sim_pool, salary_cap")
+    .eq("id", contestId)
+    .maybeSingle();
+  if (error && isMissingColumnOrSchemaError(error)) {
+    return { usesSimPool: false, salaryCap: DEFAULT_LINEUP_SALARY_CAP };
+  }
+  if (error || !data) {
+    return { usesSimPool: false, salaryCap: DEFAULT_LINEUP_SALARY_CAP };
+  }
+  const usesSimPool = Boolean((data as { uses_sim_pool?: boolean }).uses_sim_pool);
+  const sc = Number((data as { salary_cap?: number | null }).salary_cap);
+  const salaryCap = Number.isFinite(sc) && sc > 0 ? Math.floor(sc) : DEFAULT_LINEUP_SALARY_CAP;
+  return { usesSimPool, salaryCap };
+}
 
 type GolferDbRow = { id: string; name: string; salary: number };
 
@@ -95,6 +120,8 @@ export async function submitLineup(payload: {
     return { ok: false, error: "Choose a contest from the lobby before submitting." };
   }
 
+  const lineupConstraints = await getContestLineupConstraints(supabase, contestId);
+
   const { locked: contestLocked } = await getContestLineupLockState(supabase, contestId);
   if (contestLocked) {
     return { ok: false, error: contestLockErrorMessage() };
@@ -133,8 +160,18 @@ export async function submitLineup(payload: {
     totalSalary += row.salary;
   }
 
-  if (totalSalary > SALARY_CAP) {
-    return { ok: false, error: "Lineup cannot exceed the $50,000 salary cap." };
+  if (lineupConstraints.usesSimPool) {
+    const { data: simOk, error: simErr } = await supabase.from("sim_players").select("id").in("id", ids);
+    if (simErr || !simOk || simOk.length !== ROSTER_MAX) {
+      return { ok: false, error: "Each pick must be from this contest’s player pool." };
+    }
+  }
+
+  if (totalSalary > lineupConstraints.salaryCap) {
+    return {
+      ok: false,
+      error: `Lineup cannot exceed the $${lineupConstraints.salaryCap.toLocaleString()} salary cap.`,
+    };
   }
 
   /** Automatic protection is included in the entry fee split. */
@@ -327,6 +364,8 @@ export async function saveLineupDraft(payload: {
     }
   }
 
+  const lineupConstraints = await getContestLineupConstraints(supabase, resolvedContestId);
+
   const submitted = payload.golfers;
   if (!Array.isArray(submitted) || submitted.length !== ROSTER_MAX) {
     return { ok: false, error: "Lineup must include exactly 6 golfers." };
@@ -360,8 +399,18 @@ export async function saveLineupDraft(payload: {
     totalSalary += row.salary;
   }
 
-  if (totalSalary > SALARY_CAP) {
-    return { ok: false, error: "Lineup cannot exceed the $50,000 salary cap." };
+  if (lineupConstraints.usesSimPool) {
+    const { data: simOk, error: simErr } = await supabase.from("sim_players").select("id").in("id", ids);
+    if (simErr || !simOk || simOk.length !== ROSTER_MAX) {
+      return { ok: false, error: "Each pick must be from this contest’s player pool." };
+    }
+  }
+
+  if (totalSalary > lineupConstraints.salaryCap) {
+    return {
+      ok: false,
+      error: `Lineup cannot exceed the $${lineupConstraints.salaryCap.toLocaleString()} salary cap.`,
+    };
   }
 
   const totalSalaryInt = Math.round(totalSalary);
@@ -554,6 +603,8 @@ export async function editContestEntryLineup(payload: {
     return { ok: false, error: "This lineup is for a different contest." };
   }
 
+  const lineupConstraints = await getContestLineupConstraints(supabase, contestId);
+
   const submitted = payload.golfers;
   if (!Array.isArray(submitted) || submitted.length !== ROSTER_MAX) {
     return { ok: false, error: "Lineup must include exactly 6 golfers." };
@@ -587,8 +638,18 @@ export async function editContestEntryLineup(payload: {
     totalSalary += row.salary;
   }
 
-  if (totalSalary > SALARY_CAP) {
-    return { ok: false, error: "Lineup cannot exceed the $50,000 salary cap." };
+  if (lineupConstraints.usesSimPool) {
+    const { data: simOk, error: simErr } = await supabase.from("sim_players").select("id").in("id", ids);
+    if (simErr || !simOk || simOk.length !== ROSTER_MAX) {
+      return { ok: false, error: "Each pick must be from this contest’s player pool." };
+    }
+  }
+
+  if (totalSalary > lineupConstraints.salaryCap) {
+    return {
+      ok: false,
+      error: `Lineup cannot exceed the $${lineupConstraints.salaryCap.toLocaleString()} salary cap.`,
+    };
   }
 
   const totalSalaryInt = Math.round(totalSalary);

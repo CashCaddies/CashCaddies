@@ -96,7 +96,7 @@ export default async function LineupPage(props: LineupPageProps) {
             </Link>
           </p>
           <p className="mt-1 text-sm text-[#c5cdd5]">
-            Pick 6 golfers · $50,000 salary cap · Saving updates this draft
+            Pick 6 golfers · ${resolved.salaryCap.toLocaleString()} salary cap · Saving updates this draft
           </p>
         </div>
         <LineupBuilder
@@ -107,6 +107,8 @@ export default async function LineupPage(props: LineupPageProps) {
           entryFeeUsd={resolved.entryFeeUsd}
           contestLineupLocked={resolved.lineupLocked}
           payEntryBlockedBanner={payEntryBlockedBanner}
+          usesSimPool={resolved.usesSimPool}
+          salaryCap={resolved.salaryCap}
         />
       </div>
     );
@@ -235,6 +237,8 @@ export default async function LineupPage(props: LineupPageProps) {
           entryFeeUsd={resolved.entryFeeUsd}
           contestLineupLocked={resolved.lineupLocked}
           payEntryBlockedBanner={payEntryBlockedBanner}
+          usesSimPool={resolved.usesSimPool}
+          salaryCap={resolved.salaryCap}
         />
       </div>
     );
@@ -263,7 +267,7 @@ export default async function LineupPage(props: LineupPageProps) {
           </Link>
         </p>
         <p className="mt-1 text-sm text-[#c5cdd5]">
-          Pick 6 golfers · $50,000 salary cap · Your roster saves to Supabase
+          Pick 6 golfers · ${resolved.salaryCap.toLocaleString()} salary cap · Your roster saves to Supabase
         </p>
       </div>
       <LineupBuilder
@@ -274,6 +278,8 @@ export default async function LineupPage(props: LineupPageProps) {
         entryFeeUsd={resolved.entryFeeUsd}
         contestLineupLocked={resolved.lineupLocked}
         payEntryBlockedBanner={payEntryBlockedBanner}
+        usesSimPool={resolved.usesSimPool}
+        salaryCap={resolved.salaryCap}
       />
     </div>
   );
