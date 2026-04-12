@@ -11,8 +11,6 @@ export type TriggerAutoContestSettlementResult =
       contestName: string;
       prizePoolUsd: number;
       entryCount: number;
-      distributedUsd: number;
-      payoutCount: number;
     }
   | { ok: false; error: string };
 
@@ -86,7 +84,5 @@ export async function triggerAutoContestSettlement(adminSecret: string): Promise
     contestName,
     prizePoolUsd: data.prize_pool_usd,
     entryCount: data.entry_count,
-    distributedUsd: data.distributed_usd,
-    payoutCount: data.payouts.length,
   };
 }

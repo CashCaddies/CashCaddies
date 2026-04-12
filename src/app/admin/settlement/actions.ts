@@ -10,8 +10,6 @@ export type RunContestSettlementResult =
       contestId: string;
       prizePoolUsd: number;
       entryCount: number;
-      distributedUsd: number;
-      payoutCount: number;
     }
   | { ok: false; error: string };
 
@@ -51,7 +49,5 @@ export async function runContestSettlement(formData: FormData): Promise<RunConte
     contestId: data.contest_id,
     prizePoolUsd: data.prize_pool_usd,
     entryCount: data.entry_count,
-    distributedUsd: data.distributed_usd,
-    payoutCount: data.payouts.length,
   };
 }

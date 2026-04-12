@@ -3,20 +3,12 @@ import { createServiceRoleClient } from "@/lib/supabase/admin";
 /** Legacy hint for auto-settlement UI (prefer filtering by `contests.status === 'complete'`). */
 export const CONTEST_SETTLEMENT_AFTER_START_MS = 3 * 24 * 60 * 60 * 1000;
 
-export type ContestPayoutLine = {
-  user_id: string;
-  rank_place: number;
-  amount_usd: number;
-  payout_pct: number;
-};
-
-export type SettleContestPrizesPayload = {
-  ok: true;
+/** Successful `settle_contest_prizes` RPC payload (contest-level row only; no per-user payouts yet). */
+export type SettlementResponse = {
+  ok: boolean;
   contest_id: string;
-  prize_pool_usd: number;
   entry_count: number;
-  distributed_usd: number;
-  payouts: ContestPayoutLine[];
+  prize_pool_usd: number;
 };
 
 type RpcRow = {
@@ -25,34 +17,14 @@ type RpcRow = {
   contest_id?: string;
   prize_pool_usd?: number;
   entry_count?: number;
-  distributed_usd?: number;
-  payouts?: unknown;
 };
 
-function parsePayoutLines(raw: unknown): ContestPayoutLine[] {
-  if (!Array.isArray(raw)) return [];
-  const out: ContestPayoutLine[] = [];
-  for (const x of raw) {
-    if (x && typeof x === "object") {
-      const o = x as Record<string, unknown>;
-      out.push({
-        user_id: String(o.user_id ?? ""),
-        rank_place: Math.floor(Number(o.rank_place ?? 0)),
-        amount_usd: Number(o.amount_usd ?? 0),
-        payout_pct: Number(o.payout_pct ?? 0),
-      });
-    }
-  }
-  return out;
-}
-
 /**
- * Runs DB `settle_contest_prizes`: writes one `contest_settlements` row (prize pool = 90% of sum(entry_fee),
- * `distributed_usd` mirrors pool for now). No per-user wallet credits yet. Idempotent via `contest_settlements`.
+ * Runs DB `settle_contest_prizes` with `{ p_contest_id }`. Writes one `contest_settlements` row; no wallet credits yet.
  */
 export async function settleContestPrizes(
   contestId: string,
-): Promise<{ ok: true; data: SettleContestPrizesPayload } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: SettlementResponse } | { ok: false; error: string }> {
   const id = contestId.trim();
   if (!id) {
     return { ok: false, error: "Missing contest id." };
@@ -85,8 +57,6 @@ export async function settleContestPrizes(
       contest_id: String(row.contest_id ?? id),
       prize_pool_usd: Number(row.prize_pool_usd ?? 0),
       entry_count: Math.floor(Number(row.entry_count ?? 0)),
-      distributed_usd: Number(row.distributed_usd ?? 0),
-      payouts: parsePayoutLines(row.payouts),
     },
   };
 }

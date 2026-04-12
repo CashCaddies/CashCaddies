@@ -79,9 +79,8 @@ export function AdminSettlementForm({ contests }: Props) {
         >
           {result.ok ? (
             <>
-              Settled <span className="font-mono">{result.contestId}</span>. Prize pool $
-              {result.prizePoolUsd.toFixed(2)}, {result.entryCount} entries, distributed $
-              {result.distributedUsd.toFixed(2)} across {result.payoutCount} payout(s).
+              Settled <span className="font-mono">{result.contestId}</span>. Recorded prize pool $
+              {result.prizePoolUsd.toFixed(2)}, {result.entryCount} entries (contest-level settlement only).
             </>
           ) : (
             result.error

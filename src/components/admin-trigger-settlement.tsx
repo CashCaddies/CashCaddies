@@ -13,8 +13,8 @@ export function AdminTriggerSettlement() {
       <h2 className="text-lg font-semibold text-white">Trigger contest settlement</h2>
       <p className="mt-2 text-sm text-slate-400">
         Runs prize settlement on the <span className="text-slate-300">earliest eligible</span> contest: not yet
-        settled, at least 3 days after start, with entries and payout structure. Pool uses{" "}
-        <span className="text-slate-300">90%</span> of entry fees; credits winners via{" "}
+        settled, status <span className="text-slate-300">complete</span>. Records one{" "}
+        <span className="font-mono text-slate-400">contest_settlements</span> row via{" "}
         <span className="font-mono text-slate-400">settle_contest_prizes</span> (same as{" "}
         <a href="/admin/settlement" className="text-emerald-400 underline hover:text-emerald-300">
           Contest settlement
@@ -60,9 +60,8 @@ export function AdminTriggerSettlement() {
         >
           {result.ok ? (
             <>
-              Settled <span className="font-semibold">{result.contestName}</span>. Pool $
-              {result.prizePoolUsd.toFixed(2)}, {result.entryCount} entries, distributed $
-              {result.distributedUsd.toFixed(2)} across {result.payoutCount} payout(s).
+              Settled <span className="font-semibold">{result.contestName}</span>. Recorded pool $
+              {result.prizePoolUsd.toFixed(2)}, {result.entryCount} entries (contest-level only).
             </>
           ) : (
             result.error
