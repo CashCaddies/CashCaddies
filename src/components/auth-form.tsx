@@ -94,6 +94,40 @@ export function AuthForm({ mode }: Props) {
     }
   }
 
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    if (!supabase) {
+      setStatusIsError(true);
+      setStatus("Missing Supabase env vars. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      console.error(error);
+      setLoading(false);
+      return;
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session) {
+      window.location.href = "/dashboard";
+    } else {
+      setLoading(false);
+    }
+  };
+
   async function resendConfirmation() {
     setResendMsg("");
     if (!supabase) {
@@ -138,34 +172,10 @@ export function AuthForm({ mode }: Props) {
       return;
     }
 
-    let authData: Awaited<ReturnType<typeof supabase.auth.signUp>>["data"];
-    let authError: Awaited<ReturnType<typeof supabase.auth.signUp>>["error"];
-
-    if (mode === "login") {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        console.log("AUTH RESULT:", data, error);
-        authData = data;
-        authError = error;
-      } catch (e) {
-        console.error("AUTH ERROR:", e);
-        setStatusIsError(true);
-        setStatus(
-          e instanceof Error
-            ? e.message
-            : "Network error while signing in. Check Supabase URL and your connection.",
-        );
-        setLoading(false);
-        return;
-      }
-    } else {
-      const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
-      authData = data;
-      authError = error;
-    }
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
 
     if (authError) {
       setStatusIsError(true);
@@ -178,15 +188,7 @@ export function AuthForm({ mode }: Props) {
       return;
     }
 
-    if (mode === "login" && !authError && authData?.user) {
-      setStatus("Logged in. Redirecting...");
-      router.push("/dashboard");
-      router.refresh();
-      setLoading(false);
-      return;
-    }
-
-    if (mode === "signup" && authData.user) {
+    if (authData.user) {
       if (!authData.session) {
         setSignupSuccess(true);
         setLoading(false);
@@ -259,7 +261,10 @@ export function AuthForm({ mode }: Props) {
         </div>
       ) : (
         <>
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <form
+            className="mt-6 space-y-4"
+            onSubmit={mode === "login" ? handleLogin : handleSubmit}
+          >
             <label className="block space-y-2">
               <span className="text-sm text-slate-300">Email</span>
               <input
