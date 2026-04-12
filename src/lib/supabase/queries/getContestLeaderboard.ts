@@ -44,7 +44,7 @@ function firstEmbed<T>(raw: T | T[] | null | undefined): T | null {
  * Entries ordered like `settle_contest_prizes`: `contest_entries.created_at` asc, then entry id.
  * Display score comes from the lineup when present but does not determine rank or prizes.
  * `winnings` is the computed USD share when settled; otherwise `null` (amount still computed internally).
- * Prize pool: `entry_fee_usd × entry_count × 0.90`.
+ * Prize pool (display): `0.90 × sum(contest_entries.entry_fee)` to match `settle_contest_prizes`.
  */
 export async function getContestLeaderboard(contestIdRaw: string): Promise<GetContestLeaderboardResult> {
   unstable_noStore();
@@ -63,7 +63,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
     const { data: contest, error: contestErr } = await supabase
       .from("contests")
-      .select("id, status, entry_fee_usd")
+      .select("id, status")
       .eq("id", contestId)
       .maybeSingle();
 
@@ -73,13 +73,11 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
     const settled = String(contest.status ?? "").toLowerCase().trim() === "settled";
 
-    const entryFee = num((contest as { entry_fee_usd?: unknown }).entry_fee_usd);
-
     const [{ data: payoutRows }, entriesQ] = await Promise.all([
       supabase.from("contest_payouts").select("rank_place, payout_pct").eq("contest_id", contestId),
       supabase
         .from("contest_entries")
-        .select("id, user_id, lineup_id, created_at, lineups ( total_score ), profiles ( username )")
+        .select("id, user_id, lineup_id, created_at, entry_fee, lineups ( total_score ), profiles ( username )")
         .eq("contest_id", contestId),
     ]);
 
@@ -93,7 +91,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
     ) {
       const retry = await supabase
         .from("contest_entries")
-        .select("id, user_id, lineup_id, created_at, lineups ( total_score )")
+        .select("id, user_id, lineup_id, created_at, entry_fee, lineups ( total_score )")
         .eq("contest_id", contestId);
       entryRows = retry.data as unknown[] | null;
       entriesErr = retry.error;
@@ -109,6 +107,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       user_id: string;
       lineup_id?: string | null;
       created_at?: string | null;
+      entry_fee?: unknown;
       lineups?: { total_score?: unknown } | { total_score?: unknown }[] | null;
       profiles?: { username?: string | null } | { username?: string | null }[] | null;
     };
@@ -169,8 +168,8 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       return a.id.localeCompare(b.id);
     });
 
-    const nEntries = scored.length;
-    const prizePool = Math.round(entryFee * nEntries * 0.9 * 100) / 100;
+    const sumEntryFees = raw.reduce((acc, r) => acc + num((r as RawEntry).entry_fee), 0);
+    const prizePool = Math.round(sumEntryFees * 0.9 * 100) / 100;
 
     const payoutByPlace = new Map<number, number>();
     for (const p of payoutRows ?? []) {

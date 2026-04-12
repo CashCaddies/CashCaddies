@@ -47,9 +47,8 @@ function parsePayoutLines(raw: unknown): ContestPayoutLine[] {
 }
 
 /**
- * Runs DB `settle_contest_prizes`: requires `contests.status = 'complete'`; entry order is
- * `contest_entries.created_at` asc (then id), not lineup scores; `contest_payouts` percentages of prize pool (90% of gross entry fees);
- * credits `profiles.account_balance` and `transactions` (`contest_prize`). Idempotent via `contest_settlements`.
+ * Runs DB `settle_contest_prizes`: writes one `contest_settlements` row (prize pool = 90% of sum(entry_fee),
+ * `distributed_usd` mirrors pool for now). No per-user wallet credits yet. Idempotent via `contest_settlements`.
  */
 export async function settleContestPrizes(
   contestId: string,
