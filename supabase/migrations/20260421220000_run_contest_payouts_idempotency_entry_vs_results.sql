@@ -1,33 +1,4 @@
--- Payout distribution AFTER settlement: uses contest_settlements.prize_pool_usd + contest_payouts (rank_place, payout_pct).
--- Does not modify settle_contest_prizes. Rankings from lineups.total_score (then created_at, id).
-
-create table if not exists public.contest_entry_results (
-  id uuid primary key default gen_random_uuid(),
-  contest_id text not null,
-  entry_id uuid not null,
-  user_id uuid not null,
-  "rank" integer not null,
-  winnings_usd numeric not null,
-  created_at timestamptz not null default now(),
-  constraint contest_entry_results_winnings_usd_check check (winnings_usd >= 0),
-  constraint contest_entry_results_rank_check check (("rank" >= 1) and ("rank" <= 500)),
-  constraint contest_entry_results_entry_id_fkey foreign key (entry_id) references public.contest_entries (id) on delete cascade,
-  constraint contest_entry_results_contest_entry_unique unique (contest_id, entry_id)
-);
-
-create index if not exists contest_entry_results_contest_id_idx on public.contest_entry_results (contest_id);
-
-comment on table public.contest_entry_results is
-  'Per-entry payout breakdown after settlement; written by run_contest_payouts (idempotent per contest).';
-
-alter table public.contest_entry_results owner to postgres;
-
-alter table public.contest_entry_results enable row level security;
-
-grant select on table public.contest_entry_results to anon, authenticated;
-grant all on table public.contest_entry_results to service_role;
-
-drop function if exists public.run_contest_payouts(text);
+-- Re-apply run_contest_payouts: idempotency uses least(entries, payout places).
 
 create or replace function public.run_contest_payouts(p_contest_id text)
 returns jsonb
@@ -141,12 +112,3 @@ begin
   );
 end;
 $$;
-
-alter function public.run_contest_payouts(text) owner to postgres;
-
-comment on function public.run_contest_payouts(text) is
-  'After settlement: allocate contest_settlements.prize_pool_usd by contest_payouts.rank_place / payout_pct into contest_entry_results. Idempotent.';
-
-grant all on function public.run_contest_payouts(text) to anon;
-grant all on function public.run_contest_payouts(text) to authenticated;
-grant all on function public.run_contest_payouts(text) to service_role;
