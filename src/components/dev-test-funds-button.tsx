@@ -34,7 +34,7 @@ export function DevTestFundsButton({ onSuccess }: Props) {
             void (async () => {
               const r = await addDevTestFunds100();
               if (r.ok) {
-                setMessage(`Balance updated to ${r.accountBalance.toFixed(2)}.`);
+                setMessage(`Account balance updated to ${r.accountBalance.toFixed(2)}.`);
                 onSuccess();
                 return;
               }

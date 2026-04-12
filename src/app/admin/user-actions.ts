@@ -107,7 +107,7 @@ export async function grantBetaFunds(user_id: string, amount: number): Promise<G
     };
   }
 
-  // Cross-user funding (admin control panel): equivalent ledger + balance update.
+  // Cross-user funding (admin control panel): equivalent ledger + account_balance update.
   const admin = createServiceRoleClient();
   if (!admin) {
     return { ok: false, error: "Server role is not configured." };

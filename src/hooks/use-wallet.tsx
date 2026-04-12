@@ -20,7 +20,7 @@ import {
 
 /**
  * Auth user merged with `public.profiles.role` (defaults to `"user"` when missing).
- * Use `fullUser.role` for admin checks â€” never `user.role` from auth alone.
+ * Use `fullUser.role` for admin checks — never `user.role` from auth alone.
  */
 export type FullUser = User & {
   role: string;
@@ -41,12 +41,12 @@ const WalletContext = createContext<WalletContextValue | null>(null);
 
 let refreshWalletImpl: (() => Promise<void>) | null = null;
 
-/** Call after balance changes from any screen; updates header + all `useWallet()` consumers. */
+/** Call after account_balance changes from any screen; updates header + all `useWallet()` consumers. */
 export async function refreshWallet(): Promise<void> {
   await refreshWalletImpl?.();
 }
 
-/** Same as {@link refreshWallet} â€” refetch `profiles` row (wallet_balance / account_balance) after mutations. */
+/** Same as {@link refreshWallet} — refetch `profiles` row (wallet_balance / account_balance) after mutations. */
 export async function fetchWallet(): Promise<void> {
   return refreshWallet();
 }

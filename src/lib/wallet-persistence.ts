@@ -10,7 +10,7 @@ const ENVELOPE_VERSION = 1 as const;
 type BalanceEnvelope = {
   v: typeof ENVELOPE_VERSION;
   userId: string;
-  balance: number;
+  account_balance: number;
 };
 
 type TransactionsEnvelope = {
@@ -51,16 +51,16 @@ export function readPersistedWalletBalance(userId: string): number | null {
   if (!userId) return null;
   const data = readJson(WALLET_BALANCE_STORAGE_KEY);
   if (!data || typeof data !== "object") return null;
-  const o = data as Partial<BalanceEnvelope>;
+  const o = data as Partial<BalanceEnvelope> & { balance?: unknown };
   if (o.v !== ENVELOPE_VERSION || typeof o.userId !== "string" || o.userId !== userId) return null;
-  const b = safeWalletNumber(o.balance);
+  const b = safeWalletNumber(o.account_balance ?? o.balance);
   return b;
 }
 
-export function writePersistedWalletBalance(userId: string, balance: number): void {
+export function writePersistedWalletBalance(userId: string, account_balance: number): void {
   if (!userId) return;
-  const b = safeWalletNumber(balance);
-  const payload: BalanceEnvelope = { v: ENVELOPE_VERSION, userId, balance: b };
+  const b = safeWalletNumber(account_balance);
+  const payload: BalanceEnvelope = { v: ENVELOPE_VERSION, userId, account_balance: b };
   writeJson(WALLET_BALANCE_STORAGE_KEY, payload);
 }
 

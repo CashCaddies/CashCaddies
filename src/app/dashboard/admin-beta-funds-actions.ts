@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 export type AddAdminBetaFundsResult =
-  | { ok: true; walletBalance: number }
+  | { ok: true; accountBalance: number }
   | { ok: false; error: string };
 
 const ALLOWED_BETA_FUND_AMOUNTS = [10, 50, 100] as const;
@@ -40,11 +40,11 @@ export async function addAdminBetaFunds(amount: number): Promise<AddAdminBetaFun
     return { ok: false, error: "Unexpected response from wallet." };
   }
 
-  const walletBalance =
+  const accountBalance =
     typeof row.wallet_balance === "number" ? row.wallet_balance : Number(row.wallet_balance);
-  if (!Number.isFinite(walletBalance)) {
+  if (!Number.isFinite(accountBalance)) {
     return { ok: false, error: "Unexpected response from wallet." };
   }
 
-  return { ok: true, walletBalance };
+  return { ok: true, accountBalance };
 }

@@ -110,7 +110,7 @@ const PAYMENTS_ITEMS = [
     question: "How do withdrawals work?",
     answer: (
       <>
-        <p>Users can request withdrawals from their available balance.</p>
+        <p>Users can request withdrawals from their available account balance.</p>
         <p className="mt-3">Typical processing time: 24-72 hours.</p>
         <p>
           During beta, processing may occasionally take longer while we continue improving systems.

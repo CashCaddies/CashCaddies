@@ -163,7 +163,7 @@ export function ProtectionClaimControls({
                   <p className="font-semibold text-white">Refund entry fee to account balance</p>
                   <p className="text-xs text-slate-500">
                     Returns the contest entry fee to your <span className="font-medium text-slate-400">cash</span>{" "}
-                    balance (same service-role requirement as site credits).
+                    account balance (same service-role requirement as site credits).
                   </p>
                 </div>
               </label>

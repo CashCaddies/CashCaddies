@@ -99,16 +99,21 @@ begin
     return jsonb_build_object('ok', false, 'error', 'invalid_status');
   end if;
 
-  perform 1 from public.profiles p where p.id = v_user_id for update;
+  -- Serialize balance changes per user (financial safety).
+  perform 1
+  from public.profiles
+  where id = v_user_id
+  for update;
+
   if not found then
     return jsonb_build_object('ok', false, 'error', 'profile_not_found');
   end if;
 
-  update public.profiles p
+  update public.profiles
   set
-    account_balance = round(coalesce(p.account_balance, 0)::numeric + v_amount, 2),
+    account_balance = round(coalesce(account_balance, 0)::numeric + v_amount, 2),
     updated_at = now()
-  where p.id = v_user_id;
+  where id = v_user_id;
 
   update public.wallet_transactions wt
   set status = 'completed'

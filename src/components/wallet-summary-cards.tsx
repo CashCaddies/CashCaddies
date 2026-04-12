@@ -42,7 +42,7 @@ export function WalletSummaryCards({
       <p className="text-sm text-slate-400">Testing funds only</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="goldCard p-5">
-          <p className="text-sm font-medium text-slate-400">Beta wallet balance</p>
+          <p className="text-sm font-medium text-slate-400">Account balance</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-white">{formatMoney(wallet.account_balance)}</p>
         </div>
         <div className="goldCard border-emerald-900/40 p-5">

@@ -64,7 +64,9 @@ export function EnterContestWithSavedLineup({
   const router = useRouter();
   const { wallet, user } = useWallet();
   const [insufficientOpen, setInsufficientOpen] = useState(false);
-  const [insufficientCtx, setInsufficientCtx] = useState<{ balance: number; required: number } | null>(null);
+  const [insufficientCtx, setInsufficientCtx] = useState<{ account_balance: number; required: number } | null>(
+    null,
+  );
   void tier;
 
   const [error, setError] = useState<string | null>(null);
@@ -91,9 +93,9 @@ export function EnterContestWithSavedLineup({
       setError("Loading your wallet… try again in a moment.");
       return;
     }
-    const balanceBefore = safeWalletNumber(wallet.wallet_balance ?? wallet.account_balance);
-    if (balanceBefore < totalDue) {
-      setInsufficientCtx({ balance: balanceBefore, required: totalDue });
+    const accountBalanceBefore = safeWalletNumber(wallet.wallet_balance ?? wallet.account_balance);
+    if (accountBalanceBefore < totalDue) {
+      setInsufficientCtx({ account_balance: accountBalanceBefore, required: totalDue });
       setInsufficientOpen(true);
       return;
     }
@@ -108,7 +110,7 @@ export function EnterContestWithSavedLineup({
         });
         if (result.ok) {
           appendPersistedWalletTransaction(user.id, newEntryFeeTransaction(totalDue));
-          writePersistedWalletBalance(user.id, roundMoney2(Math.max(0, balanceBefore - totalDue)));
+          writePersistedWalletBalance(user.id, roundMoney2(Math.max(0, accountBalanceBefore - totalDue)));
           await refreshWallet();
           dispatchWalletBankrollFlash();
           if (result.safetyContributionUsd > 0) {
@@ -145,7 +147,7 @@ export function EnterContestWithSavedLineup({
             setInsufficientOpen(false);
             setInsufficientCtx(null);
           }}
-          balanceUsd={insufficientCtx.balance}
+          accountBalanceUsd={insufficientCtx.account_balance}
           requiredUsd={insufficientCtx.required}
         />
       ) : null}

@@ -143,7 +143,7 @@ async function applyRefundBalanceForClaim(opts: {
       user_id: opts.userId,
       amount: refundAmount,
       type: "refund",
-      description: `CashCaddies Safety Coverage — entry fee refund to balance (withdrawn golfer, claim ${opts.claimId})`,
+      description: `CashCaddies Safety Coverage — entry fee refund to account balance (withdrawn golfer, claim ${opts.claimId})`,
     })
     .select("id")
     .single();
@@ -209,7 +209,7 @@ export async function submitProtectionClaim(payload: {
   }
 
   if (resolution !== "swap" && resolution !== "refund_credit" && resolution !== "refund_balance") {
-    return { ok: false, error: "Choose swap, site credit, or balance refund." };
+    return { ok: false, error: "Choose swap, site credit, or account balance refund." };
   }
 
   const { data: lineup, error: lineupErr } = await supabase

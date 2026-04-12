@@ -30,10 +30,10 @@ export function HeaderStats() {
     return () => window.removeEventListener(WALLET_WINNINGS_EVENT, onWin);
   }, []);
 
-  const walletBalanceUsd =
+  const accountBalanceUsd =
     walletLoading || !wallet ? null : Number(wallet.wallet_balance ?? wallet.account_balance);
 
-  const walletDisplay = walletLoading ? "…" : walletBalanceUsd != null ? formatMoney(walletBalanceUsd) : "—";
+  const walletDisplay = walletLoading ? "…" : accountBalanceUsd != null ? formatMoney(accountBalanceUsd) : "—";
 
   return (
     <div className="headerStats">
@@ -42,7 +42,7 @@ export function HeaderStats() {
         className="walletStat"
         prefetch
         title="Open wallet"
-        aria-label={`Wallet, balance ${walletDisplay}. Open wallet.`}
+        aria-label={`Wallet, account balance ${walletDisplay}. Open wallet.`}
       >
         <span>Wallet</span>
         <b

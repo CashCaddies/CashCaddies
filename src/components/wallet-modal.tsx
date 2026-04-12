@@ -7,7 +7,7 @@ const QUICK_AMOUNTS = [10, 25, 50, 100] as const;
 type Props = {
   open: boolean;
   onClose: () => void;
-  /** Called after validation; should persist balance and return true on success. */
+  /** Called after validation; should persist account_balance and return true on success. */
   onConfirm: (amount: number) => Promise<boolean>;
   busy?: boolean;
 };

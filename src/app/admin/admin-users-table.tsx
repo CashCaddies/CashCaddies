@@ -93,7 +93,7 @@ export function AdminUsersTable({ users }: Props) {
           <tr className="border-b border-slate-800 text-xs font-semibold tracking-wide text-slate-400">
             <th className="px-4 py-3.5">Handle</th>
             <th className="px-4 py-3.5">Email</th>
-            <th className="px-4 py-3.5 text-right">Wallet balance</th>
+            <th className="px-4 py-3.5 text-right">Account balance</th>
             <th className="px-4 py-3.5 text-center">Beta</th>
             <th className="px-4 py-3.5 text-center">Founding</th>
             <th className="px-4 py-3.5 text-center">DFS β</th>

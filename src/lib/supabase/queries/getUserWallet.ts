@@ -9,7 +9,7 @@ export type UserWalletTransaction = {
 };
 
 export type GetUserWalletResult = {
-  balance: number;
+  account_balance: number;
   transactions: UserWalletTransaction[];
   userId: string | null;
 };
@@ -27,7 +27,7 @@ export async function getUserWallet(): Promise<GetUserWalletResult> {
   try {
     supabase = await createClient();
   } catch {
-    return { balance: 0, transactions: [], userId: null };
+    return { account_balance: 0, transactions: [], userId: null };
   }
 
   const {
@@ -35,7 +35,7 @@ export async function getUserWallet(): Promise<GetUserWalletResult> {
   } = await supabase.auth.getUser();
 
   if (!user?.id) {
-    return { balance: 0, transactions: [], userId: null };
+    return { account_balance: 0, transactions: [], userId: null };
   }
 
   const uid = user.id;
@@ -50,7 +50,7 @@ export async function getUserWallet(): Promise<GetUserWalletResult> {
       .limit(20),
   ]);
 
-  const balance = num((profileRes.data as { account_balance?: unknown } | null)?.account_balance);
+  const account_balance = num((profileRes.data as { account_balance?: unknown } | null)?.account_balance);
 
   const rows = (txRes.data ?? []) as Array<{
     id: string;
@@ -71,5 +71,5 @@ export async function getUserWallet(): Promise<GetUserWalletResult> {
         : new Date(0).toISOString(),
   }));
 
-  return { balance, transactions, userId: uid };
+  return { account_balance, transactions, userId: uid };
 }

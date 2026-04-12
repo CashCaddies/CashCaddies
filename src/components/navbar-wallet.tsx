@@ -59,7 +59,7 @@ export function NavbarWallet() {
       setToast(null);
       const b = roundUsd(nextBalance);
       if (b < 0) {
-        setToast("Balance cannot be negative.");
+        setToast("Account balance cannot be negative.");
         setPending(false);
         return;
       }
@@ -77,7 +77,7 @@ export function NavbarWallet() {
         return;
       }
       await refreshWallet();
-      setToast("Balance updated");
+      setToast("Account balance updated");
     },
     [canAddFunds, user],
   );

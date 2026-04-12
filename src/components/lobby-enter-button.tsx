@@ -104,7 +104,9 @@ export function LobbyEnterButton({
   const [capacityModalOpen, setCapacityModalOpen] = useState(false);
   const [capacityModalMessage, setCapacityModalMessage] = useState<string | null>(null);
   const [insufficientOpen, setInsufficientOpen] = useState(false);
-  const [insufficientCtx, setInsufficientCtx] = useState<{ balance: number; required: number } | null>(null);
+  const [insufficientCtx, setInsufficientCtx] = useState<{ account_balance: number; required: number } | null>(
+    null,
+  );
   const enterFlowInFlight = useRef(false);
   /** Bumps after successful entry so `contest_entries` count refetches. */
   const [entriesRefreshTick, setEntriesRefreshTick] = useState(0);
@@ -281,9 +283,9 @@ export function LobbyEnterButton({
       return;
     }
     const totalDue = totalContestEntryChargeUsd(entryFeeUsd, Number(wallet.loyalty_points ?? 0));
-    const balanceBefore = safeWalletNumber(wallet.wallet_balance ?? wallet.account_balance);
-    if (balanceBefore < totalDue) {
-      setInsufficientCtx({ balance: balanceBefore, required: totalDue });
+    const accountBalanceBefore = safeWalletNumber(wallet.wallet_balance ?? wallet.account_balance);
+    if (accountBalanceBefore < totalDue) {
+      setInsufficientCtx({ account_balance: accountBalanceBefore, required: totalDue });
       setInsufficientOpen(true);
       return;
     }
@@ -293,7 +295,7 @@ export function LobbyEnterButton({
       const result = await confirmLobbyContestEntry({ contestId, lineupId: selectedId });
       if (result.ok) {
         appendPersistedWalletTransaction(authUser.id, newEntryFeeTransaction(totalDue));
-        writePersistedWalletBalance(authUser.id, roundMoney2(Math.max(0, balanceBefore - totalDue)));
+        writePersistedWalletBalance(authUser.id, roundMoney2(Math.max(0, accountBalanceBefore - totalDue)));
         setModalOpen(false);
         setSuccess(result.message);
         setEntriesRefreshTick((t) => t + 1);
@@ -369,7 +371,7 @@ export function LobbyEnterButton({
             setInsufficientOpen(false);
             setInsufficientCtx(null);
           }}
-          balanceUsd={insufficientCtx.balance}
+          accountBalanceUsd={insufficientCtx.account_balance}
           requiredUsd={insufficientCtx.required}
           contestName={contestName}
         />

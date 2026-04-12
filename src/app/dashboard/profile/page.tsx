@@ -219,7 +219,7 @@ export default function ProfilePage() {
               <h2 className="mb-4 text-lg font-bold text-white">Wallet</h2>
               <p className="mb-4 text-sm text-slate-400">Beta testing funds</p>
               <div className="goldBorder rounded-xl bg-slate-950/80 p-6">
-                <p className="text-sm font-medium text-slate-400">Wallet balance</p>
+                <p className="text-sm font-medium text-slate-400">Account balance</p>
                 <p className="mt-1 text-3xl font-bold tabular-nums text-white">{formatMoney(wallet.account_balance)}</p>
               </div>
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">

@@ -7,12 +7,18 @@ import { formatMoney } from "@/lib/wallet";
 type Props = {
   open: boolean;
   onClose: () => void;
-  balanceUsd: number;
+  accountBalanceUsd: number;
   requiredUsd: number;
   contestName?: string;
 };
 
-export function InsufficientFundsModal({ open, onClose, balanceUsd, requiredUsd, contestName }: Props) {
+export function InsufficientFundsModal({
+  open,
+  onClose,
+  accountBalanceUsd,
+  requiredUsd,
+  contestName,
+}: Props) {
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -24,7 +30,7 @@ export function InsufficientFundsModal({ open, onClose, balanceUsd, requiredUsd,
 
   if (!open) return null;
 
-  const shortfall = Math.max(0, requiredUsd - balanceUsd);
+  const shortfall = Math.max(0, requiredUsd - accountBalanceUsd);
 
   return (
     <div
@@ -47,7 +53,7 @@ export function InsufficientFundsModal({ open, onClose, balanceUsd, requiredUsd,
           </p>
         ) : null}
         <p className="mt-4 text-sm leading-relaxed text-slate-300">
-          Your balance ({formatMoney(balanceUsd)}) is below the cost to enter ({formatMoney(requiredUsd)}).
+          Your account balance ({formatMoney(accountBalanceUsd)}) is below the cost to enter ({formatMoney(requiredUsd)}).
           {shortfall > 0 ? (
             <>
               {" "}

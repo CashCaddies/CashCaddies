@@ -3,7 +3,7 @@ import { getUserWallet } from "@/lib/supabase/queries/getUserWallet";
 import { formatMoney } from "@/lib/wallet";
 
 export default async function WalletPage() {
-  const { balance, transactions, userId } = await getUserWallet();
+  const { account_balance, transactions, userId } = await getUserWallet();
 
   if (!userId) {
     return (
@@ -22,8 +22,8 @@ export default async function WalletPage() {
     <div className="mx-auto max-w-lg p-6">
       <h1 className="text-xl font-semibold text-white">Wallet</h1>
 
-      <p className="mt-8 text-sm text-slate-500">Balance</p>
-      <p className="mt-1 text-4xl font-semibold tabular-nums text-white">{formatMoney(balance)}</p>
+      <p className="mt-8 text-sm text-slate-500">Account balance</p>
+      <p className="mt-1 text-4xl font-semibold tabular-nums text-white">{formatMoney(account_balance)}</p>
 
       <h2 className="mt-10 text-sm font-medium text-slate-400">Transactions</h2>
 
