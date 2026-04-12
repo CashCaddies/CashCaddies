@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { triggerAutoContestSettlement, type TriggerAutoContestSettlementResult } from "@/app/admin/settlement/auto-actions";
 
 export function AdminTriggerSettlement() {
@@ -16,9 +17,9 @@ export function AdminTriggerSettlement() {
         settled, status <span className="text-slate-300">complete</span>. Records one{" "}
         <span className="font-mono text-slate-400">contest_settlements</span> row via{" "}
         <span className="font-mono text-slate-400">settle_contest_prizes</span> (same as{" "}
-        <a href="/admin/settlement" className="text-emerald-400 underline hover:text-emerald-300">
+        <Link href="/admin/settlement" className="text-emerald-400 underline hover:text-emerald-300">
           Contest settlement
-        </a>
+        </Link>
         ).
       </p>
       <div className="mt-4 space-y-3">

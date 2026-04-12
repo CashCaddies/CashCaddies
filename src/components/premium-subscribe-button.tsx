@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { createPremiumCheckoutSession } from "@/app/premium/actions";
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function PremiumSubscribeButton({ subscribed, priceLabel }: Props) {
+  const router = useRouter();
   const { user, isReady } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -60,7 +62,12 @@ export function PremiumSubscribeButton({ subscribed, priceLabel }: Props) {
                 setError(r.error);
                 return;
               }
-              window.location.href = r.url;
+              const url = r.url;
+              if (url.startsWith("http://") || url.startsWith("https://")) {
+                window.location.assign(url);
+              } else {
+                router.push(url);
+              }
             })();
           });
         }}
