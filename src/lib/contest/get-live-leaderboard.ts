@@ -13,6 +13,14 @@ import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
  * Same tie-break order as `run_contest_payouts` (lineups.total_score desc, entry created_at asc, entry id asc).
  * Use for any live / in-progress leaderboard — not `contest_entry_results` (post-settlement only).
  */
+/** Per-golfer row for expandable live leaderboard (from `lineup_players` + contest `golfer_scores`). */
+export type LiveLineupPlayerBreakdown = {
+  golferId: string;
+  playerName: string;
+  /** Contest DFS points (`golfer_scores.total_score`), else `golfers.fantasy_points` fallback. */
+  score: number;
+};
+
 export type LiveLeaderboardRow = {
   rank: number;
   entryId: string;
@@ -21,9 +29,11 @@ export type LiveLeaderboardRow = {
   /** From `lineups.total_score` */
   totalScore: number;
   createdAt: string | null;
+  /** Roster breakdown; empty if embed blocked or no rows. */
+  players: LiveLineupPlayerBreakdown[];
 };
 
-type LineupsEmbed = { total_score?: unknown } | null;
+type LineupsEmbed = { total_score?: unknown; lineup_players?: unknown } | null;
 type ProfilesEmbed = { username?: string | null } | null;
 
 type ContestEntryQueryRow = {
@@ -33,6 +43,8 @@ type ContestEntryQueryRow = {
   lineups: LineupsEmbed | LineupsEmbed[] | null;
   profiles: ProfilesEmbed | ProfilesEmbed[] | null;
 };
+
+const LINEUPS_WITH_PLAYERS = `id, total_score, lineup_players ( slot_index, golfer_id, golfers ( name, fantasy_points ) )`;
 
 function num(v: unknown): number {
   const n = typeof v === "number" ? v : Number(v);
@@ -53,6 +65,44 @@ function firstEmbed<T>(raw: T | T[] | null | undefined): T | null {
 function lineupScoreFromRow(row: ContestEntryQueryRow): number {
   const lu = firstEmbed(row.lineups ?? null);
   return num((lu as { total_score?: unknown } | null)?.total_score);
+}
+
+type LineupPlayerRaw = {
+  slot_index?: unknown;
+  golfer_id?: unknown;
+  golfers?: { name?: unknown; fantasy_points?: unknown } | { name?: unknown; fantasy_points?: unknown }[] | null;
+};
+
+function playersForEntryRow(
+  row: ContestEntryQueryRow,
+  scoreByGolfer: Map<string, number>,
+): LiveLineupPlayerBreakdown[] {
+  const lu = firstEmbed(row.lineups ?? null) as { lineup_players?: LineupPlayerRaw[] | null } | null;
+  const lps = lu?.lineup_players;
+  if (!Array.isArray(lps) || lps.length === 0) return [];
+
+  const withSlots = lps.map((lp, idx) => {
+    const gid = String(lp.golfer_id ?? "").trim();
+    const g = firstEmbed(lp.golfers ?? null);
+    const name = trimStr((g as { name?: unknown } | null)?.name) || "—";
+    const fromGs = gid ? scoreByGolfer.get(gid) : undefined;
+    const fp = num((g as { fantasy_points?: unknown } | null)?.fantasy_points);
+    const score = fromGs !== undefined ? fromGs : fp;
+    const sn = Number(lp.slot_index);
+    const slotIndex = Number.isFinite(sn) ? sn : idx;
+    return { slotIndex, golferId: gid, playerName: name, score };
+  });
+
+  withSlots.sort((a, b) => {
+    if (a.slotIndex !== b.slotIndex) return a.slotIndex - b.slotIndex;
+    return a.playerName.localeCompare(b.playerName);
+  });
+
+  return withSlots.map((x) => ({
+    golferId: x.golferId,
+    playerName: x.playerName,
+    score: x.score,
+  }));
 }
 
 /**
@@ -105,15 +155,22 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
 
     await ensureContestEntryProtection(supabase, contestId);
 
+    const selectWithPlayers = `${CONTEST_ENTRIES_READ_BASE}, lineups ( ${LINEUPS_WITH_PLAYERS} ), profiles ( username )`;
     const selectFull = `${CONTEST_ENTRIES_READ_BASE}, lineups ( total_score ), profiles ( username )`;
     const selectMinimal = `${CONTEST_ENTRIES_READ_BASE}, lineups ( total_score )`;
 
     let data: ContestEntryQueryRow[] | null = null;
     let error: { message: string } | null = null;
 
-    const q1 = await supabase.from("contest_entries").select(selectFull).eq("contest_id", contestId);
-    data = q1.data as ContestEntryQueryRow[] | null;
-    error = q1.error;
+    const q0 = await supabase.from("contest_entries").select(selectWithPlayers).eq("contest_id", contestId);
+    data = q0.data as ContestEntryQueryRow[] | null;
+    error = q0.error;
+
+    if (error && (isPostgrestRelationshipOrEmbedError(error) || isMissingColumnOrSchemaError(error))) {
+      const q1 = await supabase.from("contest_entries").select(selectFull).eq("contest_id", contestId);
+      data = q1.data as ContestEntryQueryRow[] | null;
+      error = q1.error;
+    }
 
     if (error && (isPostgrestRelationshipOrEmbedError(error) || isMissingColumnOrSchemaError(error))) {
       const q2 = await supabase.from("contest_entries").select(selectMinimal).eq("contest_id", contestId);
@@ -142,6 +199,15 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
       });
     }
 
+    const gsRes = await supabase.from("golfer_scores").select("golfer_id, total_score").eq("contest_id", contestId);
+    const scoreByGolfer = new Map<string, number>();
+    if (!gsRes.error) {
+      for (const gs of gsRes.data ?? []) {
+        const gid = String((gs as { golfer_id?: string }).golfer_id ?? "");
+        if (gid) scoreByGolfer.set(gid, num((gs as { total_score?: unknown }).total_score));
+      }
+    }
+
     const sorted = [...raw].sort(compareContestEntriesLiveScoring);
 
     const rows: LiveLeaderboardRow[] = sorted.map((row, i) => {
@@ -154,6 +220,7 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
         username: name || "—",
         totalScore: lineupScoreFromRow(row),
         createdAt: typeof row.created_at === "string" ? row.created_at : null,
+        players: playersForEntryRow(row, scoreByGolfer),
       };
     });
 
