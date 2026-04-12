@@ -59,8 +59,6 @@ export default async function PayoutHistoryPage({ searchParams }: PageProps) {
     totalAmount: data.reduce((s, d) => s + Number(d.winnings_usd), 0),
   };
 
-  const cid = encodeURIComponent(contestId);
-
   return (
     <div className="border-b border-[#2a3039] bg-[#0f1419] p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8b98a5]">Admin</p>
@@ -86,6 +84,12 @@ export default async function PayoutHistoryPage({ searchParams }: PageProps) {
         >
           Unpaid
         </Link>
+        <a
+          href={`/api/admin/export-payouts?contestId=${encodeURIComponent(contestId)}`}
+          className="rounded bg-blue-600 px-3 py-1 text-white"
+        >
+          Export CSV
+        </a>
       </div>
 
       <div className="mb-4 space-y-1 text-sm text-[#c5cdd5]">
