@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Sign in to your CashCaddie account.",
 };
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   searchParams: Promise<{ reason?: string }>;
 };

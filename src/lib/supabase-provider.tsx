@@ -1,32 +1,38 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useEffect } from "react"
-import { supabase } from "./supabase/client"
+import { createBrowserClient } from "@supabase/ssr";
+import { createContext, useContext, useEffect } from "react";
 
-const SupabaseContext = createContext(supabase)
+/** Single browser client — module scope only; never inside the component body. */
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
+
+const SupabaseContext = createContext(supabase);
 
 export default function SupabaseProvider({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        window.location.href = "/dashboard"
+        window.location.href = "/dashboard";
       }
-    })
+    });
 
     return () => {
-      listener.subscription.unsubscribe()
-    }
-  }, [])
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <SupabaseContext.Provider value={supabase}>
       {children}
     </SupabaseContext.Provider>
-  )
+  );
 }
 
-export const useSupabase = () => useContext(SupabaseContext)
+export const useSupabase = () => useContext(SupabaseContext);

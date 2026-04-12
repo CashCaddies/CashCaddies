@@ -8,6 +8,8 @@ import { formatContestStartDate } from "@/lib/contest-lobby-shared";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ contestId: string }>;
 };

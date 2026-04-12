@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getUserWallet } from "@/lib/supabase/queries/getUserWallet";
 import { formatMoney } from "@/lib/wallet";
 
+export const dynamic = "force-dynamic";
+
 export default async function WalletPage() {
   const { account_balance, transactions, userId } = await getUserWallet();
 

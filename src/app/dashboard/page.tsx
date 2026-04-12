@@ -9,6 +9,7 @@ import { ProtectionActivitySection } from "@/components/protection-activity-sect
 import { ProtectionNotificationBanner } from "@/components/protection-notification-banner";
 import { aggregateEnteredContests, totalEntryFeesUsd } from "@/lib/dashboard-aggregates";
 import { dashboardLineupContestPresentation } from "@/lib/dashboard-lineups";
+import useRequireAuth from "@/hooks/useRequireAuth";
 import { useDashboardLineups } from "@/hooks/use-dashboard-lineups";
 import { useWallet } from "@/hooks/use-wallet";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
@@ -33,7 +34,8 @@ function formatSubmitted(iso: string) {
 }
 
 export default function DashboardOverviewPage() {
-  const { user, lineups, error, loading } = useDashboardLineups();
+  const loading = useRequireAuth();
+  const { user, lineups, error, loading: lineupsLoading } = useDashboardLineups();
   const { wallet, fullUser, loading: walletLoading, refresh: refreshWallet } = useWallet();
   const [safetyFundBalance, setSafetyFundBalance] = useState<number | null>(null);
 
@@ -47,6 +49,8 @@ export default function DashboardOverviewPage() {
     void loadSafetyFund();
   }, [loadSafetyFund]);
 
+  if (loading) return null;
+
   const isAdminUser = isAdmin(fullUser?.role);
   const contests = aggregateEnteredContests(lineups);
   const accountBalance = wallet?.account_balance ?? 0;
@@ -59,9 +63,9 @@ export default function DashboardOverviewPage() {
       description="Entered contests, submitted lineups, entry fees, and contest status — synced from your account."
       dashboardNavMode="dashboard"
     >
-      {loading && <p className="text-slate-400">Loading…</p>}
+      {lineupsLoading && <p className="text-slate-400">Loading…</p>}
       {error && <p className="rounded-lg border border-amber-700/50 bg-amber-950/40 px-4 py-3 text-amber-200">{error}</p>}
-      {!loading && !user && (
+      {!lineupsLoading && !user && (
         <p className="rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-slate-300">
           <Link href="/login" className="font-semibold text-emerald-400 underline hover:text-emerald-300">
             Sign in
@@ -70,7 +74,7 @@ export default function DashboardOverviewPage() {
         </p>
       )}
 
-      {user && !loading && (
+      {user && !lineupsLoading && (
         <>
           <div className="dashboardTopBar">
             <div className="fundCard goldCard">

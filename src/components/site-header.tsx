@@ -14,8 +14,8 @@ const navColors = [
 
 const navItems = [
   { href: "/lobby", label: "Lobby" },
-  { href: "/dashboard/contests", label: "Contests" },
-  { href: "/dashboard/lineups", label: "Lineups" },
+  { href: "/contests", label: "Contests" },
+  { href: "/lineups", label: "Lineups" },
   { href: "/dashboard", label: "Dashboard" },
 ] as const;
 
@@ -45,13 +45,16 @@ export function SiteHeader() {
       {navItems.map((item, index) => {
         const colorClass = navColors[index % navColors.length];
         return (
-          <Link
+          <button
             key={item.href}
-            href={item.href}
-            className={`${colorClass} font-semibold transition-colors duration-200`}
+            type="button"
+            className={`${colorClass} cursor-pointer border-0 bg-transparent p-0 font-semibold transition-colors duration-200`}
+            onClick={() => {
+              window.location.href = item.href;
+            }}
           >
             {item.label}
-          </Link>
+          </button>
         );
       })}
     </nav>

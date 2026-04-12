@@ -7,6 +7,8 @@ import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { loadDraftLineupForEditor, loadLatestDraftLineupForContest } from "@/lib/lineup-draft-load";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 type LineupPageProps = {
   searchParams: Promise<{ contest?: string; edit?: string; entryId?: string }>;
 };

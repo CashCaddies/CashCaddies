@@ -7,8 +7,6 @@ import { loadContestForLineupPage } from "@/lib/contest-resolve";
 import { tierFromPoints, type TierName } from "@/lib/loyalty";
 import { createClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
-
 type PageProps = {
   params: Promise<{ contestId: string }>;
 };

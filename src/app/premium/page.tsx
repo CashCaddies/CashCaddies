@@ -8,6 +8,8 @@ export const metadata = {
   description: "CashCaddies Premium — advanced DFS golf tools and monthly membership.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function PremiumPage({
   searchParams,
 }: {

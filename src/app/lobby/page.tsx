@@ -1,8 +1,6 @@
 import { fetchLobbyContests } from "@/lib/contest-lobby-fetch";
 import { LobbyPageContent } from "@/components/lobby-page-content";
 
-export const dynamic = "force-dynamic";
-
 export default async function LobbyPage() {
   const { contests, error } = await fetchLobbyContests();
 

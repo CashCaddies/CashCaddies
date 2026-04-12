@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useWallet } from "@/hooks/use-wallet";
 import { getAdminNewFeedbackCount } from "@/app/admin/feedback/actions";
 import { isAdmin, isSeniorAdmin } from "@/lib/permissions";
@@ -22,15 +22,20 @@ const lobbyLink: DashboardNavLink = {
 };
 
 const myContestsNavLinkFull: DashboardNavLink = {
-  href: "/dashboard/contests",
+  href: "/contests",
   label: "My Contests",
-  match: (p: string) => p === "/dashboard" || p === "/dashboard/contests" || p.startsWith("/dashboard/contests/"),
+  match: (p: string) =>
+    p === "/contests" ||
+    p === "/dashboard" ||
+    p === "/dashboard/contests" ||
+    p.startsWith("/dashboard/contests/"),
 };
 
 const lineupsNavLink: DashboardNavLink = {
-  href: "/dashboard/lineups",
+  href: "/lineups",
   label: "My Lineups",
-  match: (p: string) => p === "/dashboard/lineups" || p.startsWith("/dashboard/lineups/"),
+  match: (p: string) =>
+    p === "/lineups" || p === "/dashboard/lineups" || p.startsWith("/dashboard/lineups/"),
 };
 
 const winningsNavLink: DashboardNavLink = {
@@ -81,9 +86,10 @@ const adminFeedbackLink: DashboardNavLink = {
 };
 
 const myContestsNavLinkSingle: DashboardNavLink = {
-  href: "/dashboard/contests",
+  href: "/contests",
   label: "My Contests",
-  match: (p: string) => p === "/dashboard/contests" || p.startsWith("/dashboard/contests/"),
+  match: (p: string) =>
+    p === "/contests" || p === "/dashboard/contests" || p.startsWith("/dashboard/contests/"),
 };
 
 type SingleNavResolution =
@@ -92,10 +98,10 @@ type SingleNavResolution =
 
 function resolveSingleDashboardNav(pathname: string): SingleNavResolution {
   const p = pathname || "";
-  if (p === "/dashboard/contests" || p.startsWith("/dashboard/contests/")) {
+  if (p === "/contests" || p === "/dashboard/contests" || p.startsWith("/dashboard/contests/")) {
     return { kind: "links", links: [myContestsNavLinkSingle] };
   }
-  if (p === "/dashboard/lineups" || p.startsWith("/dashboard/lineups/")) {
+  if (p === "/lineups" || p === "/dashboard/lineups" || p.startsWith("/dashboard/lineups/")) {
     return { kind: "links", links: [lineupsNavLink] };
   }
   if (p === "/dashboard/winnings" || p.startsWith("/dashboard/winnings/")) {
@@ -127,6 +133,22 @@ function dropdownItemClass(active: boolean) {
   return `block w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
     active ? "bg-emerald-600/20 text-emerald-300 ring-1 ring-emerald-500/40" : "text-slate-300 hover:bg-slate-800 hover:text-white"
   }`;
+}
+
+/** Full page navigation — avoids stale client state after route change. */
+function NavDashButton({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      className={navButtonClass(active)}
+      aria-current={active ? "page" : undefined}
+      onClick={() => {
+        window.location.href = href;
+      }}
+    >
+      {children}
+    </button>
+  );
 }
 
 function staffRoutesActive(pathname: string): boolean {
@@ -413,21 +435,17 @@ export function DashboardNav({ mode = "single" }: DashboardNavProps) {
         {primaryLinks.map(({ href, label, match }) => {
           const active = match(pathname);
           return (
-            <Link key={href} href={href} className={navButtonClass(active)} aria-current={active ? "page" : undefined}>
+            <NavDashButton key={href} href={href} active={active}>
               {label}
-            </Link>
+            </NavDashButton>
           );
         })}
         <DashboardMoreMenu pathname={pathname} showAdminFeedback={showAdminFeedback} newFeedbackCount={newFeedbackCount} />
         {showStaffMenu ? <DashboardStaffMenu pathname={pathname} role={resolvedRole} /> : null}
         {showBetaUsers ? (
-          <Link
-            href={adminBetaUsersLink.href}
-            className={navButtonClass(adminBetaUsersLink.match(pathname))}
-            aria-current={adminBetaUsersLink.match(pathname) ? "page" : undefined}
-          >
+          <NavDashButton href={adminBetaUsersLink.href} active={adminBetaUsersLink.match(pathname)}>
             {adminBetaUsersLink.label}
-          </Link>
+          </NavDashButton>
         ) : null}
       </nav>
     );
@@ -450,21 +468,17 @@ export function DashboardNav({ mode = "single" }: DashboardNavProps) {
         {primaryLinks.map(({ href, label, match }) => {
           const active = match(pathname);
           return (
-            <Link key={href} href={href} className={navButtonClass(active)} aria-current={active ? "page" : undefined}>
+            <NavDashButton key={href} href={href} active={active}>
               {label}
-            </Link>
+            </NavDashButton>
           );
         })}
         <DashboardMoreMenu pathname={pathname} showAdminFeedback={showAdminFeedback} newFeedbackCount={newFeedbackCount} />
         {showStaffMenu ? <DashboardStaffMenu pathname={pathname} role={resolvedRole} /> : null}
         {showBetaUsers ? (
-          <Link
-            href={adminBetaUsersLink.href}
-            className={navButtonClass(adminBetaUsersLink.match(pathname))}
-            aria-current={adminBetaUsersLink.match(pathname) ? "page" : undefined}
-          >
+          <NavDashButton href={adminBetaUsersLink.href} active={adminBetaUsersLink.match(pathname)}>
             {adminBetaUsersLink.label}
-          </Link>
+          </NavDashButton>
         ) : null}
       </nav>
     );
@@ -475,9 +489,9 @@ export function DashboardNav({ mode = "single" }: DashboardNavProps) {
       {single.links.map(({ href, label, match }) => {
         const active = match(pathname);
         return (
-          <Link key={href} href={href} className={navButtonClass(active)} aria-current={active ? "page" : undefined}>
+          <NavDashButton key={href} href={href} active={active}>
             {label}
-          </Link>
+          </NavDashButton>
         );
       })}
     </nav>
