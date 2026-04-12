@@ -2,13 +2,14 @@ import { unstable_noStore } from "next/cache";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import { createClient } from "@/lib/supabase/server";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
+import { compareLivePreliminaryScore } from "@/lib/contest/get-live-leaderboard";
 import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
 } from "@/lib/supabase-missing-column";
 
 export type ContestLeaderboardRow = {
-  /** 1-based display order (entry time order); not tied to prize distribution. */
+  /** 1-based rank by live score (`lineups.total_score`), then entry time, then id — same as payout ordering. */
   order: number;
   /** 1-based position among this user’s entries in the contest. */
   entryNumber: number;
@@ -40,8 +41,8 @@ function firstEmbed<T>(raw: T | T[] | null | undefined): T | null {
 }
 
 /**
- * Entries ordered by `contest_entries.created_at` asc, then id. Score is informational only.
- * Independent of `settle_contest_prizes` (contest-level accounting only; no prize shares here).
+ * Live entry leaderboard: `lineups.total_score` desc, then `created_at` asc, then entry id (matches payout / `run_contest_payouts`).
+ * Uses `contest_entries` + lineups — not `contest_entry_results` (post-settlement only).
  */
 export async function getContestLeaderboard(contestIdRaw: string): Promise<GetContestLeaderboardResult> {
   unstable_noStore();
@@ -159,12 +160,12 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       };
     });
 
-    scored.sort((a, b) => {
-      const ta = Date.parse(a.createdAt) || 0;
-      const tb = Date.parse(b.createdAt) || 0;
-      if (ta !== tb) return ta - tb;
-      return a.id.localeCompare(b.id);
-    });
+    scored.sort((a, b) =>
+      compareLivePreliminaryScore(
+        { score: a.score, createdAt: a.createdAt, id: a.id },
+        { score: b.score, createdAt: b.createdAt, id: b.id },
+      ),
+    );
 
     const rows: ContestLeaderboardRow[] = scored.map((ent, idx) => ({
       order: idx + 1,

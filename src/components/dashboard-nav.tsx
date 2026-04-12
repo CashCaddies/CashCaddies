@@ -33,6 +33,12 @@ const lineupsNavLink: DashboardNavLink = {
   match: (p: string) => p === "/dashboard/lineups" || p.startsWith("/dashboard/lineups/"),
 };
 
+const winningsNavLink: DashboardNavLink = {
+  href: "/dashboard/winnings",
+  label: "My Winnings",
+  match: (p: string) => p === "/dashboard/winnings" || p.startsWith("/dashboard/winnings/"),
+};
+
 const profileNavLink: DashboardNavLink = {
   href: "/dashboard/profile",
   label: "Profile",
@@ -50,6 +56,7 @@ const primaryLinks: readonly DashboardNavLink[] = [
   lobbyLink,
   myContestsNavLinkFull,
   lineupsNavLink,
+  winningsNavLink,
   profileNavLink,
 ];
 
@@ -90,6 +97,9 @@ function resolveSingleDashboardNav(pathname: string): SingleNavResolution {
   }
   if (p === "/dashboard/lineups" || p.startsWith("/dashboard/lineups/")) {
     return { kind: "links", links: [lineupsNavLink] };
+  }
+  if (p === "/dashboard/winnings" || p.startsWith("/dashboard/winnings/")) {
+    return { kind: "links", links: [winningsNavLink] };
   }
   if (p === "/dashboard/profile" || p.startsWith("/dashboard/profile/")) {
     return { kind: "links", links: [profileNavLink] };

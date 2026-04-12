@@ -9,7 +9,10 @@ export type PayoutRowSummary = {
 /** Aggregate stats for the current payout row list (e.g. after filter). */
 export function getPayoutRowSummary(data: PayoutHistoryRow[]): PayoutRowSummary {
   const totalPaid = data.filter((d) => d.paid).length;
-  const totalAmount = data.reduce((sum, d) => sum + Number(d.winnings_usd), 0);
+  const totalAmount = data.reduce(
+    (sum: number, d) => sum + Number(d.winnings_usd || 0),
+    0,
+  );
 
   return {
     totalRows: data.length,

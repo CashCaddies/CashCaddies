@@ -56,7 +56,7 @@ export default async function PayoutHistoryPage({ searchParams }: PageProps) {
   const summary = {
     totalRows: data.length,
     totalPaid: data.filter((d) => d.paid).length,
-    totalAmount: data.reduce((s, d) => s + Number(d.winnings_usd), 0),
+    totalAmount: data.reduce((sum: number, d) => sum + Number(d.winnings_usd || 0), 0),
   };
 
   return (

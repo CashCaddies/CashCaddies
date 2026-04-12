@@ -7,6 +7,7 @@ import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
 } from "@/lib/supabase-missing-column";
+import { compareContestEntriesLiveScoring } from "@/lib/contest/get-live-leaderboard";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
 /**
@@ -158,12 +159,7 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       });
     }
 
-    const sorted = [...raw].sort((a, b) => {
-      const ta = Date.parse(a.created_at ?? "") || 0;
-      const tb = Date.parse(b.created_at ?? "") || 0;
-      if (ta !== tb) return ta - tb;
-      return String(a.id).localeCompare(String(b.id));
-    });
+    const sorted = [...raw].sort(compareContestEntriesLiveScoring);
 
     const rows: LeaderboardDisplayRow[] = sorted.map((row, index) => {
       const rank = index + 1;
