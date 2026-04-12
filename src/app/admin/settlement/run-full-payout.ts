@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { calculateContestFinancialsSnapshot } from "@/lib/contest-payout-engine";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 type RpcJson = Record<string, unknown>;
@@ -15,7 +16,7 @@ export type RunFullPayoutResult =
     }
   | {
       ok: false;
-      step: "auth" | "input" | "config" | "settle" | "payouts" | "credit" | "status";
+      step: "auth" | "input" | "config" | "settle" | "financials" | "payouts" | "credit" | "status";
       error: string;
     };
 
@@ -30,7 +31,7 @@ function rpcFailurePayload(data: unknown): string | null {
 }
 
 /**
- * Runs settlement pipeline: settle_contest_prizes → run_contest_payouts → credit_contest_winnings.
+ * Runs settlement pipeline: settle_contest_prizes → calculate_contest_financials → run_contest_payouts → credit_contest_winnings.
  * Requires admin secret (same as other settlement actions). Marks contest settled only after all steps succeed.
  */
 export async function runFullPayout(formData: FormData): Promise<RunFullPayoutResult> {
@@ -60,6 +61,11 @@ export async function runFullPayout(formData: FormData): Promise<RunFullPayoutRe
   const settleFail = rpcFailurePayload(settleRaw);
   if (settleFail) {
     return { ok: false, step: "settle", error: settleFail };
+  }
+
+  const finRes = await calculateContestFinancialsSnapshot(contestId);
+  if (!finRes.ok) {
+    return { ok: false, step: "financials", error: finRes.error };
   }
 
   const { data: payoutRaw, error: payoutError } = await admin.rpc("run_contest_payouts", {

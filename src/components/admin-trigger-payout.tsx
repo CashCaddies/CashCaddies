@@ -29,6 +29,7 @@ export default function AdminTriggerPayout({ contestId }: Props) {
       <h3 className="text-sm font-semibold text-white">Full payout pipeline</h3>
       <p className="mt-1 text-xs text-slate-400">
         Runs <span className="font-mono text-slate-300">settle_contest_prizes</span> →{" "}
+        <span className="font-mono text-slate-300">calculate_contest_financials</span> →{" "}
         <span className="font-mono text-slate-300">run_contest_payouts</span> →{" "}
         <span className="font-mono text-slate-300">credit_contest_winnings</span>, then marks the contest settled.
       </p>
