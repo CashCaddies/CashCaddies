@@ -78,14 +78,25 @@ export default function RootLayout({
             inset: 0,
             pointerEvents: "none",
             zIndex: 999999,
-            border: "3px solid transparent",
-            borderImageSlice: 1,
-            borderImageSource:
-              "linear-gradient(135deg, #00ff9c, #00c97a, #ffd700, #ffea70, #00ff9c)",
-            boxShadow:
-              "0 0 8px #00ff9c, 0 0 16px #00c97a, 0 0 20px #ffd700, inset 0 0 6px rgba(255,255,255,0.3)",
           }}
-        />
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              padding: "3px",
+              background:
+                "linear-gradient(135deg, #00ff9c, #00c97a, #ffd700, #ffea70, #00ff9c)",
+              WebkitMask:
+                "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+              WebkitMaskComposite: "xor",
+              maskComposite: "exclude",
+              borderRadius: "4px",
+              boxShadow:
+                "0 0 10px rgba(0,255,156,0.6), 0 0 20px rgba(255,215,0,0.5)",
+            }}
+          />
+        </div>
       </body>
     </html>
   );
