@@ -1593,3 +1593,8 @@ header {
   position: relative;
   z-index: 50;
 }
+
+/* Remove scrollbar arrows globally */
+::-webkit-scrollbar-button {
+  display: none;
+}
