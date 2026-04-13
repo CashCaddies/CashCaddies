@@ -15,10 +15,11 @@ export function HeaderMainNav() {
 
   return (
     <nav className="mainNav" aria-label="Main">
-      {links.map(({ href, label }) => (
-        <div key={href} className="relative group">
-          <div
-            className={`
+      <div className="flex items-center gap-3 overflow-x-auto overflow-y-hidden">
+        {links.map(({ href, label }) => (
+          <div key={href} className="relative group">
+            <div
+              className={`
       absolute inset-0 rounded-md p-[2px]
       bg-gradient-to-br from-green-400 via-emerald-500 to-yellow-400
       transition duration-200
@@ -28,15 +29,15 @@ export function HeaderMainNav() {
           : "opacity-60 group-hover:opacity-100"
       }
     `}
-          />
+            />
 
-          <button
-            type="button"
-            aria-current={isActive(href) ? "page" : undefined}
-            onClick={() => {
-              window.location.href = href;
-            }}
-            className={`
+            <button
+              type="button"
+              aria-current={isActive(href) ? "page" : undefined}
+              onClick={() => {
+                window.location.href = href;
+              }}
+              className={`
       metal-shine relative overflow-hidden px-4 py-2 rounded-md text-sm font-semibold transition
       ${
         isActive(href)
@@ -44,18 +45,19 @@ export function HeaderMainNav() {
           : "text-white bg-[#020617] hover:text-green-300"
       }
     `}
-          >
-            {label}
-            <span
-              className={`
+            >
+              {label}
+              <span
+                className={`
   absolute bottom-0 left-0 w-full h-[2px]
   bg-gradient-to-r from-green-400 to-yellow-400
   ${isActive(href) ? "opacity-100" : "opacity-0"}
 `}
-            />
-          </button>
-        </div>
-      ))}
+              />
+            </button>
+          </div>
+        ))}
+      </div>
     </nav>
   );
 }
