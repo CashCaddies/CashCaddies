@@ -59,20 +59,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="min-h-screen overflow-y-auto bg-slate-950 text-slate-100">
         <SupabaseProvider>
           <AppProviders>
-            <SiteHeader />
-            <SoftLaunchCountdown />
-            <ConditionalBetaBanner />
-            <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
-            <SiteFooter />
+            <div className="min-h-screen flex flex-col overflow-y-auto">
+              <SiteHeader />
+              <SoftLaunchCountdown />
+              <ConditionalBetaBanner />
+              <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto px-6 py-8">{children}</main>
+              <SiteFooter />
+            </div>
           </AppProviders>
         </SupabaseProvider>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            border: "3px solid red",
+            pointerEvents: "none",
+            zIndex: 999999,
+          }}
+        />
       </body>
     </html>
   );

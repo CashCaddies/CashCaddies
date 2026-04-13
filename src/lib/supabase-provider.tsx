@@ -17,13 +17,15 @@ export default function SupabaseProvider({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    let hasRedirected = false;
-
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (event === "SIGNED_IN" && session && !hasRedirected) {
-          hasRedirected = true;
-          window.location.href = "/dashboard";
+        if (event === "SIGNED_IN" && session) {
+          const currentPath = window.location.pathname;
+
+          // ONLY redirect if on login page
+          if (currentPath === "/login") {
+            window.location.href = "/dashboard";
+          }
         }
       }
     );

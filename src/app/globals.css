@@ -14,6 +14,12 @@
   --cc-card: #0b1220;
 }
 
+html,
+body {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
 body {
   min-height: 100vh;
 }
@@ -1514,4 +1520,13 @@ body {
 .adminActions button:focus-visible {
   outline: 2px solid rgba(16, 185, 129, 0.55);
   outline-offset: 2px;
+}
+
+* {
+  overscroll-behavior: auto !important;
+}
+
+html, body {
+  overflow-y: auto !important;
+  height: auto !important;
 }
