@@ -83,7 +83,7 @@ export default function RootLayout({
             borderImageSource:
               "linear-gradient(135deg, #00ff9c, #00c97a, #ffd700, #ffea70, #00ff9c)",
             boxShadow:
-              "0 0 12px rgba(0,255,156,0.6), 0 0 18px rgba(255,215,0,0.5)",
+              "0 0 8px #00ff9c, 0 0 16px #00c97a, 0 0 20px #ffd700, inset 0 0 6px rgba(255,255,255,0.3)",
           }}
         />
       </body>
