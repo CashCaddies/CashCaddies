@@ -1,26 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export default function useRequireAuth() {
-  const [loading, setLoading] = useState(true);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     const check = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) {
+      if (!session && mounted) {
         window.location.href = "/login";
-      } else {
-        setLoading(false);
+        return;
       }
+
+      if (mounted) setChecked(true);
     };
 
-    void check();
+    check();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  return loading;
+  return !checked;
 }
