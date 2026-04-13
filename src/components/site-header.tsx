@@ -1,22 +1,46 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
 import { HeaderLogoLink } from "@/components/header-logo-link";
 import { HeaderStats } from "@/components/header-stats";
 
-const navColors = [
-  "text-yellow-400 hover:text-yellow-300",
-  "text-emerald-400 hover:text-emerald-300",
-];
-
 const navItems = [
-  { href: "/lobby", label: "Lobby" },
-  { href: "/contests", label: "Contests" },
-  { href: "/lineups", label: "Lineups" },
-  { href: "/dashboard", label: "Dashboard" },
+  {
+    href: "/lobby",
+    label: "Lobby",
+    isActive: (p: string) => p === "/lobby" || p.startsWith("/lobby/"),
+  },
+  {
+    href: "/contests",
+    label: "Contests",
+    isActive: (p: string) =>
+      p === "/contests" ||
+      p.startsWith("/contests/") ||
+      p === "/dashboard/contests" ||
+      p.startsWith("/dashboard/contests/"),
+  },
+  {
+    href: "/lineups",
+    label: "Lineups",
+    isActive: (p: string) =>
+      p === "/lineups" ||
+      p.startsWith("/lineups/") ||
+      p === "/dashboard/lineups" ||
+      p.startsWith("/dashboard/lineups/"),
+  },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    isActive: (p: string) =>
+      p === "/dashboard" ||
+      (p.startsWith("/dashboard/") &&
+        !p.startsWith("/dashboard/contests") &&
+        !p.startsWith("/dashboard/lineups")),
+  },
 ] as const;
 
 /**
@@ -24,6 +48,8 @@ const navItems = [
  * Minimal header (logo → closed beta, badge, login/account) when logged out or not approved.
  */
 export function SiteHeader() {
+  const pathname = usePathname() ?? "";
+
   const brandLinks = (
     <div className="headerLinks hidden md:flex">
       <div className="headerCol">
@@ -42,19 +68,26 @@ export function SiteHeader() {
       className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center gap-8 overflow-x-auto whitespace-nowrap"
       aria-label="Primary"
     >
-      {navItems.map((item, index) => {
-        const colorClass = navColors[index % navColors.length];
+      {navItems.map((item) => {
+        const isActive = item.isActive(pathname);
         return (
-          <button
-            key={item.href}
-            type="button"
-            className={`${colorClass} cursor-pointer border-0 bg-transparent p-0 font-semibold transition-colors duration-200`}
-            onClick={() => {
-              window.location.href = item.href;
-            }}
-          >
-            {item.label}
-          </button>
+          <div key={item.href} className="relative group">
+            <div
+              className="absolute inset-0 rounded-md p-[2px] bg-gradient-to-br from-green-400 via-emerald-500 to-yellow-400 opacity-70 transition duration-200 group-hover:opacity-100 group-hover:shadow-[0_0_12px_rgba(255,215,0,0.7)]"
+            />
+            <button
+              type="button"
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => {
+                window.location.href = item.href;
+              }}
+              className={`metal-shine relative overflow-hidden rounded-md bg-[#020617] px-4 py-2 text-sm font-semibold transform transition duration-200 hover:scale-105 active:scale-95 hover:text-green-300 hover:shadow-[0_0_12px_rgba(255,215,0,0.6)] ${isActive ? "text-green-400" : "text-white"} ${
+                isActive ? "shadow-[0_0_14px_rgba(0,255,156,0.75)]" : "shadow-[0_0_6px_rgba(0,255,156,0.4)]"
+              }`}
+            >
+              {item.label}
+            </button>
+          </div>
         );
       })}
     </nav>

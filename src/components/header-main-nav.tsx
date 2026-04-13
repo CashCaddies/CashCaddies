@@ -27,17 +27,19 @@ export function HeaderMainNav() {
   return (
     <nav className="mainNav" aria-label="Main">
       {links.map(({ href, label, match }) => (
-        <button
-          key={href}
-          type="button"
-          className="cursor-pointer border-0 bg-transparent p-0 text-inherit underline-offset-4 hover:underline"
-          aria-current={match(pathname) ? "page" : undefined}
-          onClick={() => {
-            window.location.href = href;
-          }}
-        >
-          {label}
-        </button>
+        <div key={href} className="relative group">
+          <div className="absolute inset-0 rounded-md bg-gradient-to-br from-green-400 via-emerald-500 to-yellow-400 p-[2px] opacity-80 transition group-hover:opacity-100" />
+          <button
+            type="button"
+            className="relative rounded-md bg-[#020617] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_8px_rgba(0,255,156,0.5)] transition hover:text-green-300 hover:shadow-[0_0_12px_rgba(255,215,0,0.6)]"
+            aria-current={match(pathname) ? "page" : undefined}
+            onClick={() => {
+              window.location.href = href;
+            }}
+          >
+            {label}
+          </button>
+        </div>
       ))}
     </nav>
   );
