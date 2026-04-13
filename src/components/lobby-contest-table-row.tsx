@@ -116,7 +116,6 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
       window.alert(error.message ?? "Could not delete contest.");
       return;
     }
-    router.refresh();
   }
 
   return (

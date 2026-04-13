@@ -1,5 +1,6 @@
 "use server";
 
+import { fetchLobbyContests } from "@/lib/contest-lobby-fetch";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { refundContestEntryCharge } from "@/lib/contest-entry-payment";
@@ -17,6 +18,10 @@ import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+export async function loadLobbyPageContests() {
+  return fetchLobbyContests();
 }
 
 export type ConfirmLobbyEntryResult =

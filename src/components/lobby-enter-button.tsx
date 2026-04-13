@@ -301,7 +301,6 @@ export function LobbyEnterButton({
         setEntriesRefreshTick((t) => t + 1);
         await refreshWallet();
         dispatchWalletBankrollFlash();
-        router.refresh();
         return;
       }
       setError(result.error);

@@ -210,7 +210,6 @@ export function AuthForm({ mode }: Props) {
 
     setStatus("Welcome! Redirecting to your dashboard…");
     router.push("/dashboard");
-    router.refresh();
     setLoading(false);
   }
 

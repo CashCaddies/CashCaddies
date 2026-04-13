@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { bulkUpdateFeedbackAdminStatus } from "@/app/admin/feedback/actions";
 import type { AdminFeedbackStatus } from "@/app/admin/feedback/feedback-admin-types";
@@ -18,7 +17,6 @@ function notifyFeedbackUpdated() {
 }
 
 export function FeedbackAdminQuickActions({ feedbackIds }: { feedbackIds: string[] }) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   if (feedbackIds.length === 0) {
@@ -30,7 +28,6 @@ export function FeedbackAdminQuickActions({ feedbackIds }: { feedbackIds: string
       const result = await bulkUpdateFeedbackAdminStatus(feedbackIds, status);
       if (result.ok) {
         notifyFeedbackUpdated();
-        router.refresh();
       }
     });
   }

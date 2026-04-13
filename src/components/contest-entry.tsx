@@ -7,7 +7,6 @@ import {
   isEntryFeeProtected,
   type EntryProtectionFields,
 } from "@/lib/entry-protection";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export type ContestEntryCardProps = {
@@ -31,7 +30,6 @@ export function ContestEntryCard({
   lineup_edited,
   entry_protection_forced,
 }: ContestEntryCardProps) {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const protectedRow = isEntryFeeProtected({ entry_protected });
 
@@ -43,7 +41,6 @@ export function ContestEntryCard({
         window.alert(r.error);
         return;
       }
-      router.refresh();
     } finally {
       setBusy(false);
     }

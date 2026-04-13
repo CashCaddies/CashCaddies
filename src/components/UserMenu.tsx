@@ -107,7 +107,6 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
     close();
     await supabase.auth.signOut();
     router.push("/login");
-    router.refresh();
   }
 
   const propRole = profile?.role != null && String(profile.role).trim() !== "" ? String(profile.role).trim() : null;

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   grantBetaFunds,
@@ -37,7 +36,6 @@ function formatMoney(n: number) {
 }
 
 export function AdminUsersTable({ users }: Props) {
-  const router = useRouter();
   const { fullUser } = useWallet();
   const canToggleAdminRole = hasPermission(fullUser?.role, "manage_roles");
   const [statusByUser, setStatusByUser] = useState<Record<string, string>>({});
@@ -53,7 +51,6 @@ export function AdminUsersTable({ users }: Props) {
         const result = await action();
         if (result.ok) {
           setStatus(userId, result.message ?? "Updated.");
-          router.refresh();
         } else {
           setStatus(userId, result.error ?? "Action failed.");
         }
@@ -78,7 +75,6 @@ export function AdminUsersTable({ users }: Props) {
             minute: "2-digit",
           });
           setStatus(userId, `$${amount} beta funds granted • ${result.grant_count} total grants • ${localTime}`);
-          router.refresh();
         } else {
           setStatus(userId, result.error ?? "Action failed.");
         }

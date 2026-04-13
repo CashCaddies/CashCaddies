@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
 import { supabase } from "@/lib/supabase/client";
@@ -32,7 +31,6 @@ function statusBadgeClass(status: string | null): string {
 }
 
 export default function AdminBetaApprovalPage() {
-  const router = useRouter();
   const { user, isReady } = useAuth();
   const { fullUser, loading: walletLoading } = useWallet();
   const [rows, setRows] = useState<BetaRow[]>([]);
@@ -92,7 +90,6 @@ export default function AdminBetaApprovalPage() {
       return;
     }
     await loadRows();
-    router.refresh();
   };
 
   const reject = async (id: string) => {
@@ -108,7 +105,6 @@ export default function AdminBetaApprovalPage() {
       return;
     }
     await loadRows();
-    router.refresh();
   };
 
   if (!isReady || walletLoading) {

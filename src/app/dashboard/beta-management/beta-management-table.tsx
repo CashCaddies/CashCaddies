@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { approveBetaUser, toggleFoundingTester } from "@/app/dashboard/beta-management/actions";
 import { FoundingStarIcon, FoundingStarOutlineIcon } from "@/components/founding-star-icon";
@@ -45,7 +44,6 @@ function UserTable({
   showApprove: boolean;
   emptyLabel: string;
 }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -59,10 +57,6 @@ function UserTable({
     const t = window.setTimeout(() => setSuccessToast(null), 4000);
     return () => window.clearTimeout(t);
   }, [successToast]);
-
-  function refresh() {
-    router.refresh();
-  }
 
   return (
     <>
@@ -127,7 +121,6 @@ function UserTable({
                     }
                     setConfirmApproveId(null);
                     setSuccessToast("User approved");
-                    refresh();
                   });
                 }}
               >
@@ -235,7 +228,6 @@ function UserTable({
                                 setError(r.error);
                                 return;
                               }
-                              refresh();
                             });
                           }}
                         >

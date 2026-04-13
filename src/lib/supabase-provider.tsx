@@ -17,11 +17,16 @@ export default function SupabaseProvider({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        window.location.href = "/dashboard";
+    let hasRedirected = false;
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN" && session && !hasRedirected) {
+          hasRedirected = true;
+          window.location.href = "/dashboard";
+        }
       }
-    });
+    );
 
     return () => {
       listener.subscription.unsubscribe();

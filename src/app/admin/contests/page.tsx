@@ -143,7 +143,6 @@ export default function AdminContestsPage() {
         return;
       }
 
-      router.refresh();
       const contests = await fetchContestsSafe();
       setRows(contests);
       setListNotice({ text: "Contest published", ok: true });

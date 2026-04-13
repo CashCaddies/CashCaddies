@@ -119,11 +119,9 @@ export function EnterContestWithSavedLineup({
             );
             window.setTimeout(() => {
               router.push("/dashboard/lineups");
-              router.refresh();
             }, 2200);
           } else {
             router.push("/dashboard/lineups");
-            router.refresh();
           }
           return;
         }

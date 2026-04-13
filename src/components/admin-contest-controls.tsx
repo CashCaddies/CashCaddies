@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   adminCompleteContest,
@@ -22,7 +21,6 @@ type Props = {
 };
 
 export function AdminContestControls({ contestId, lifecycle, dbStatus, lateSwapEnabled = true }: Props) {
-  const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -35,7 +33,6 @@ export function AdminContestControls({ contestId, lifecycle, dbStatus, lateSwapE
         setMsg(r.error ?? "Action failed.");
         return;
       }
-      router.refresh();
     } finally {
       setBusy(null);
     }
