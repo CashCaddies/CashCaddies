@@ -104,25 +104,27 @@ export function FeedbackAdminTable({ rows }: { rows: BetaFeedbackAdminRow[] }) {
                 </td>
                 <td className="whitespace-nowrap px-3 py-3 text-[#9aa5b1]">{formatDate(row.created_at)}</td>
                 <td className="px-3 py-3">
-                  <select
-                    className={`w-full min-w-[140px] rounded-md border bg-[#0f1419] px-2 py-1.5 text-sm font-medium text-white ring-1 focus:outline-none focus:ring-2 disabled:opacity-50 ${STATUS_STYLE[safeStatus]}`}
-                    value={safeStatus}
-                    disabled={pending}
-                    aria-label={`Status for feedback ${row.id}`}
-                    onChange={(e) => {
-                      const next = e.target.value as AdminFeedbackStatus;
-                      startTransition(async () => {
-                        const r = await updateBetaFeedbackAdminStatus(row.id, next);
-                        if (r.ok) notifyFeedbackUpdated();
-                      });
-                    }}
-                  >
-                    {ADMIN_FEEDBACK_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {STATUS_LABEL[s]}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative z-0">
+                    <select
+                      className={`w-full min-w-[140px] relative z-0 rounded-md border bg-[#0f1419] px-2 py-1.5 text-sm font-medium text-white ring-1 focus:outline-none focus:ring-2 disabled:opacity-50 ${STATUS_STYLE[safeStatus]}`}
+                      value={safeStatus}
+                      disabled={pending}
+                      aria-label={`Status for feedback ${row.id}`}
+                      onChange={(e) => {
+                        const next = e.target.value as AdminFeedbackStatus;
+                        startTransition(async () => {
+                          const r = await updateBetaFeedbackAdminStatus(row.id, next);
+                          if (r.ok) notifyFeedbackUpdated();
+                        });
+                      }}
+                    >
+                      {ADMIN_FEEDBACK_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_LABEL[s]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </td>
               </tr>
             );

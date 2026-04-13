@@ -37,22 +37,24 @@ export function AdminInsuranceForm({ contests }: Props) {
         <label htmlFor="insuranceContestId" className="block text-xs font-semibold uppercase tracking-wide text-[#8b98a5]">
           Contest
         </label>
-        <select
-          id="insuranceContestId"
-          name="contestId"
-          required
-          className="mt-1 w-full rounded-lg border border-[#2a3039] bg-[#0f1419] px-3 py-2 text-sm text-white"
-          defaultValue=""
-        >
-          <option value="" disabled>
-            Choose contest…
-          </option>
-          {contests.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name} ({c.id})
+        <div className="relative z-0">
+          <select
+            id="insuranceContestId"
+            name="contestId"
+            required
+            className="mt-1 w-full relative z-0 rounded-lg border border-[#2a3039] bg-[#0f1419] px-3 py-2 text-sm text-white"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Choose contest…
             </option>
-          ))}
-        </select>
+            {contests.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.id})
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <div>
         <label htmlFor="insuranceAdminSecret" className="block text-xs font-semibold uppercase tracking-wide text-[#8b98a5]">

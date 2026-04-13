@@ -190,31 +190,35 @@ export function ContestLabPanel({ contestId, entryId, lineupId, players }: Props
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
                   <label className="flex flex-1 flex-col gap-1 text-xs text-slate-400">
                     Select golfer
-                    <select
-                      value={golferId}
-                      onChange={(e) => setGolferId(e.target.value)}
-                      className="rounded border border-slate-600 bg-slate-950 px-2 py-1.5 text-slate-100"
-                    >
-                      <option value="">—</option>
-                      {players.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative z-0">
+                      <select
+                        value={golferId}
+                        onChange={(e) => setGolferId(e.target.value)}
+                        className="w-full relative z-0 rounded border border-slate-600 bg-slate-950 px-2 py-1.5 text-slate-100"
+                      >
+                        <option value="">—</option>
+                        {players.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </label>
                   <label className="flex flex-1 flex-col gap-1 text-xs text-slate-400">
                     Select scenario
-                    <select
-                      value={manualScenario}
-                      onChange={(e) => setManualScenario(e.target.value as typeof manualScenario)}
-                      className="rounded border border-slate-600 bg-slate-950 px-2 py-1.5 text-slate-100"
-                    >
-                      <option value="WD">Simulate golfer WD</option>
-                      <option value="BAD_ROUND">Bad round (+5–10 DFS pts penalty)</option>
-                      <option value="HOT_ROUND">Hot round (+3–8 DFS pts bonus)</option>
-                      <option value="MISS_CUT">Missed cut (~50% weekend pts)</option>
-                    </select>
+                    <div className="relative z-0">
+                      <select
+                        value={manualScenario}
+                        onChange={(e) => setManualScenario(e.target.value as typeof manualScenario)}
+                        className="w-full relative z-0 rounded border border-slate-600 bg-slate-950 px-2 py-1.5 text-slate-100"
+                      >
+                        <option value="WD">Simulate golfer WD</option>
+                        <option value="BAD_ROUND">Bad round (+5–10 DFS pts penalty)</option>
+                        <option value="HOT_ROUND">Hot round (+3–8 DFS pts bonus)</option>
+                        <option value="MISS_CUT">Missed cut (~50% weekend pts)</option>
+                      </select>
+                    </div>
                   </label>
                 </div>
                 <button

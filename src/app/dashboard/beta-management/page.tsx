@@ -471,19 +471,21 @@ function InviteSourceField({
       <label className="block text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor={`invite-source-${row.id}`}>
         Invite source
       </label>
-      <select
-        id={`invite-source-${row.id}`}
-        className="mt-1 w-full max-w-xs rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
-        value={row.invite_source}
-        disabled={busy}
-        onChange={(e) => onSetSource(e.target.value as InviteSource)}
-      >
-        {INVITE_SOURCES.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
+      <div className="relative z-0">
+        <select
+          id={`invite-source-${row.id}`}
+          className="mt-1 w-full max-w-xs relative z-0 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
+          value={row.invite_source}
+          disabled={busy}
+          onChange={(e) => onSetSource(e.target.value as InviteSource)}
+        >
+          {INVITE_SOURCES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }
@@ -506,19 +508,21 @@ function BetaPriorityField({
         Beta priority
       </label>
       {canEdit ? (
-        <select
-          id={`beta-priority-${row.id}`}
-          className="mt-1 w-full max-w-xs rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
-          value={value}
-          disabled={busy}
-          onChange={(e) => onSetPriority(e.target.value as BetaPriority)}
-        >
-          {BETA_PRIORITIES.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
+        <div className="relative z-0">
+          <select
+            id={`beta-priority-${row.id}`}
+            className="mt-1 w-full max-w-xs relative z-0 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
+            value={value}
+            disabled={busy}
+            onChange={(e) => onSetPriority(e.target.value as BetaPriority)}
+          >
+            {BETA_PRIORITIES.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
       ) : (
         <p className="mt-1 text-sm capitalize text-slate-200">{value}</p>
       )}

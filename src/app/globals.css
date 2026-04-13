@@ -1581,3 +1581,15 @@ input[type="number"] {
 input {
   outline: 3px solid red !important;
 }
+
+/* Prevent any stray selects from floating into header */
+select {
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+/* Ensure header always stays on top */
+header {
+  position: relative;
+  z-index: 50;
+}

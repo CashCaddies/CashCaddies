@@ -118,18 +118,20 @@ export function ProtectionSwapPanel({
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="min-w-0 flex-1 text-xs text-amber-100/90">
           <span className="sr-only">Replacement golfer</span>
-          <select
-            value={choice}
-            onChange={(e) => setChoice(e.target.value)}
-            className="mt-1 w-full rounded border border-amber-800/60 bg-slate-950 px-2 py-2 text-sm text-white"
-          >
-            <option value="">Select golferâ€¦</option>
-            {eligible.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name} Â· ${g.salary.toLocaleString()}
-              </option>
-            ))}
-          </select>
+          <div className="relative z-0">
+            <select
+              value={choice}
+              onChange={(e) => setChoice(e.target.value)}
+              className="mt-1 w-full relative z-0 rounded border border-amber-800/60 bg-slate-950 px-2 py-2 text-sm text-white"
+            >
+              <option value="">Select golferâ€¦</option>
+              {eligible.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name} Â· ${g.salary.toLocaleString()}
+                </option>
+              ))}
+            </select>
+          </div>
         </label>
         <button
           type="submit"

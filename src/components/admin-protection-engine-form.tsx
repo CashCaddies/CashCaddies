@@ -35,21 +35,23 @@ export function AdminProtectionEngineForm({ contests }: { contests: Contest[] })
       </p>
       <label className="block text-sm text-[#c5cdd5]">
         Contest
-        <select
-          name="contestId"
-          required
-          className="mt-1 w-full rounded border border-[#2a3039] bg-[#141920] px-3 py-2 text-white"
-          defaultValue=""
-        >
-          <option value="" disabled>
-            Select…
-          </option>
-          {contests.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
+        <div className="relative z-0">
+          <select
+            name="contestId"
+            required
+            className="mt-1 w-full relative z-0 rounded border border-[#2a3039] bg-[#141920] px-3 py-2 text-white"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Select…
             </option>
-          ))}
-        </select>
+            {contests.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </label>
       <label className="block text-sm text-[#c5cdd5]">
         Admin secret

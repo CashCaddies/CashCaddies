@@ -40,20 +40,22 @@ export function AdminScoringForm({ golfers }: { golfers: GolferOption[] }) {
         <label htmlFor="golferId" className="block text-sm font-semibold text-[#c5cdd5]">
           Golfer
         </label>
-        <select
-          id="golferId"
-          name="golferId"
-          required
-          value={golferId}
-          onChange={(e) => setGolferId(e.target.value)}
-          className="w-full max-w-md rounded border border-[#2a3039] bg-[#0f1419] px-3 py-2.5 text-[#e8ecf0]"
-        >
-          {golfers.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name} (current: {Number(g.fantasy_points).toFixed(1)} pts)
-            </option>
-          ))}
-        </select>
+        <div className="relative z-0">
+          <select
+            id="golferId"
+            name="golferId"
+            required
+            value={golferId}
+            onChange={(e) => setGolferId(e.target.value)}
+            className="w-full max-w-md relative z-0 rounded border border-[#2a3039] bg-[#0f1419] px-3 py-2.5 text-[#e8ecf0]"
+          >
+            {golfers.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name} (current: {Number(g.fantasy_points).toFixed(1)} pts)
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="grid max-w-md gap-4 sm:grid-cols-3">

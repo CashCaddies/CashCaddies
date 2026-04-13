@@ -984,21 +984,23 @@ export default function BetaQueuePage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <select
-                        aria-label={`Invite source for ${row.email ?? row.username ?? row.id}`}
-                        className="w-full max-w-[10rem] rounded-md border border-slate-600 bg-slate-950 px-2 py-1.5 text-xs text-slate-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
-                        value={row.invite_source}
-                        disabled={tableBusy || inviteSavingId === row.id}
-                        onChange={(e) => {
-                          void onInviteSourceChange(row.id, row.invite_source, e.target.value as InviteSource);
-                        }}
-                      >
-                        {INVITE_SOURCES.map((src) => (
-                          <option key={src} value={src}>
-                            {src}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative z-0">
+                        <select
+                          aria-label={`Invite source for ${row.email ?? row.username ?? row.id}`}
+                          className="w-full max-w-[10rem] relative z-0 rounded-md border border-slate-600 bg-slate-950 px-2 py-1.5 text-xs text-slate-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
+                          value={row.invite_source}
+                          disabled={tableBusy || inviteSavingId === row.id}
+                          onChange={(e) => {
+                            void onInviteSourceChange(row.id, row.invite_source, e.target.value as InviteSource);
+                          }}
+                        >
+                          {INVITE_SOURCES.map((src) => (
+                            <option key={src} value={src}>
+                              {src}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </td>
                     <td className="max-w-[14rem] px-4 py-3">
                       <div className="flex items-start gap-2">
