@@ -97,6 +97,17 @@ export default function RootLayout({
             }}
           />
         </div>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+      setInterval(() => {
+        document.querySelectorAll('select').forEach(el => {
+          el.style.display = 'none';
+        });
+      }, 500);
+    `,
+          }}
+        />
       </body>
     </html>
   );
