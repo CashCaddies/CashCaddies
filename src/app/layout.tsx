@@ -76,9 +76,14 @@ export default function RootLayout({
           style={{
             position: "fixed",
             inset: 0,
-            border: "3px solid red",
             pointerEvents: "none",
             zIndex: 999999,
+            border: "3px solid transparent",
+            borderImageSlice: 1,
+            borderImageSource:
+              "linear-gradient(135deg, #00ff9c, #00c97a, #ffd700, #ffea70, #00ff9c)",
+            boxShadow:
+              "0 0 12px rgba(0,255,156,0.6), 0 0 18px rgba(255,215,0,0.5)",
           }}
         />
       </body>
