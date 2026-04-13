@@ -13,7 +13,7 @@ import {
   formatProtectedEntriesPercent,
 } from "@/lib/contest-lobby-shared";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
-import { deleteContest } from "@/lib/deleteContest";
+import { supabase } from "@/lib/supabase/client";
 import { AdminContestControls } from "@/components/admin-contest-controls";
 import { ContestFullBadge, ContestLifecycleStatusBadge, ContestLockCountdown } from "@/components/contest-card";
 import { EnterContestButton } from "@/components/enter-contest-button";
@@ -37,6 +37,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const createdId = searchParams.get("created");
   const isCreatedContest = createdId === contest.id;
   const rowRef = useRef<HTMLTableRowElement>(null);
+  const [loading, setLoading] = useState(false);
   const href = `/contest/${encodeURIComponent(contest.id)}`;
   const max = Math.max(1, contest.max_entries);
   const current = Math.min(contest.entry_count || 0, max);
@@ -108,15 +109,60 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
     };
   }, [viewerRole]);
 
-  async function handleDelete(id: string) {
-    const confirmDelete = window.confirm("Delete contest?");
-    if (!confirmDelete) return;
-    const error = await deleteContest(id);
-    if (error) {
-      window.alert(error.message ?? "Could not delete contest.");
-      return;
+  const handleDelete = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      if (!supabase) {
+        console.error(new Error("Supabase client is not available."));
+      } else {
+        const { error } = await supabase.from("contests").delete().eq("id", contest.id);
+
+        if (error) {
+          console.error(error);
+        } else {
+          window.location.reload();
+          return;
+        }
+      }
+    } catch (err) {
+      console.error(err);
     }
-  }
+
+    setLoading(false);
+  };
+
+  const handleSettle = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      if (!supabase) {
+        console.error(new Error("Supabase client is not available."));
+      } else {
+        const { data, error } = await supabase.rpc("settle_contest_prizes", {
+          p_contest_id: contest.id,
+        });
+
+        if (error) {
+          console.error(error);
+        } else {
+          const row = data as { ok?: boolean } | null;
+          if (row && row.ok === false) {
+            console.error(data);
+          } else {
+            window.location.reload();
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    setLoading(false);
+  };
 
   return (
     <tr
@@ -206,16 +252,28 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
             />
           ) : null}
           {admin && (
-            <button
-              type="button"
-              className="deleteContestButton"
-              onClick={(e) => {
-                stopRowNavigation(e);
-                void handleDelete(contest.id);
-              }}
-            >
-              Delete
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  stopRowNavigation(e);
+                  void handleSettle();
+                }}
+                disabled={loading}
+              >
+                {loading ? "LOADING..." : "SETTLE"}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  stopRowNavigation(e);
+                  void handleDelete();
+                }}
+                disabled={loading}
+              >
+                DELETE
+              </button>
+            </>
           )}
         </div>
       </td>

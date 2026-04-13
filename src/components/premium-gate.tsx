@@ -27,13 +27,10 @@ export function PremiumGate({
 
   return (
     <div className={`relative min-h-[8rem] ${className}`.trim()}>
-      <div
-        className="pointer-events-none select-none blur-[4px]"
-        aria-hidden="true"
-      >
+      <div className="pointer-events-auto relative z-0 select-none blur-[4px]" aria-hidden="true">
         {children}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center bg-black/60 p-4">
+      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 p-4">
         <div className="w-full max-w-sm rounded-xl border border-amber-600/35 bg-[#0c1015] px-5 py-6 text-center shadow-xl shadow-black/50">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-amber-500/50 bg-amber-950/40 text-2xl text-amber-300">
             <span aria-hidden="true">🔒</span>

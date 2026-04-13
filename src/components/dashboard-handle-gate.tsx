@@ -33,10 +33,7 @@ export function DashboardHandleGate({ children }: { children: React.ReactNode })
 
   return (
     <div className="relative min-h-[40vh]">
-      <div
-        className="pointer-events-none select-none opacity-[0.12] blur-[1px]"
-        aria-hidden
-      >
+      <div className="pointer-events-auto relative z-0 select-none opacity-[0.12] blur-[1px]" aria-hidden>
         {children}
       </div>
       <div className="absolute inset-0 z-40 flex items-start justify-center pt-8 sm:pt-12">
