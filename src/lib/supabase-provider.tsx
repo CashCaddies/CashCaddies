@@ -1,7 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
 
 /** Single browser client — module scope only; never inside the component body. */
 export const supabase = createBrowserClient(
@@ -16,25 +16,6 @@ export default function SupabaseProvider({
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          const currentPath = window.location.pathname;
-
-          // ONLY redirect if on login page
-          if (currentPath === "/login") {
-            window.location.href = "/dashboard";
-          }
-        }
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
   return (
     <SupabaseContext.Provider value={supabase}>
       {children}
