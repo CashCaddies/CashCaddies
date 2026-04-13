@@ -110,6 +110,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   }, [viewerRole]);
 
   const handleDelete = async () => {
+    console.log("DELETE CLICKED", contest.id);
     if (loading) return;
     setLoading(true);
 
