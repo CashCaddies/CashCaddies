@@ -14,6 +14,7 @@ import {
   resolveLineupEntryStatus,
 } from "@/lib/dashboard-lineups";
 import { useDashboardLineups } from "@/hooks/use-dashboard-lineups";
+import useRequireAuth from "@/hooks/useRequireAuth";
 import { useInsuranceClaims } from "@/hooks/use-insurance-claims";
 import { ContestLabPanel } from "@/components/contest-lab-modal";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
@@ -37,9 +38,12 @@ function formatSafetyUsd(n: number) {
 }
 
 export default function MyLineupsPage() {
+  const authLoading = useRequireAuth();
   const { user, lineups, error, loading, refresh } = useDashboardLineups();
   const lineupIds = useMemo(() => lineups.map((l) => l.id), [lineups]);
   const { getClaim, refresh: refreshClaims } = useInsuranceClaims(lineupIds);
+
+  if (authLoading) return null;
 
   return (
     <DashboardShell

@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
 
@@ -56,8 +55,6 @@ export function AuthForm({ mode }: Props) {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [resendMsg, setResendMsg] = useState("");
   const [resendSending, setResendSending] = useState(false);
-  const router = useRouter();
-
   const title = useMemo(() => (mode === "login" ? "Login" : "Create account"), [mode]);
   const submitLabel = useMemo(() => (mode === "login" ? "Log in" : title), [mode, title]);
 
@@ -209,7 +206,7 @@ export function AuthForm({ mode }: Props) {
     }
 
     setStatus("Welcome! Redirecting to your dashboard…");
-    router.push("/dashboard");
+    window.location.href = "/dashboard";
     setLoading(false);
   }
 

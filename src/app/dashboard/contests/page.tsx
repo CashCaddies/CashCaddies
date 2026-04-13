@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { DashboardStatusBadge } from "@/components/dashboard-status-badge";
 import { ProtectedEntryBadge } from "@/components/protected-golfer-indicators";
 import { useMyContestEntries } from "@/hooks/use-my-contest-entries";
+import useRequireAuth from "@/hooks/useRequireAuth";
 
 function formatUsd(n: number) {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
@@ -23,8 +24,11 @@ function formatEnteredAt(iso: string) {
 }
 
 export default function MyContestsPage() {
+  const authLoading = useRequireAuth();
   const router = useRouter();
   const { user, rows, error, loading, sessionResolved } = useMyContestEntries();
+
+  if (authLoading) return null;
 
   return (
     <DashboardShell

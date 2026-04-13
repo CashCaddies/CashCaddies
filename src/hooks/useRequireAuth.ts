@@ -1,32 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function useRequireAuth() {
   const [checked, setChecked] = useState(false);
-  const hasChecked = useRef(false);
 
   useEffect(() => {
-    if (hasChecked.current) return;
-    hasChecked.current = true;
-
     let mounted = true;
 
-    const check = async () => {
+    const run = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session && mounted) {
-        window.location.href = "/login";
+      const currentPath = window.location.pathname;
+
+      // NOT logged in → go to login ONLY
+      if (!session) {
+        if (currentPath !== "/login") {
+          window.location.href = "/login";
+        }
         return;
       }
 
+      // logged in → DO NOTHING (no redirect!)
       if (mounted) setChecked(true);
     };
 
-    check();
+    run();
 
     return () => {
       mounted = false;
