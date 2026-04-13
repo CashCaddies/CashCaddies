@@ -15,7 +15,7 @@ export function HeaderMainNav() {
 
   return (
     <nav className="mainNav" aria-label="Main">
-      <div className="flex items-center gap-3 overflow-x-auto overflow-y-hidden">
+      <div className="flex items-center gap-4 overflow-x-auto whitespace-nowrap">
         {links.map(({ href, label }) => (
           <div key={href} className="relative group">
             <div

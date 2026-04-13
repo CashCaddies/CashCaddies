@@ -211,7 +211,7 @@ export function HeaderFundBar() {
         {current?.valueMailto ? (
           <div className={rowClassName}>
             <Icon
-              className="h-[18px] w-[18px] shrink-0 text-amber-400/90 opacity-80 transition-all duration-300 group-hover:opacity-100 motion-reduce:transition-none"
+              className="h-auto w-[18px] shrink-0 text-amber-400/90 opacity-80 transition-all duration-300 group-hover:opacity-100 motion-reduce:transition-none"
               strokeWidth={2}
               aria-hidden
             />
@@ -228,7 +228,7 @@ export function HeaderFundBar() {
         ) : (
           <Link href={current?.href ?? "/"} className={rowClassName}>
             <Icon
-              className="h-[18px] w-[18px] shrink-0 text-amber-400/90 opacity-80 transition-all duration-300 group-hover:opacity-100 motion-reduce:transition-none"
+              className="h-auto w-[18px] shrink-0 text-amber-400/90 opacity-80 transition-all duration-300 group-hover:opacity-100 motion-reduce:transition-none"
               strokeWidth={2}
               aria-hidden
             />

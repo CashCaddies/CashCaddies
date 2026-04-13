@@ -1598,3 +1598,20 @@ header {
 ::-webkit-scrollbar-button {
   display: none;
 }
+
+/* 🔥 Remove ANY vertical scrollbar in header/nav */
+header,
+header * {
+  overflow-y: hidden !important;
+  max-height: none !important;
+}
+
+/* Remove scrollbar UI completely (Chrome) */
+header *::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox */
+header * {
+  scrollbar-width: none;
+}
