@@ -28,3 +28,30 @@ export const createClient = cache(async () => {
     },
   );
 });
+
+/** Supabase client whose HTTP layer uses `fetch(..., { cache: "no-store" })` for Next.js dynamic data. */
+export const createClientNoStore = cache(async () => {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {}
+        },
+      },
+      global: {
+        fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+      },
+    },
+  );
+});

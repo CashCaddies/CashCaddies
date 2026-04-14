@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { createClientNoStore } from "@/lib/supabase/server";
 import {
   entryCountFromContestEntriesRelation,
   type LobbyContestPayoutRow,
@@ -105,7 +105,7 @@ export async function fetchLobbyContests(): Promise<{
   error: string | null;
 }> {
   try {
-    const supabase = await createClient();
+    const supabase = await createClientNoStore();
     const hasAccess = await currentUserHasContestAccess(supabase);
     // TEMP STABILIZATION MODE:
     // Server auth is disabled, so `hasAccess` can be false even for valid users.
@@ -178,6 +178,8 @@ export async function fetchLobbyContests(): Promise<{
       })
       .filter((row): row is LobbyContestRow => row != null);
 
+    console.log("LOBBY DATA:", contests);
+
     return { contests, error: null };
   } catch (e) {
     let message = e instanceof Error ? e.message : "Could not load contests.";
@@ -194,7 +196,7 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
   const id = contestId?.trim();
   if (!id) return null;
   try {
-    const supabase = await createClient();
+    const supabase = await createClientNoStore();
     const hasAccess = await currentUserHasContestAccess(supabase);
     // TEMP STABILIZATION MODE: avoid false negatives from disabled server auth.
     if (!hasAccess && process.env.NODE_ENV === "development") {

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { fetchLobbyContests } from "@/lib/contest-lobby-fetch";
 import { LobbyPageContent } from "@/components/lobby-page-content";
 

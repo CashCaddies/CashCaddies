@@ -53,7 +53,14 @@ export function LobbyPageContent({ contests, error }: Props) {
               Guaranteed prize pools · Pick 6 · $50K salary cap
             </p>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 sm:mt-0">
+          <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-0">
+            <button
+              type="button"
+              className="rounded border border-amber-600/50 bg-[#1c2128] px-3 py-1 text-xs font-semibold text-amber-100 hover:bg-[#252b33]"
+              onClick={() => window.location.reload()}
+            >
+              FORCE REFRESH
+            </button>
             <span className="rounded border border-[#2f3640] bg-[#1c2128] px-3 py-1 text-xs font-semibold text-[#c5cdd5]">
               Classic
             </span>
