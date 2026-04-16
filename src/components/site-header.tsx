@@ -106,23 +106,23 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center px-6 py-4">
-              <div className="headerLeft flex shrink-0 items-center gap-6">
+            <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center justify-between px-6 py-6">
+              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-6">
                 <div className="header-logo-link group inline-flex min-w-0 items-center gap-6">
-                  <div className="brandBlock">
+                  <div className="brandBlock min-w-0">
                     <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Image
                           src="/cashcaddies-square.png"
                           alt="CashCaddies"
-                          width={300}
-                          height={150}
-                          className="h-12 w-auto object-contain"
+                          width={80}
+                          height={80}
+                          className="h-20 w-20 object-contain"
                           priority
                           unoptimized
                         />
-                        <div className="min-w-0 flex flex-col leading-tight">
+                        <div className="min-w-0">
                           <h1
                             className={
                               ctx.showMinimalHeader
