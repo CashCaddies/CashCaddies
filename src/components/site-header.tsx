@@ -114,7 +114,7 @@ export function SiteHeader() {
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
                       <div className="flex items-center gap-4">
                         <Image
-                          src="/cashcaddies-square.png"
+                          src="/cashcaddies-square.png?v=1"
                           alt="CashCaddies"
                           width={80}
                           height={80}
