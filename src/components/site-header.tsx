@@ -105,18 +105,20 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center justify-between px-6 py-6">
+            <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center justify-between px-6 py-7">
               <div className="headerLeft flex min-w-0 shrink-0 items-center gap-6">
                 <div className="header-logo-link group inline-flex min-w-0 items-center gap-6">
                   <div className="brandBlock min-w-0">
                     <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
-                      <div className="flex items-center gap-4">
-                        <img
-                          src="/cashcaddies-square.png"
-                          alt="CashCaddies"
-                          className="h-28 w-28 object-contain"
-                        />
+                      <div className="flex items-center gap-5">
+                        <div className="logo-glow">
+                          <img
+                            src="/cashcaddies-square.png"
+                            alt="CashCaddies"
+                            className="h-32 w-32 object-contain"
+                          />
+                        </div>
                         <div className="min-w-0">
                           <h1
                             className={

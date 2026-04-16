@@ -1716,30 +1716,42 @@ header * {
   }
 }
 
-@keyframes logoGlow {
-  0% {
-    filter:
-      drop-shadow(0 0 6px #00ff88) drop-shadow(0 0 4px #ffd700);
-  }
-  50% {
-    filter:
-      drop-shadow(0 0 14px #00ff88) drop-shadow(0 0 10px #ffd700);
-  }
-  100% {
-    filter:
-      drop-shadow(0 0 6px #00ff88) drop-shadow(0 0 4px #ffd700);
-  }
-}
-
 .logo-glow {
-  animation: logoGlow 2.5s ease-in-out infinite;
+  position: relative;
+  border-radius: 12px;
   overflow: visible;
   max-width: none;
 }
 
+.logo-glow::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 16px;
+  background: linear-gradient(
+    120deg,
+    #00ff99,
+    #00cc66,
+    #ffd700,
+    #00ff99
+  );
+  background-size: 400% 400%;
+  animation: glowMove 2.5s linear infinite;
+  filter: blur(8px);
+  opacity: 0.9;
+}
+
+@keyframes glowMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .logo-glow {
+  .logo-glow::before {
     animation: none;
-    filter: none;
   }
 }
