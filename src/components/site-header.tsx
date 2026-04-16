@@ -1,11 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
-import { HeaderLogoLink } from "@/components/header-logo-link";
 import { HeaderStats } from "@/components/header-stats";
 
 const navItems = [
@@ -109,18 +109,32 @@ export function SiteHeader() {
             <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center px-6 py-4">
               <div className="headerLeft flex shrink-0 items-center gap-6">
                 <div className="header-logo-link group inline-flex min-w-0 items-center gap-6">
-                  <HeaderLogoLink />
                   <div className="brandBlock">
                     <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
-                      <h1
-                        className={
-                          ctx.showMinimalHeader ? "brandTitle brandTitle--compact" : "brandTitle"
-                        }
-                      >
-                        CashCaddies
-                      </h1>
-                      <p className="brandSubtitle">Daily Fantasy Golf Platform</p>
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src="/cashcaddies-full.png"
+                          alt="CashCaddies"
+                          width={300}
+                          height={150}
+                          className="h-12 w-auto object-contain"
+                          priority
+                          unoptimized
+                        />
+                        <div className="min-w-0 flex flex-col leading-tight">
+                          <h1
+                            className={
+                              ctx.showMinimalHeader
+                                ? "brandTitle brandTitle--compact"
+                                : "brandTitle"
+                            }
+                          >
+                            CashCaddies
+                          </h1>
+                          <p className="brandSubtitle">Daily Fantasy Golf Platform</p>
+                        </div>
+                      </div>
                       {brandLinks}
                     </div>
                   </div>
