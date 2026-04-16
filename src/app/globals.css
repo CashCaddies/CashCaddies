@@ -1712,3 +1712,32 @@ header * {
       0 0 6px #ffd700;
   }
 }
+
+@keyframes logoGlow {
+  0% {
+    filter:
+      drop-shadow(0 0 6px #00ff88) drop-shadow(0 0 4px #ffd700);
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 14px #00ff88) drop-shadow(0 0 10px #ffd700);
+  }
+  100% {
+    filter:
+      drop-shadow(0 0 6px #00ff88) drop-shadow(0 0 4px #ffd700);
+  }
+}
+
+.logo-glow {
+  animation: logoGlow 2.5s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-glow {
+    animation: none;
+    filter: none;
+  }
+}
