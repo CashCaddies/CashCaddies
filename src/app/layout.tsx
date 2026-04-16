@@ -18,38 +18,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const ogImageUrl = "https://www.cashcaddies.com/Thumbnail2.0FORCC.png";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://cashcaddies.com"),
 
-  title: "CashCaddies DFS | Fantasy Golf Platform",
+  title: "CashCaddies",
 
-  description:
-    "Daily fantasy golf contests with built-in entry protection and real cash prizes.",
+  description: "Daily Fantasy Golf",
 
   openGraph: {
-    title: "CashCaddies DFS | Fantasy Golf Platform",
-
-    description:
-      "Daily fantasy golf contests with built-in entry protection and real cash prizes.",
-
+    title: "CashCaddies",
+    description: "Daily Fantasy Golf",
     images: [
       {
-        url: "/cashcaddies-preview.png",
-        width: 1200,
-        height: 630,
+        url: ogImageUrl,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-
-    title: "CashCaddies DFS | Fantasy Golf Platform",
-
-    description:
-      "Daily fantasy golf contests with built-in entry protection and real cash prizes.",
-
-    images: ["/cashcaddies-preview.png"],
+    title: "CashCaddies",
+    description: "Daily Fantasy Golf",
+    images: [ogImageUrl],
   },
 };
 
