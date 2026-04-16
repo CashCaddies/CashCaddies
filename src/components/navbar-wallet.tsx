@@ -141,7 +141,7 @@ export function NavbarWallet() {
 
       {open && (
         <div
-          className="absolute right-0 z-50 mt-2 w-[min(100vw-2rem,20rem)] rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl shadow-black/40"
+          className="absolute right-0 z-50 mt-2 w-[min(calc(100%-2rem),20rem)] rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl shadow-black/40"
           role="dialog"
           aria-label="Beta wallet summary"
         >

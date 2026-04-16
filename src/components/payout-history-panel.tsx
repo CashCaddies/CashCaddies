@@ -108,7 +108,7 @@ export function PayoutHistoryPanel({
                 return (
                   <tr key={row.id} className="border-b border-[#2a3039]/70 last:border-0">
                     <td className="px-4 py-3 font-mono tabular-nums text-white">{row.rank}</td>
-                    <td className="max-w-[min(100vw,22rem)] px-4 py-3">
+                    <td className="max-w-[min(100%,22rem)] px-4 py-3">
                       <div className="font-medium text-white">{label.primary}</div>
                       {label.secondary ? (
                         <div className="mt-0.5 text-xs text-[#8b98a5]">{label.secondary}</div>
