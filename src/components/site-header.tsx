@@ -64,7 +64,7 @@ export function SiteHeader() {
 
   const ccMainNav = (
     <nav
-      className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center gap-8 overflow-x-auto whitespace-nowrap"
+      className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center gap-3 overflow-x-auto whitespace-nowrap"
       aria-label="Primary"
     >
       {navItems.map((item) => {
@@ -101,41 +101,28 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-yellow-500/20 bg-gradient-to-b from-slate-950 to-slate-900">
+    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-white/10 bg-gradient-to-b from-slate-950 to-slate-900">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center justify-between px-6 py-7">
-              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-6">
-                <div className="header-logo-link group inline-flex min-w-0 items-center gap-6">
-                  <div className="brandBlock min-w-0">
-                    <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                    <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
-                      <div className="flex items-center gap-5">
-                        <div className="logo-glow">
-                          <img
-                            src="/cashcaddies-square.png"
-                            alt="CashCaddies"
-                            className="h-36 w-36 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <h1
-                            className={
-                              ctx.showMinimalHeader
-                                ? "brandTitle brandTitle--compact"
-                                : "brandTitle"
-                            }
-                          >
-                            CashCaddies
-                          </h1>
-                          <p className="brandSubtitle">Daily Fantasy Golf Platform</p>
-                        </div>
-                      </div>
-                      {brandLinks}
-                    </div>
+            <div className="headerContainer mx-auto flex w-full max-w-7xl items-center justify-between px-8 py-6">
+              <div className="min-w-0 shrink-0">
+                <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
+                <div className="flex items-center gap-4">
+                  <div className="logo-glow flex-shrink-0">
+                    <img
+                      src="/cashcaddies-square.png"
+                      alt="CashCaddies"
+                      className="h-32 w-32 object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.6)]"
+                    />
+                  </div>
+
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-2xl font-semibold text-emerald-400">CashCaddies</span>
+                    <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
                   </div>
                 </div>
+                <div className="mt-2 hidden md:block">{brandLinks}</div>
               </div>
               {ccMainNav}
               {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
