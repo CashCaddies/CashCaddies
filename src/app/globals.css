@@ -192,6 +192,35 @@ body {
   width: 100%;
 }
 
+.logo-crop {
+  width: 140px;
+  height: 115px;
+  overflow: hidden;
+  border-radius: 12px;
+  position: relative;
+}
+
+.logo-img {
+  width: 140px;
+  height: auto;
+  transform: translateY(-22px);
+}
+
+.logo-crop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
 .headerLeft {
   position: relative;
   z-index: 2;
@@ -1716,24 +1745,3 @@ header * {
   }
 }
 
-.logo-glow {
-  position: relative;
-  display: inline-block;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.logo-glow::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    transparent 40%,
-    transparent 60%,
-    rgba(0, 0, 0, 0.25) 100%
-  );
-}

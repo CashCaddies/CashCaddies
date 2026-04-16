@@ -70,23 +70,21 @@ export function SiteHeader() {
       {navItems.map((item) => {
         const isActive = item.isActive(pathname);
         return (
-          <div key={item.href} className="relative group">
-            <div
-              className="absolute inset-0 rounded-md p-[2px] bg-gradient-to-br from-green-400 via-emerald-500 to-yellow-400 opacity-70 transition duration-200 group-hover:opacity-100 group-hover:shadow-[0_0_12px_rgba(255,215,0,0.7)]"
-            />
-            <button
-              type="button"
-              aria-current={isActive ? "page" : undefined}
-              onClick={() => {
-                window.location.href = item.href;
-              }}
-              className={`metal-shine relative overflow-hidden rounded-md bg-[#020617] px-4 py-2 text-sm font-semibold transform transition duration-200 hover:scale-105 active:scale-95 hover:text-green-300 hover:shadow-[0_0_12px_rgba(255,215,0,0.6)] ${isActive ? "text-green-400" : "text-white"} ${
-                isActive ? "shadow-[0_0_14px_rgba(0,255,156,0.75)]" : "shadow-[0_0_6px_rgba(0,255,156,0.4)]"
-              }`}
-            >
-              {item.label}
-            </button>
-          </div>
+          <button
+            key={item.href}
+            type="button"
+            aria-current={isActive ? "page" : undefined}
+            onClick={() => {
+              window.location.href = item.href;
+            }}
+            className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+              isActive
+                ? "border-emerald-500/45 bg-emerald-950/35 text-emerald-400"
+                : "border-white/10 bg-slate-900/50 text-white hover:border-emerald-500/25 hover:text-emerald-300"
+            }`}
+          >
+            {item.label}
+          </button>
         );
       })}
     </nav>
@@ -96,6 +94,9 @@ export function SiteHeader() {
     <div className="headerRight flex shrink-0 items-center justify-end gap-4">
       {premiumTag}
       <HeaderStats />
+      <span className="mr-4 shrink-0 text-[11px] uppercase tracking-wide text-yellow-400">
+        Premium Golf DFS
+      </span>
       {authControls}
     </div>
   );
@@ -105,22 +106,27 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-7xl items-center justify-between px-8 py-6">
+            <div className="headerContainer mx-auto flex w-full max-w-7xl items-center gap-4 justify-between px-8 py-6">
               <div className="min-w-0 shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex items-center gap-4">
-                  <div className="logo-glow flex-shrink-0">
-                    <img
-                      src="/cashcaddies-square.png"
-                      alt="CashCaddies"
-                      className="h-32 w-32 object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.6)]"
-                    />
-                  </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-4">
+                    <div className="logo-crop flex-shrink-0">
+                      <img
+                        src="/cashcaddies-square.png"
+                        alt="CashCaddies"
+                        className="logo-img"
+                      />
+                    </div>
 
-                  <div className="flex flex-col leading-tight">
-                    <span className="text-2xl font-semibold text-emerald-400">CashCaddies</span>
-                    <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-2xl font-semibold text-emerald-400">CashCaddies</span>
+                      <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
+                    </div>
                   </div>
+                  <span className="text-[11px] uppercase tracking-wide text-emerald-300">
+                    Safety Coverage Fund
+                  </span>
                 </div>
                 <div className="mt-2 hidden md:block">{brandLinks}</div>
               </div>
