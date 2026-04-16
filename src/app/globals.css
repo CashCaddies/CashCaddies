@@ -1719,27 +1719,8 @@ header * {
 .logo-glow {
   position: relative;
   display: inline-block;
-  overflow: hidden; /* IMPORTANT */
+  overflow: hidden;
   border-radius: 12px;
-}
-
-.logo-glow::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 16px;
-  background: linear-gradient(
-    120deg,
-    #00ff99,
-    #00cc66,
-    #ffd700,
-    #00ff99
-  );
-  background-size: 400% 400%;
-  animation: glowMove 2.5s linear infinite;
-  filter: blur(8px);
-  opacity: 0.8;
-  z-index: -1; /* KEY FIX */
 }
 
 .logo-glow::after {
@@ -1759,15 +1740,6 @@ header * {
   animation: goldSweep 2.5s infinite;
 }
 
-@keyframes glowMove {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-
 @keyframes goldSweep {
   0% {
     left: -75%;
@@ -1778,10 +1750,6 @@ header * {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo-glow::before {
-    animation: none;
-  }
-
   .logo-glow::after {
     animation: none;
   }
