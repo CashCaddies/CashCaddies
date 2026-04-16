@@ -14,10 +14,10 @@ type Props = {
 };
 
 /**
- * Premium logo treatment: layered gold glow, float motion, continuous shimmer, breathing inner glow; hover on parent.
- * Logo + CLOSED BETA stack in brandBlock; wordmark in brandText (children).
+ * Header brand: animated green/gold glow (`.logo-glow` + `@keyframes logoGlow` in globals.css), CLOSED BETA badge, wordmark in `children`.
  */
 export function HeaderLogoLink({ href, variant, children, betaBadgeLabel = "CLOSED BETA" }: Props) {
+  void variant;
   return (
     <div className="header-logo-link group inline-flex min-w-0 items-center">
       <Link
@@ -26,15 +26,14 @@ export function HeaderLogoLink({ href, variant, children, betaBadgeLabel = "CLOS
         className="inline-flex shrink-0 cursor-pointer items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3d8bfd]"
       >
         <div className="logoColumn">
-          <div className="logo-glow" data-variant={variant}>
+          <div className="logo-glow">
             <Image
-              src="/cashcaddies-new.png"
+              src="/cashcaddies-new.png?v=3"
               alt="CashCaddies"
               width={140}
               height={140}
               className="h-14 w-auto"
               priority
-              sizes="96px"
             />
           </div>
           <span className="betaBadge select-none" title="Closed beta access required for DFS features">
