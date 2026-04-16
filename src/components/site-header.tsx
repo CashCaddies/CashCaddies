@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
+import { HeaderLogoLink } from "@/components/header-logo-link";
 import { HeaderStats } from "@/components/header-stats";
 
 const navItems = [
@@ -107,7 +108,8 @@ export function SiteHeader() {
           <>
             <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center px-6 py-4">
               <div className="headerLeft flex shrink-0 items-center gap-6">
-                <div className="header-logo-link group inline-flex min-w-0 items-center">
+                <div className="header-logo-link group inline-flex min-w-0 items-center gap-6">
+                  <HeaderLogoLink />
                   <div className="brandBlock">
                     <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">

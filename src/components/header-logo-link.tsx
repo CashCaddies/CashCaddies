@@ -1,15 +1,22 @@
 "use client";
 
-import type { ReactNode } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
-type Props = {
-  href: string;
-  variant: "minimal" | "full";
-  children: ReactNode;
-  betaBadgeLabel?: string;
-};
-
-/** Logo removed; brand column lives in `site-header.tsx`. Props kept for call-site compatibility. */
-export function HeaderLogoLink(_props: Props): null {
-  return null;
+export function HeaderLogoLink() {
+  return (
+    <Link href="/" className="flex items-center">
+      <div className="logo-glow">
+        <Image
+          src="/cashcaddies-full.png"
+          alt="CashCaddies"
+          width={300}
+          height={150}
+          className="h-12 w-auto object-contain"
+          priority
+          unoptimized
+        />
+      </div>
+    </Link>
+  );
 }
