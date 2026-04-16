@@ -1726,35 +1726,15 @@ header * {
 .logo-glow::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: -80%;
-  width: 40%;
-  height: 100%;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
   background: linear-gradient(
-    115deg,
+    135deg,
     transparent 0%,
-    rgba(184, 134, 11, 0.15) 40%,
-    rgba(255, 215, 0, 0.25) 50%,
-    rgba(184, 134, 11, 0.15) 60%,
+    rgba(255, 215, 0, 0.08) 35%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(184, 134, 11, 0.08) 65%,
     transparent 100%
   );
-  transform: skewX(-25deg);
-  animation: goldSweep 4s linear infinite;
-  opacity: 0.5;
-  filter: blur(0.2px);
-}
-
-@keyframes goldSweep {
-  0% {
-    left: -80%;
-  }
-  100% {
-    left: 125%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .logo-glow::after {
-    animation: none;
-  }
 }
