@@ -116,7 +116,7 @@ export function SiteHeader() {
                           <img
                             src="/cashcaddies-square.png"
                             alt="CashCaddies"
-                            className="h-32 w-32 object-contain"
+                            className="h-36 w-36 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
                           />
                         </div>
                         <div className="min-w-0">
