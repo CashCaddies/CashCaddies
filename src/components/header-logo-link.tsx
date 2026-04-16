@@ -34,13 +34,13 @@ export function HeaderLogoLink({ href, variant, children, betaBadgeLabel = "CLOS
                 <div className={`logoWrapper ${variant === "full" ? "logoWrapper--full" : ""}`}>
                   <div className="logoClip">
                     <Image
-                      src="/cashcaddies-logo.png"
-                      alt=""
-                      width={500}
-                      height={500}
+                      src="/cashcaddies-new-logo.png"
+                      alt="CashCaddies"
+                      width={480}
+                      height={480}
                       className="logo"
                       priority
-                      sizes="(max-width: 768px) 95px, 143px"
+                      sizes="(max-width: 768px) 120px, 160px"
                     />
                     <div className="logoShine pointer-events-none" aria-hidden />
                     <div className="logoGlow pointer-events-none" aria-hidden />

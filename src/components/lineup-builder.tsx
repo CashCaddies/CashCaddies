@@ -614,7 +614,7 @@ export function LineupBuilder({
               </label>
             </div>
           </div>
-          <div className="max-h-[calc(100vh-14rem)] overflow-y-auto">
+          <div className="max-h-[calc(100dvh-14rem)] overflow-y-auto">
             <table className="w-full min-w-[360px] text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-[#2a3039] bg-[#141920] text-[11px] font-bold uppercase tracking-wider text-[#8b98a5]">
                 <tr>
