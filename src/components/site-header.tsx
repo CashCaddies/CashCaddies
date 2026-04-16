@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -113,14 +112,10 @@ export function SiteHeader() {
                     <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
                       <div className="flex items-center gap-4">
-                        <Image
+                        <img
                           src="/cashcaddies-square.png"
                           alt="CashCaddies"
-                          width={80}
-                          height={80}
                           className="h-20 w-20 object-contain"
-                          priority
-                          unoptimized
                         />
                         <div className="min-w-0">
                           <h1
