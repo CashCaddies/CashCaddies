@@ -710,6 +710,7 @@ body {
   align-items: center;
   flex-shrink: 0;
   margin-right: 12px;
+  overflow: visible;
 }
 
 /* Header — wordmark: title + subtitle + utility links */
@@ -1730,9 +1731,8 @@ header * {
 
 .logo-glow {
   animation: logoGlow 2.5s ease-in-out infinite;
-  display: flex;
-  align-items: center;
-  margin-right: 12px;
+  overflow: visible;
+  max-width: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

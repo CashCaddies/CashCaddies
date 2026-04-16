@@ -102,7 +102,7 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="w-full overflow-hidden border-b border-yellow-500/20 bg-gradient-to-b from-slate-950 to-slate-900">
+    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-yellow-500/20 bg-gradient-to-b from-slate-950 to-slate-900">
       <HeaderAuthSection
         render={(ctx) => (
           <>

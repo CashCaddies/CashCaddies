@@ -26,14 +26,15 @@ export function HeaderLogoLink({ href, variant, children, betaBadgeLabel = "CLOS
         className="inline-flex shrink-0 cursor-pointer items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3d8bfd]"
       >
         <div className="logoColumn">
-          <div className="logo-glow">
+          <div className="logo-glow flex items-center">
             <Image
-              src="/cashcaddies-new.png?v=3"
+              src="/cashcaddies-full.png"
               alt="CashCaddies"
-              width={140}
-              height={140}
-              className="h-14 w-auto"
+              width={400}
+              height={200}
+              className="h-auto max-h-20 w-auto object-contain"
               priority
+              unoptimized
             />
           </div>
           <span className="betaBadge select-none" title="Closed beta access required for DFS features">
