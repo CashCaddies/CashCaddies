@@ -1718,9 +1718,7 @@ header * {
 
 .logo-glow {
   position: relative;
-  border-radius: 12px;
-  overflow: visible;
-  max-width: none;
+  display: inline-block;
 }
 
 .logo-glow::before {
@@ -1738,7 +1736,8 @@ header * {
   background-size: 400% 400%;
   animation: glowMove 2.5s linear infinite;
   filter: blur(8px);
-  opacity: 0.9;
+  opacity: 0.8;
+  z-index: -1; /* KEY FIX */
 }
 
 @keyframes glowMove {
