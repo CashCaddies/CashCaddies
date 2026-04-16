@@ -1728,22 +1728,20 @@ header * {
   position: absolute;
   top: 0;
   left: -80%;
-  width: 55%;
+  width: 40%;
   height: 100%;
   background: linear-gradient(
     115deg,
     transparent 0%,
-    rgba(120, 85, 10, 0.15) 20%, /* dark gold base */
-    rgba(184, 134, 11, 0.6) 40%, /* bronze gold */
-    rgba(255, 215, 0, 0.7) 50%, /* highlight */
-    rgba(184, 134, 11, 0.6) 60%,
-    rgba(120, 85, 10, 0.2) 75%,
+    rgba(184, 134, 11, 0.15) 40%,
+    rgba(255, 215, 0, 0.25) 50%,
+    rgba(184, 134, 11, 0.15) 60%,
     transparent 100%
   );
   transform: skewX(-25deg);
-  animation: goldSweep 3s linear infinite;
-  filter: blur(0.3px);
-  opacity: 0.85;
+  animation: goldSweep 4s linear infinite;
+  opacity: 0.5;
+  filter: blur(0.2px);
 }
 
 @keyframes goldSweep {
