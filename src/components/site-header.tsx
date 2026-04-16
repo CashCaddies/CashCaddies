@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
-import { HeaderLogoLink } from "@/components/header-logo-link";
 import { HeaderStats } from "@/components/header-stats";
 
 const navItems = [
@@ -108,23 +107,22 @@ export function SiteHeader() {
           <>
             <div className="headerContainer mx-auto flex w-full min-w-0 max-w-7xl items-center px-6 py-4">
               <div className="headerLeft flex shrink-0 items-center gap-6">
-                {ctx.showMinimalHeader ? (
-                  <HeaderLogoLink href="/closed-beta" variant="minimal">
+                <div className="header-logo-link group inline-flex min-w-0 items-center">
+                  <div className="brandBlock">
+                    <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                     <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
-                      <h1 className="brandTitle brandTitle--compact">CashCaddies</h1>
+                      <h1
+                        className={
+                          ctx.showMinimalHeader ? "brandTitle brandTitle--compact" : "brandTitle"
+                        }
+                      >
+                        CashCaddies
+                      </h1>
                       <p className="brandSubtitle">Daily Fantasy Golf Platform</p>
                       {brandLinks}
                     </div>
-                  </HeaderLogoLink>
-                ) : (
-                  <HeaderLogoLink href="/closed-beta" variant="full">
-                    <div className="brandText hidden min-w-0 flex-col leading-tight md:flex">
-                      <h1 className="brandTitle">CashCaddies</h1>
-                      <p className="brandSubtitle">Daily Fantasy Golf Platform</p>
-                      {brandLinks}
-                    </div>
-                  </HeaderLogoLink>
-                )}
+                  </div>
+                </div>
               </div>
               {ccMainNav}
               {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
