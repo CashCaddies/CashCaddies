@@ -1,20 +1,86 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { LobbyContestRow } from "@/lib/contest-lobby-shared";
+import type { LobbyContestPayoutRow, LobbyContestRow } from "@/lib/contest-lobby-shared";
 import { LobbyAdminActions } from "@/components/lobby-admin-actions";
 import { LobbyEmptyState } from "@/components/lobby-empty-state";
 import { LobbyContestTableRow } from "@/components/lobby-contest-table-row";
 import { getProfile } from "@/lib/getProfile";
 import { isAdmin } from "@/lib/permissions";
+import { supabase } from "@/lib/supabase/client";
 
-type Props = {
-  contests: LobbyContestRow[];
-  error: string | null;
-};
+function normalizeLobbyRows(raw: unknown[]): LobbyContestRow[] {
+  const emptyPayouts: LobbyContestPayoutRow[] = [];
+  const out: LobbyContestRow[] = [];
+  for (const row of raw) {
+    const r = row as Record<string, unknown>;
+    const id = String(r.id ?? "").trim();
+    if (!id) continue;
+    const entryFee = Number(r.entry_fee ?? r.entry_fee_usd ?? 0);
+    const maxEntries = Math.max(1, Number(r.max_entries ?? 100));
+    const startsAt = String(r.starts_at ?? r.start_time ?? r.created_at ?? new Date().toISOString());
+    out.push({
+      id,
+      name: String(r.name ?? "Contest"),
+      entry_fee_usd: Number.isFinite(entryFee) ? entryFee : 0,
+      entry_fee: Number.isFinite(entryFee) ? entryFee : 0,
+      max_entries: maxEntries,
+      max_entries_per_user: r.max_entries_per_user != null ? Number(r.max_entries_per_user) : 1,
+      entry_count: typeof r.entry_count === "number" ? r.entry_count : 0,
+      starts_at: startsAt,
+      start_time: r.start_time != null ? String(r.start_time) : null,
+      status: r.status != null ? String(r.status) : null,
+      entries_open_at: r.entries_open_at != null ? String(r.entries_open_at) : null,
+      created_at: r.created_at != null ? String(r.created_at) : null,
+      has_settlement: false,
+      protected_entries_count: 0,
+      safety_pool_usd: typeof r.safety_pool_usd === "number" ? r.safety_pool_usd : 0,
+      late_swap_enabled:
+        r.late_swap_enabled === undefined || r.late_swap_enabled === null ? true : Boolean(r.late_swap_enabled),
+      payouts: emptyPayouts,
+    });
+  }
+  return out;
+}
 
-export function LobbyPageContent({ contests, error }: Props) {
+export function LobbyPageContent() {
+  const [contests, setContests] = useState<LobbyContestRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchContests = async () => {
+      setLoading(true);
+      setError(null);
+
+      if (!supabase) {
+        console.error("Contest fetch error: Supabase client unavailable");
+        setError("Failed to load contests");
+        setContests([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from("contests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (fetchError) {
+        console.error("Contest fetch error:", fetchError);
+        setError("Failed to load contests");
+        setContests([]);
+      } else {
+        setContests(normalizeLobbyRows(data ?? []));
+      }
+
+      setLoading(false);
+    };
+
+    void fetchContests();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +107,18 @@ export function LobbyPageContent({ contests, error }: Props) {
         typeof c.name === "string"
     );
   }, [contests]);
+
+  if (loading) {
+    return <div className="p-4">Loading contests...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
+
+  if (contests.length === 0) {
+    return <div className="p-4">No contests available</div>;
+  }
 
   return (
     <div className="space-y-0">
@@ -72,12 +150,6 @@ export function LobbyPageContent({ contests, error }: Props) {
         </div>
       </div>
 
-      {error && (
-        <div className="border-x border-b border-amber-700/40 bg-amber-950/30 px-5 py-4 text-sm text-amber-100">
-          {error}
-        </div>
-      )}
-
       <div className="overflow-x-auto border-x border-b border-[#2a3039] bg-[#0f1419]">
         <table className="w-full min-w-[920px] table-fixed border-collapse text-left text-sm">
           <thead>
@@ -91,7 +163,7 @@ export function LobbyPageContent({ contests, error }: Props) {
             </tr>
           </thead>
           <tbody className="text-[#e8ecf0]">
-            {!error && safeContests.length === 0 && (
+            {safeContests.length === 0 && (
               <tr>
                 <td colSpan={6}>
                   <LobbyEmptyState viewerIsAdmin={admin} />
