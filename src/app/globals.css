@@ -1480,39 +1480,9 @@ header * {
   max-height: none !important;
 }
 
-.header-tooltip-wrap {
-  position: relative;
-  overflow: visible !important;
-}
-
-.header-tooltip {
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-  margin-top: 8px;
-  z-index: 9999;
-  white-space: nowrap;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.9);
-  padding: 6px 10px;
-  font-size: 12px;
-  color: white;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  overflow: visible !important;
-}
-
-.header-tooltip-wrap:hover .header-tooltip {
-  opacity: 1;
-}
-
-/* Portal golf ball + tooltip: beat header * overflow-y:hidden on these subtrees */
+/* Portal golf ball: beat header * overflow-y:hidden for hover scale */
 header .header-portal-golf-shell,
-header .header-portal-golf-shell *,
-header .header-tooltip-wrap,
-header .header-tooltip-wrap * {
+header .header-portal-golf-shell * {
   overflow-x: visible !important;
   overflow-y: visible !important;
 }
