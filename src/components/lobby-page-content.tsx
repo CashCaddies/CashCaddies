@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { LobbyContestPayoutRow, LobbyContestRow } from "@/lib/contest-lobby-shared";
 import { LobbyAdminActions } from "@/components/lobby-admin-actions";
-import { LobbyEmptyState } from "@/components/lobby-empty-state";
 import { LobbyContestTableRow } from "@/components/lobby-contest-table-row";
 import { getProfile } from "@/lib/getProfile";
 import { isAdmin } from "@/lib/permissions";
@@ -16,17 +15,46 @@ function normalizeLobbyRows(raw: unknown[]): LobbyContestRow[] {
     const r = row as Record<string, unknown>;
     const id = String(r.id ?? "").trim();
     if (!id) continue;
-    const entryFee = Number(r.entry_fee ?? r.entry_fee_usd ?? 0);
-    const maxEntries = Math.max(1, Number(r.max_entries ?? 100));
-    const startsAt = String(r.starts_at ?? r.start_time ?? r.created_at ?? new Date().toISOString());
+
+    const name = String(r.name ?? "").trim();
+    if (!name) continue;
+
+    const maxEntries = Number(r.max_entries);
+    if (!Number.isFinite(maxEntries) || maxEntries < 1) continue;
+
+    const startRaw = r.starts_at ?? r.start_time ?? r.created_at;
+    if (startRaw == null || String(startRaw).trim() === "") continue;
+    const startsAt = String(startRaw);
+
+    const entryFee = Number(r.entry_fee ?? r.entry_fee_usd);
+    if (!Number.isFinite(entryFee)) continue;
+
+    const ecRaw = r.entry_count ?? r.current_entries;
+    const entryCount =
+      typeof ecRaw === "number" && Number.isFinite(ecRaw)
+        ? ecRaw
+        : typeof ecRaw === "string" && ecRaw.trim() !== ""
+          ? Number(ecRaw)
+          : NaN;
+    const entry_count = Number.isFinite(entryCount) ? Math.max(0, Math.floor(entryCount)) : 0;
+
+    const curCol = r.current_entries;
+    const current_entries =
+      typeof curCol === "number" && Number.isFinite(curCol)
+        ? curCol
+        : typeof curCol === "string" && curCol.trim() !== ""
+          ? Number(curCol)
+          : undefined;
+
     out.push({
       id,
-      name: String(r.name ?? "Contest"),
-      entry_fee_usd: Number.isFinite(entryFee) ? entryFee : 0,
-      entry_fee: Number.isFinite(entryFee) ? entryFee : 0,
-      max_entries: maxEntries,
+      name,
+      entry_fee_usd: entryFee,
+      entry_fee: entryFee,
+      max_entries: Math.floor(maxEntries),
       max_entries_per_user: r.max_entries_per_user != null ? Number(r.max_entries_per_user) : 1,
-      entry_count: typeof r.entry_count === "number" ? r.entry_count : 0,
+      entry_count,
+      current_entries: Number.isFinite(current_entries ?? NaN) ? current_entries : undefined,
       starts_at: startsAt,
       start_time: r.start_time != null ? String(r.start_time) : null,
       status: r.status != null ? String(r.status) : null,
@@ -97,17 +125,6 @@ export function LobbyPageContent() {
 
   const admin = isAdmin(profile?.role);
 
-  const safeContests = useMemo(() => {
-    const list = contests ?? [];
-    return list.filter(
-      (c): c is LobbyContestRow =>
-        c != null &&
-        typeof c.id === "string" &&
-        c.id.length > 0 &&
-        typeof c.name === "string"
-    );
-  }, [contests]);
-
   if (loading) {
     return <div className="p-4">Loading contests...</div>;
   }
@@ -163,20 +180,8 @@ export function LobbyPageContent() {
             </tr>
           </thead>
           <tbody className="text-[#e8ecf0]">
-            {safeContests.length === 0 && (
-              <tr>
-                <td colSpan={6}>
-                  <LobbyEmptyState viewerIsAdmin={admin} />
-                </td>
-              </tr>
-            )}
-            {safeContests.map((contest, index) => (
-              <LobbyContestTableRow
-                key={contest.id}
-                contest={contest}
-                index={index}
-                viewerRole={profile?.role ?? null}
-              />
+            {contests?.map((contest, index) => (
+              <LobbyContestTableRow key={contest.id} contest={contest} index={index} viewerRole={profile?.role ?? null} />
             ))}
           </tbody>
         </table>

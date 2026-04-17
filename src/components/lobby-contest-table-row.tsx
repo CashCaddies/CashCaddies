@@ -42,10 +42,17 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const [loading, setLoading] = useState(false);
   const href = `/contest/${encodeURIComponent(contest.id)}`;
   const max = Math.max(1, contest.max_entries);
-  const current = Math.min(contest.entry_count || 0, max);
+  const currentFromDb =
+    contest.current_entries != null && String(contest.current_entries).trim() !== ""
+      ? Number(contest.current_entries)
+      : NaN;
+  const currentBase = Number.isFinite(currentFromDb)
+    ? Math.max(0, Math.floor(currentFromDb))
+    : Math.max(0, Math.floor(Number(contest.entry_count) || 0));
+  const current = Math.min(currentBase, max);
   const isFull = current >= max;
   const protectedCount = Math.max(0, Math.trunc(Number(contest.protected_entries_count ?? 0)));
-  const protectedPctLabel = formatProtectedEntriesPercent(contest.entry_count || 0, protectedCount);
+  const protectedPctLabel = formatProtectedEntriesPercent(currentBase, protectedCount);
   const safetyPoolUsd = contest.safety_pool_usd ?? 0;
   const fillPct = Math.min(100, (current / max) * 100);
   const perUserLabel = formatPerUserEntryLimit(contest.max_entries_per_user);
@@ -57,10 +64,10 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
     created_at: contest.created_at,
     has_settlement: contest.has_settlement,
   });
-  const entryFeeUsd =
-    typeof contest.entry_fee_usd === "string"
-      ? Number.parseFloat(contest.entry_fee_usd)
-      : Number(contest.entry_fee_usd);
+  const entryFeeSource =
+    contest.entry_fee != null && String(contest.entry_fee).trim() !== ""
+      ? contest.entry_fee
+      : contest.entry_fee_usd;
   const admin =
     viewerRole !== undefined
       ? isAdmin(viewerRole)
@@ -162,7 +169,6 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   }, [viewerRole]);
 
   const handleDelete = async () => {
-    console.log("DELETE CLICKED", contest.id);
     if (loading) return;
     setLoading(true);
 
@@ -243,7 +249,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         </div>
       </td>
       <td className="px-3 py-3.5 align-top text-[#c5cdd5]">
-        <p className="font-medium">{formatLobbyEntryFeeUsd(contest.entry_fee_usd)}</p>
+        <p className="font-medium">{formatLobbyEntryFeeUsd(entryFeeSource)}</p>
         <dl className="mt-2 space-y-1 text-[10px] leading-snug text-[#8b98a5]">
           <div className="flex flex-wrap gap-x-1.5 gap-y-0">
             <dt className="font-semibold uppercase tracking-wide text-[#6b7684]">Entries</dt>
@@ -272,7 +278,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
       </td>
       <td className="px-3 py-3.5 align-middle">
         <div className="flex flex-col items-end gap-1">
-                      <span className="tabular-nums text-[#c5cdd5]">{current.toLocaleString()}</span>
+          <span className="tabular-nums text-[#c5cdd5]">{current.toLocaleString()}</span>
           <div className="h-1 w-full max-w-[7rem] overflow-hidden rounded-full bg-[#2a3039]">
             <div className="h-full rounded-full bg-[#3d8bfd]/80" style={{ width: `${fillPct}%` }} />
           </div>

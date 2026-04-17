@@ -14,6 +14,8 @@ export type LobbyContestRow = {
   max_entries_per_user: number | null;
   /** Filled from `contest_entries ( id )` embed: `contest_entries.length` (PostgREST). */
   entry_count: number;
+  /** Present when `contests.current_entries` (or similar) is selected from Supabase. */
+  current_entries?: number | null;
   starts_at: string;
   /** Optional contest end; when null, UI treats "ended" as starts_at + 3 days. */
   ends_at?: string | null;
@@ -80,7 +82,7 @@ export function isContestLineupLocked(row: Pick<LobbyContestRow, "starts_at" | "
 
 /**
  * Contest type badge from `max_entries_per_user` (shown next to contest name in the lobby).
- * - `1` → Single Entry
+ * - `1` → 1 Max
  * - `3` → 3 Max
  * - `10` → 10 Max
  * - any other positive integer → `${n} Max`
@@ -89,7 +91,7 @@ export function formatPerUserEntryLimit(maxPerUser: number | string | null | und
   if (maxPerUser == null || maxPerUser === "") return null;
   const n = Math.floor(Number(maxPerUser));
   if (!Number.isFinite(n) || n <= 0) return null;
-  if (n === 1) return "Single Entry";
+  if (n === 1) return "1 Max";
   return `${n} Max`;
 }
 
