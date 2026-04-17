@@ -97,14 +97,14 @@ export function SiteHeader() {
         render={(ctx) => (
           <>
             <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between gap-3 px-8 py-4 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-2 md:gap-3">
+              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-3 md:gap-5">
                 <div className="flex items-center gap-4">
                   <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                  <div className="flex-shrink-0">
+                  <div className="relative flex-shrink-0">
                     <img
                       src="/logo.png?v=1"
                       alt="CashCaddies"
-                      className="h-14 w-14 object-contain rounded-md"
+                      className="h-16 w-16 object-contain rounded-md brightness-110 contrast-110 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] md:h-20 md:w-20"
                       loading="eager"
                     />
                   </div>
@@ -120,22 +120,24 @@ export function SiteHeader() {
                   </div>
                 </div>
 
-                <Link
-                  href="/portal"
-                  className="flex shrink-0 items-center justify-center group"
-                  aria-label="Open portal"
-                >
-                  <div className="relative h-10 w-10 md:h-12 md:w-12 transition-transform duration-300 group-hover:scale-110">
-                    <Image
-                      src="/golf-ball.png"
-                      alt="Portal"
-                      fill
-                      className="object-contain drop-shadow-[0_0_6px_rgba(16,185,129,0.35)]"
-                      priority
-                      sizes="(max-width: 768px) 40px, 48px"
-                    />
-                  </div>
-                </Link>
+                <div className="header-portal-golf-shell flex items-center justify-center shrink-0 min-w-fit">
+                  <Link
+                    href="/portal"
+                    className="flex shrink-0 items-center justify-center group"
+                    aria-label="Open portal"
+                  >
+                    <div className="relative h-14 w-14 transition-transform duration-300 group-hover:scale-110 md:h-16 md:w-16">
+                      <Image
+                        src="/golf-ball.png"
+                        alt="Portal"
+                        fill
+                        className="object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.45)] will-change-transform"
+                        priority
+                        sizes="(max-width: 768px) 56px, 64px"
+                      />
+                    </div>
+                  </Link>
+                </div>
               </div>
 
               {ccMainNav}
