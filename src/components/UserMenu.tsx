@@ -122,34 +122,41 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
     profile?.founding_tester === true || clientFoundingTester === true;
 
   const avatarSrc = profile?.avatar_url?.trim() || "/default-avatar.svg";
-  const roleNorm = String(effectiveRole ?? "").trim().toLowerCase().replace(/\s+/g, "_");
   const displayName = (profile?.username?.trim() || label.replace(/^@/, "")).trim() || "Account";
+
+  const adminBadgeLabel = isSeniorAdminUser ? "SENIOR" : "ADMIN";
 
   return (
     <div ref={rootRef} className="userMenu">
       <button
         type="button"
-        className="userTrigger"
+        className="userTrigger !gap-3"
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
         title={displayName}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- remote avatar URLs from Supabase Storage */}
-        <img src={avatarSrc} alt="" className="avatar" width={48} height={48} />
-        <div className="userInfo">
-          <span className="username inline-flex items-center gap-1">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-yellow-400">
+          {/* eslint-disable-next-line @next/next/no-img-element -- remote avatar URLs from Supabase Storage */}
+          <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
+        </div>
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="inline-flex max-w-[10rem] items-center gap-1 truncate text-sm font-medium text-emerald-400">
             {premiumSubscriber ? (
-              <span className="text-amber-400" title="Premium member" aria-hidden="true">
-                ðŸ‘‘
+              <span className="shrink-0 text-amber-400" title="Premium member" aria-hidden="true">
+                👑
               </span>
             ) : null}
             {displayName}
           </span>
-          <span className="flex flex-wrap items-center gap-1.5">
+          <div className="mt-0.5 flex flex-wrap items-center gap-2">
             {showFounderBadge ? <FounderBadge /> : null}
-            {roleNorm === "admin" || roleNorm === "senior_admin" ? <span className="adminBadge">ADMIN</span> : null}
-          </span>
+            {isAdminUser ? (
+              <span className="text-[10px] px-2 py-[2px] rounded-md bg-gray-600 font-semibold text-white">
+                {adminBadgeLabel}
+              </span>
+            ) : null}
+          </div>
         </div>
         <span className="sr-only">Open account menu</span>
       </button>
