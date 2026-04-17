@@ -47,6 +47,8 @@ export function LobbyContestTableRow({
   const [entryError, setEntryError] = useState<string | null>(null);
   /** Current user already has a row in contest_entries for this contest */
   const [userHasEntry, setUserHasEntry] = useState(false);
+  const [justEntered, setJustEntered] = useState(false);
+  const justEnteredTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const searchParams = useSearchParams();
@@ -97,6 +99,17 @@ export function LobbyContestTableRow({
   const refreshContests = async () => {
     if (!onRefresh) return;
     await onRefresh({ initial: false });
+  };
+
+  const triggerJustEnteredFeedback = () => {
+    if (justEnteredTimerRef.current) {
+      clearTimeout(justEnteredTimerRef.current);
+    }
+    setJustEntered(true);
+    justEnteredTimerRef.current = setTimeout(() => {
+      setJustEntered(false);
+      justEnteredTimerRef.current = null;
+    }, 1200);
   };
 
   type EnterContestRpcRow = {
@@ -150,6 +163,7 @@ export function LobbyContestTableRow({
           String(row.message ?? "").toLowerCase() === "already_entered";
         if (already) {
           setUserHasEntry(true);
+          triggerJustEnteredFeedback();
           return;
         }
         setEntryError(msg);
@@ -175,6 +189,8 @@ export function LobbyContestTableRow({
       if (rpcMissingCount || wasNearFull) {
         await refreshContests();
       }
+
+      triggerJustEnteredFeedback();
     } catch (err) {
       console.error("Unexpected error:", err);
       setEntryError("Something went wrong. Try again.");
@@ -244,6 +260,14 @@ export function LobbyContestTableRow({
     };
   }, [viewerRole]);
 
+  useEffect(() => {
+    return () => {
+      if (justEnteredTimerRef.current) {
+        clearTimeout(justEnteredTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleDelete = async () => {
     if (loading) return;
     setLoading(true);
@@ -307,9 +331,14 @@ export function LobbyContestTableRow({
       aria-label={`View contest ${contest.name}`}
       onClick={go}
       onKeyDown={onRowKeyDown}
-      className={`border-b border-[#232a33] transition-colors hover:bg-[#161c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3d8bfd] ${
-        index % 2 === 0 ? "bg-[#0f1419]" : "bg-[#0c1015]"
-      } ${isCreatedContest ? "highlightContest" : ""} cursor-pointer`}
+      className={`
+        border-b border-[#232a33] transition-all duration-300
+        hover:bg-[#161c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3d8bfd]
+        ${index % 2 === 0 ? "bg-[#0f1419]" : "bg-[#0c1015]"}
+        ${isCreatedContest ? "highlightContest" : ""}
+        ${justEntered ? "scale-[1.02] bg-green-50" : ""}
+        cursor-pointer
+      `}
     >
       <td className="px-4 py-3.5 pl-5 align-middle sm:px-5">
         <div className="flex flex-wrap items-center gap-2">
@@ -384,11 +413,12 @@ export function LobbyContestTableRow({
               ${!entering && isEntered ? "bg-green-600 text-white cursor-not-allowed" : ""}
               ${!entering && !isEntered && isFull ? "bg-gray-500 text-white cursor-not-allowed" : ""}
               ${!entering && !isEntered && !isFull ? "bg-blue-600 text-white hover:bg-blue-500" : ""}
+              ${justEntered ? "ring-2 ring-green-400" : ""}
             `}
             onClick={handleEnterContest}
             disabled={entering || isFull || isEntered}
           >
-            {entering ? "Entering..." : isEntered ? "Entered" : isFull ? "Full" : "Enter"}
+            {entering ? "Entering..." : isEntered ? "✓ Entered" : isFull ? "Full" : "Enter"}
           </button>
           {admin ? (
             <AdminContestControls
