@@ -66,8 +66,28 @@ function formatStartDate(iso: string): string {
 export const dynamic = "force-dynamic";
 
 export default async function PortalPage() {
-  const totalFund = 5000;
-  const requiredBuffer = 3000;
+  // TEMP TEST MODE (change number to test different states) — remove when Supabase supplies fund data
+  const TEST_MODE = 2;
+
+  // 0 = no surplus
+  // 1 = weekly only
+  // 2 = all tiers
+
+  let totalFund = 0;
+  let requiredBuffer = 3000;
+
+  if (TEST_MODE === 0) {
+    totalFund = 3000; // surplus = 0
+  }
+
+  if (TEST_MODE === 1) {
+    totalFund = 3500; // small surplus → weekly only ($500+)
+  }
+
+  if (TEST_MODE === 2) {
+    // surplus must be ≥ $10k for monthly; 13k fund − 3k buffer = $10k
+    totalFund = 13000;
+  }
 
   const surplus = calculateSurplus(totalFund, requiredBuffer);
   const unlocked = getUnlockedTiers(surplus);
