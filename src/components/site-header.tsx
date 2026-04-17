@@ -71,24 +71,18 @@ export function SiteHeader() {
   );
 
   const golfBallElement = (
-    <Link
-      href="/portal"
-      className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
-      aria-label="Portal to CashCaddies Coveted Contests"
-    >
-      <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
-        <div className="golf-ball-roll relative h-full w-full">
-          <Image
-            src="/golf-ball.png"
-            alt="Portal"
-            fill
-            className="object-contain"
-            priority
-            sizes="(max-width: 768px) 80px, 96px"
-          />
-        </div>
+    <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
+      <div className="golf-ball-roll relative h-full w-full">
+        <Image
+          src="/golf-ball.png"
+          alt="Portal"
+          fill
+          className="object-contain"
+          priority
+          sizes="(max-width: 768px) 80px, 96px"
+        />
       </div>
-    </Link>
+    </div>
   );
 
   return (
@@ -120,14 +114,16 @@ export function SiteHeader() {
               {/* CENTER: Portal (golf ball) */}
               <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
-                  <Tooltip
-                    content={
-                      <>
-                        Portal to CashCaddies Coveted Contests
-                      </>
-                    }
-                  >
-                    {golfBallElement}
+                  <Tooltip content={<>Portal to CashCaddies Coveted Contests</>}>
+                    <Link
+                      href="/portal"
+                      className="group relative block origin-center cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-105"
+                      aria-label="Portal to CashCaddies Coveted Contests"
+                    >
+                      <div className="rounded-xl transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.25)]">
+                        {golfBallElement}
+                      </div>
+                    </Link>
                   </Tooltip>
                 </div>
               </div>
