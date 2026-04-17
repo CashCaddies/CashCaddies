@@ -46,7 +46,7 @@ body {
 
 .app-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   box-sizing: border-box;
   border: 2px solid transparent;
@@ -536,7 +536,7 @@ body {
 }
 
 .pageWrap {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: auto;
   padding: 24px;
 }

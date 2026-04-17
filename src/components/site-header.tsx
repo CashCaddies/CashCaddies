@@ -106,7 +106,7 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between px-6 py-6">
+            <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between px-8 py-6">
               <div className="min-w-0 shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                 <div className="flex items-center gap-6">

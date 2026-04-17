@@ -129,7 +129,7 @@ export default function AdminBetaApprovalPage() {
   const pendingCount = rows.filter((r) => String(r.beta_status ?? "").toLowerCase() === "pending").length;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto max-w-[1400px] px-4 py-8">
       <h1 className="text-2xl font-bold text-white">Beta approval</h1>
       <p className="mt-1 text-sm text-slate-400">Review profiles and approve or reject beta access.</p>
 
