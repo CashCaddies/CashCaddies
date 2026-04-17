@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -94,29 +93,16 @@ export function SiteHeader() {
                 </div>
               </div>
 
-              {/* CENTER: portal golf ball */}
+              {/* CENTER: Portal */}
               <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
-                  <Tooltip
-                    content={<>Portal to CashCaddies Coveted Contests</>}
-                  >
+                  <Tooltip content={<>Portal to CashCaddies Coveted Contests</>}>
                     <Link
                       href="/portal"
-                      className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
+                      className="inline-flex cursor-pointer items-center rounded-lg border border-white/10 bg-[#111827] px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-emerald-500/40"
                       aria-label="Portal to CashCaddies Coveted Contests"
                     >
-                      <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
-                        <div className="golf-ball-roll relative h-full w-full">
-                          <Image
-                            src="/golf-ball.png"
-                            alt="Portal"
-                            fill
-                            className="object-contain"
-                            priority
-                            sizes="(max-width: 768px) 80px, 96px"
-                          />
-                        </div>
-                      </div>
+                      Portal
                     </Link>
                   </Tooltip>
                 </div>
