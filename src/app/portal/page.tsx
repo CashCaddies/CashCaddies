@@ -121,66 +121,81 @@ export default async function PortalPage() {
         </p>
       )}
 
+      <div className="mb-6 rounded-lg border border-white/10 p-4">
+        <p className="text-sm text-gray-400">
+          Fund Surplus: <span className="text-white">{formatMoney(surplus)}</span>
+        </p>
+      </div>
+
       {FREQUENCY_SECTIONS.map((section) => (
         <section key={section.key} className="space-y-3">
-          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-violet-200">{section.title}</h2>
+          {section.key === "monthly" ? (
+            <h2 className="mb-2 mt-8 text-sm tracking-widest text-gray-400">MONTHLY PORTAL</h2>
+          ) : (
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-violet-200">{section.title}</h2>
+          )}
 
-          {section.key === "weekly" && unlocked.includes("weekly") && (
+          {unlocked.includes(section.key) ? (
             <div className="rounded-lg border border-white/10 p-4">
-              <h3 className="text-lg font-semibold text-white">Weekly Portal</h3>
-              <p className="mt-1 text-slate-300">
-                Money Added: {formatMoney(getOverlayAmount(surplus, "weekly"))}
+              <p className="text-emerald-400">
+                Money Added: {formatMoney(getOverlayAmount(surplus, section.key))}
               </p>
             </div>
-          )}
-
-          {!unlocked.includes(section.key) ? (
-            <p className="text-gray-400">{TIER_UNAVAILABLE[section.key]}</p>
-          ) : groups[section.key].length === 0 ? (
-            <div className="text-slate-300">{TIER_AVAILABLE[section.key]}</div>
+          ) : section.key === "monthly" ? (
+            <p className="text-gray-400">
+              Monthly contests unlock when fund surplus reaches premium levels.
+            </p>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {groups[section.key].map((contest) => {
-                const startsAt = startIso(contest);
-                const lifecycle = resolveEffectiveContestLifecycle({
-                  status: contest.status,
-                  starts_at: startsAt,
-                  entries_open_at: contest.entries_open_at,
-                  created_at: contest.created_at,
-                });
-                return (
-                  <Link
-                    key={contest.id}
-                    href={`/lobby/${encodeURIComponent(contest.id)}`}
-                    className="group rounded-2xl border border-violet-500/20 bg-[#0f1419] p-5 transition hover:border-violet-400/50 hover:bg-[#121a24]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-lg font-bold text-white">{contest.name}</p>
-                      <ContestLifecycleStatusBadge status={contest.status} />
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <div className="rounded-lg border border-slate-800 bg-[#101925] p-3">
-                        <p className="text-[11px] uppercase tracking-wide text-slate-400">Prize Pool</p>
-                        <p className="mt-1 text-base font-semibold text-slate-100">{formatMoney(contest.prize_pool)}</p>
-                      </div>
-                      <div className="rounded-lg border border-emerald-500/35 bg-emerald-950/25 p-3">
-                        <p className="text-[11px] uppercase tracking-wide text-emerald-300">Overlay</p>
-                        <p className="mt-1 text-base font-extrabold text-emerald-300">
-                          {formatMoney(contest.overlay_amount)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-                      <span>{formatStartDate(startsAt)}</span>
-                      <ContestLockCountdown lifecycle={lifecycle} startsAtIso={startsAt} />
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            <p className="text-gray-400">{TIER_UNAVAILABLE[section.key]}</p>
           )}
+
+          {unlocked.includes(section.key) ? (
+            groups[section.key].length === 0 ? (
+              <div className="text-slate-300">{TIER_AVAILABLE[section.key]}</div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {groups[section.key].map((contest) => {
+                  const startsAt = startIso(contest);
+                  const lifecycle = resolveEffectiveContestLifecycle({
+                    status: contest.status,
+                    starts_at: startsAt,
+                    entries_open_at: contest.entries_open_at,
+                    created_at: contest.created_at,
+                  });
+                  return (
+                    <Link
+                      key={contest.id}
+                      href={`/lobby/${encodeURIComponent(contest.id)}`}
+                      className="group rounded-2xl border border-violet-500/20 bg-[#0f1419] p-5 transition hover:border-violet-400/50 hover:bg-[#121a24]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-lg font-bold text-white">{contest.name}</p>
+                        <ContestLifecycleStatusBadge status={contest.status} />
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                        <div className="rounded-lg border border-slate-800 bg-[#101925] p-3">
+                          <p className="text-[11px] uppercase tracking-wide text-slate-400">Prize Pool</p>
+                          <p className="mt-1 text-base font-semibold text-slate-100">{formatMoney(contest.prize_pool)}</p>
+                        </div>
+                        <div className="rounded-lg border border-emerald-500/35 bg-emerald-950/25 p-3">
+                          <p className="text-[11px] uppercase tracking-wide text-emerald-300">Overlay</p>
+                          <p className="mt-1 text-base font-extrabold text-emerald-300">
+                            {formatMoney(contest.overlay_amount)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
+                        <span>{formatStartDate(startsAt)}</span>
+                        <ContestLockCountdown lifecycle={lifecycle} startsAtIso={startsAt} />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )
+          ) : null}
         </section>
       ))}
     </div>
