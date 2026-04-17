@@ -79,6 +79,30 @@ const GETTING_STARTED_ITEMS = [
       </>
     ),
   },
+  {
+    id: "what-is-the-portal",
+    question: "What is the Portal?",
+    answer: (
+      <>
+        <p>The Portal is the gateway to CashCaddies’ most competitive and rewarding contests.</p>
+
+        <p className="mt-3">
+          Inside, contests are divided into three tiers based on your contribution to the Safety Coverage Fund—ensuring
+          every entry is protected while rewarding committed players with access to higher-tier competition.
+        </p>
+
+        <p className="mt-3">
+          As the fund grows stronger and becomes self-sustaining, CashCaddies unlocks{" "}
+          <strong>money-added tournaments</strong>—premium contests where extra cash is injected directly into the prize
+          pool.
+        </p>
+
+        <p className="mt-3">
+          <strong>More contribution. More protection. More opportunity.</strong>
+        </p>
+      </>
+    ),
+  },
 ];
 
 const PAYMENTS_ITEMS = [
