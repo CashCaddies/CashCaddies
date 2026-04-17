@@ -105,15 +105,15 @@ export function SiteHeader() {
                     className="group flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
                     aria-label="Open portal"
                   >
-                    <div className="perspective relative flex h-20 w-20 items-center justify-center">
-                      <div className="golf-ball-3d relative h-full w-full">
+                    <div className="perspective relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
+                      <div className="golf-ball-globe relative h-full w-full">
                         <Image
                           src="/golf-ball.png"
                           alt="Portal"
                           fill
-                          className="object-contain transition-transform duration-200 group-hover:scale-105"
+                          className="object-contain"
                           priority
-                          sizes="80px"
+                          sizes="(max-width: 768px) 80px, 96px"
                         />
                       </div>
                     </div>
