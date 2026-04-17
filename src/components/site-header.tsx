@@ -64,52 +64,52 @@ export function SiteHeader() {
 
   const ccMainNav = (
     <nav
-      className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center gap-3 overflow-x-auto whitespace-nowrap"
+      className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-x-auto whitespace-nowrap"
       aria-label="Primary"
     >
-      {navItems.map((item) => {
-        const isActive = item.isActive(pathname);
-        return (
-          <button
-            key={item.href}
-            type="button"
-            aria-current={isActive ? "page" : undefined}
-            onClick={() => {
-              window.location.href = item.href;
-            }}
-            className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? "border-emerald-500/45 bg-emerald-950/35 text-emerald-400"
-                : "border-white/10 bg-slate-900/50 text-white hover:border-emerald-500/25 hover:text-emerald-300"
-            }`}
-          >
-            {item.label}
-          </button>
-        );
-      })}
+      <div className="flex items-center gap-3 ml-6">
+        {navItems.map((item) => {
+          const isActive = item.isActive(pathname);
+          return (
+            <button
+              key={item.href}
+              type="button"
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => {
+                window.location.href = item.href;
+              }}
+              className={`px-4 py-2 rounded-md border text-sm font-medium transition ${
+                isActive
+                  ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300"
+                  : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+              }`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 
   const headerRight = (authControls: ReactNode, premiumTag: ReactNode | null) => (
-    <div className="headerRight flex shrink-0 items-center justify-end gap-4">
+    <div className="headerRight flex shrink-0 items-center gap-4 ml-6">
       {premiumTag}
       <HeaderStats />
-      <span className="mr-4 text-[11px] uppercase tracking-wide text-yellow-400">
-        Premium Golf DFS
-      </span>
+      <span className="text-[11px] uppercase tracking-wider text-yellow-400">Premium Golf DFS</span>
       {authControls}
     </div>
   );
 
   return (
-    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-white/10 bg-slate-950">
+    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-yellow-500/20 bg-[#020617]">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between gap-4 px-4 py-2">
+            <div className="headerContainer mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between px-6 py-3">
               <div className="min-w-0 shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="flex-shrink-0">
                     <img
                       src="/logo.png?v=1"
@@ -119,10 +119,11 @@ export function SiteHeader() {
                   </div>
 
                   <div className="flex flex-col leading-tight">
-                    <span className="text-2xl font-semibold text-emerald-400">CashCaddies</span>
+                    <span className="text-2xl font-semibold text-emerald-400 tracking-tight">
+                      CashCaddies
+                    </span>
                     <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
-
-                    <span className="text-[11px] uppercase tracking-wide text-emerald-300">
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
                       Safety Coverage Fund
                     </span>
                   </div>

@@ -1,34 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useWallet } from "@/hooks/use-wallet";
-import { WALLET_BANKROLL_FLASH_EVENT, WALLET_WINNINGS_EVENT } from "@/lib/wallet-bankroll-events";
 import { formatMoney } from "@/lib/wallet";
 
 /** Wallet chip in header right rail (with account). Fund strip is `HeaderFundBar`. */
 export function HeaderStats() {
   const { wallet, loading: walletLoading } = useWallet();
-  const [deductFlash, setDeductFlash] = useState(false);
-  const [winFlash, setWinFlash] = useState(false);
-
-  useEffect(() => {
-    function onFlash() {
-      setDeductFlash(true);
-      window.setTimeout(() => setDeductFlash(false), 700);
-    }
-    window.addEventListener(WALLET_BANKROLL_FLASH_EVENT, onFlash);
-    return () => window.removeEventListener(WALLET_BANKROLL_FLASH_EVENT, onFlash);
-  }, []);
-
-  useEffect(() => {
-    function onWin() {
-      setWinFlash(true);
-      window.setTimeout(() => setWinFlash(false), 900);
-    }
-    window.addEventListener(WALLET_WINNINGS_EVENT, onWin);
-    return () => window.removeEventListener(WALLET_WINNINGS_EVENT, onWin);
-  }, []);
 
   const accountBalanceUsd =
     walletLoading || !wallet ? null : Number(wallet.wallet_balance ?? wallet.account_balance);
@@ -39,19 +17,13 @@ export function HeaderStats() {
     <div className="headerStats">
       <Link
         href="/wallet"
-        className="walletStat"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold text-sm transition hover:bg-yellow-500/15"
         prefetch
         title="Open wallet"
         aria-label={`Wallet, account balance ${walletDisplay}. Open wallet.`}
       >
-        <span>Wallet</span>
-        <b
-          className={[deductFlash ? "walletStatAmountDeduct" : "", winFlash ? "walletStatAmountWin" : ""]
-            .filter(Boolean)
-            .join(" ") || undefined}
-        >
-          {walletDisplay}
-        </b>
+        <span className="text-yellow-400/90">Wallet</span>
+        <span className="font-semibold tabular-nums text-yellow-300">{walletDisplay}</span>
       </Link>
     </div>
   );
