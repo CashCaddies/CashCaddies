@@ -83,6 +83,13 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
     router.push(href);
   };
 
+  type EnterContestRpcRow = {
+    ok?: boolean;
+    current_entries?: number;
+    error?: string;
+    message?: string;
+  };
+
   const handleEnterContest = async (e: MouseEvent) => {
     e.stopPropagation();
     setEntryError(null);
@@ -100,46 +107,31 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
     setEntering(true);
 
     try {
-      const { data: existing } = await supabase
-        .from("contest_entries")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("contest_id", contest.id)
-        .maybeSingle();
-
-      if (existing) {
-        setEntryError("You're already in this contest.");
-        return;
-      }
-
-      const prevCount = contest.current_entries ?? contest.entry_count ?? 0;
-      if (prevCount >= contest.max_entries) {
-        setEntryError("This contest is full.");
-        return;
-      }
-
-      const { error } = await supabase.from("contest_entries").insert({
-        user_id: user.id,
-        contest_id: contest.id,
+      const { data, error } = await supabase.rpc("enter_contest", {
+        p_contest_id: contest.id,
       });
 
       if (error) {
-        console.error("Entry error:", error);
-        setEntryError("Unable to enter contest. Try again.");
+        setEntryError(error.message);
         return;
       }
 
-      const nextCount = prevCount + 1;
-      const { error: updateError } = await supabase
-        .from("contests")
-        .update({
-          current_entries: nextCount,
-        })
-        .eq("id", contest.id);
-
-      if (updateError) {
-        console.error("Contest entry count update error:", updateError);
+      const row = data as EnterContestRpcRow | null;
+      if (row && row.ok === false) {
+        const msg =
+          typeof row.message === "string" && row.message.trim() !== ""
+            ? row.message
+            : typeof row.error === "string" && row.error.trim() !== ""
+              ? row.error
+              : "Unable to enter contest. Try again.";
+        setEntryError(msg);
+        return;
       }
+
+      const nextCount =
+        row != null && typeof row.current_entries === "number" && Number.isFinite(row.current_entries)
+          ? Math.max(0, Math.floor(row.current_entries))
+          : (contest.current_entries ?? contest.entry_count ?? 0) + 1;
 
       onContestPatched?.(contest.id, {
         current_entries: nextCount,
