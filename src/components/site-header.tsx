@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import type { MouseEvent, ReactNode } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { Tooltip } from "@/components/ui/tooltip";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -31,6 +32,23 @@ const navButtonBase =
  */
 export function SiteHeader() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
+  const supabase = createClient();
+
+  async function handlePortalClick(e: MouseEvent<HTMLDivElement>) {
+    e.preventDefault();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    router.push("/portal");
+  }
 
   const ccMainNav = (
     <div className="ccMainNav flex min-h-0 shrink-0 items-center overflow-x-auto">
@@ -113,13 +131,21 @@ export function SiteHeader() {
               <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
                   <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
-                    <Link
-                      href="/portal"
-                      className="portal-golf-trigger inline-flex cursor-pointer"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       aria-label="Click here to access the CashCaddies Coveted Contest Portal"
+                      onClick={handlePortalClick}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.currentTarget.click();
+                        }
+                      }}
+                      className="portal-golf-trigger inline-flex cursor-pointer"
                     >
                       <div className="transition duration-200 hover:scale-105">{golfBallElement}</div>
-                    </Link>
+                    </div>
                   </Tooltip>
                 </div>
               </div>

@@ -6,6 +6,45 @@ export default function Page() {
     <main className="mx-auto w-full max-w-6xl overflow-visible px-4 py-6 sm:px-6">
       <ClosedBetaClient />
 
+      <div className="mx-auto mt-20 w-full max-w-4xl px-6">
+        <div className="rounded-xl border border-emerald-500/10 bg-[#0b1220] p-8">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">
+            How to Get Started
+          </h2>
+
+          <div className="space-y-4 text-gray-300">
+            <div>
+              <span className="font-semibold text-emerald-400">1.</span> Create your account
+            </div>
+
+            <div>
+              <span className="font-semibold text-emerald-400">2.</span> Get approved for beta access
+            </div>
+
+            <div>
+              <span className="font-semibold text-emerald-400">3.</span> Enter contests in the Lobby
+            </div>
+
+            <div>
+              <span className="font-semibold text-emerald-400">4.</span> Gain access to higher tiers through participation
+            </div>
+
+            <div>
+              <span className="font-semibold text-emerald-400">5.</span> Unlock Portal contests as the fund grows
+            </div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <Link
+              href="/login"
+              className="inline-block rounded-lg border border-emerald-500/30 px-6 py-3 text-emerald-400 transition hover:bg-emerald-500/10"
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="mx-auto mb-24 mt-20 w-full max-w-4xl px-6">
         <div className="rounded-xl border border-white/10 bg-[#0b1220] p-8 text-center">
           <h2 className="mb-2 text-2xl font-bold text-white">Frequently Asked Questions</h2>
