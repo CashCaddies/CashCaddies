@@ -44,7 +44,7 @@ const navItems = [
 ] as const;
 
 const navButtonBase =
-  "px-4 py-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition whitespace-nowrap";
+  "rounded-md border border-white/10 bg-white/5 px-5 py-2.5 text-base font-medium transition hover:bg-white/10 whitespace-nowrap";
 
 /**
  * Full DFS header when user has beta or admin access.
@@ -55,7 +55,7 @@ export function SiteHeader() {
 
   const ccMainNav = (
     <div className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-x-auto">
-      <div className="flex items-center gap-3" role="navigation" aria-label="Primary">
+      <div className="flex items-center gap-4" role="navigation" aria-label="Primary">
         {navItems.map((item) => {
           const isActive = item.isActive(pathname);
           return (
@@ -96,25 +96,25 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between gap-3 px-8 py-4 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-3 md:gap-5">
-                <div className="flex items-center gap-4">
+            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-3 px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-5 md:gap-8">
+                <div className="flex items-center gap-6">
                   <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                   <div className="relative flex-shrink-0">
                     <img
                       src="/logo.png?v=1"
                       alt="CashCaddies"
-                      className="h-16 w-16 object-contain rounded-md brightness-110 contrast-110 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] md:h-20 md:w-20"
+                      className="h-20 w-20 object-contain rounded-md brightness-110 contrast-110 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] md:h-24 md:w-24"
                       loading="eager"
                     />
                   </div>
 
                   <div className="flex flex-col leading-tight">
-                    <span className="text-2xl font-semibold text-emerald-400 tracking-tight">
+                    <span className="text-3xl font-semibold tracking-tight text-emerald-400 md:text-4xl">
                       CashCaddies
                     </span>
-                    <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
-                    <span className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
+                    <span className="text-sm text-gray-400">Daily Fantasy Golf Platform</span>
+                    <span className="mt-1 text-xs uppercase tracking-wider text-emerald-300">
                       Safety Coverage Fund
                     </span>
                   </div>
@@ -126,14 +126,14 @@ export function SiteHeader() {
                     className="flex shrink-0 items-center justify-center group"
                     aria-label="Open portal"
                   >
-                    <div className="relative h-14 w-14 transition-transform duration-300 group-hover:scale-110 md:h-16 md:w-16">
+                    <div className="relative h-16 w-16 transition-transform duration-300 group-hover:scale-110 md:h-20 md:w-20">
                       <Image
                         src="/golf-ball.png"
                         alt="Portal"
                         fill
                         className="object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.45)] will-change-transform"
                         priority
-                        sizes="(max-width: 768px) 56px, 64px"
+                        sizes="(max-width: 768px) 64px, 80px"
                       />
                     </div>
                   </Link>
