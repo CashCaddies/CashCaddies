@@ -128,20 +128,29 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
 
   return (
     <div ref={rootRef} className="userMenu">
-      <button
-        type="button"
-        className="userTrigger !gap-3"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen((v) => !v)}
-        title={displayName}
-      >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-yellow-400">
-          {/* eslint-disable-next-line @next/next/no-img-element -- remote avatar URLs from Supabase Storage */}
-          <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
-        </div>
-        <div className="flex min-w-0 flex-col leading-tight">
-          <span className="inline-flex max-w-[10rem] items-center gap-1 truncate text-sm font-medium text-emerald-400">
+      <div className="userTrigger !gap-3">
+        <button
+          type="button"
+          className="flex shrink-0 cursor-pointer items-center border-0 bg-transparent p-0"
+          aria-expanded={open}
+          aria-haspopup="menu"
+          onClick={() => setOpen((v) => !v)}
+          title="Open account menu"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-yellow-400">
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote avatar URLs from Supabase Storage */}
+            <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
+          </div>
+          <span className="sr-only">Open account menu</span>
+        </button>
+
+        <Link
+          href="/profile"
+          className="flex min-w-0 flex-1 flex-col leading-tight text-left text-emerald-400 no-underline transition-colors hover:text-emerald-300"
+          onClick={close}
+          title={displayName}
+        >
+          <span className="username inline-flex max-w-[10rem] items-center gap-1 truncate text-sm font-medium">
             {premiumSubscriber ? (
               <span className="shrink-0 text-amber-400" title="Premium member" aria-hidden="true">
                 👑
@@ -157,9 +166,8 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
               </span>
             ) : null}
           </div>
-        </div>
-        <span className="sr-only">Open account menu</span>
-      </button>
+        </Link>
+      </div>
 
       {open ? (
         <div className="userDropdown" role="menu">
