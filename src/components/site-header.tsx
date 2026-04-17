@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -69,46 +70,73 @@ export function SiteHeader() {
     </div>
   );
 
+  const golfBallElement = (
+    <Tooltip content={<>Portal to CashCaddies Coveted Contests</>}>
+      <Link
+        href="/portal"
+        className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
+        aria-label="Portal to CashCaddies Coveted Contests"
+      >
+        <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
+          <div className="golf-ball-roll relative h-full w-full">
+            <Image
+              src="/golf-ball.png"
+              alt="Portal"
+              fill
+              className="object-contain"
+              priority
+              sizes="(max-width: 768px) 80px, 96px"
+            />
+          </div>
+        </div>
+      </Link>
+    </Tooltip>
+  );
+
   return (
     <header className="relative w-full overflow-x-visible overflow-y-visible">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center overflow-visible px-6 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-              {/* LEFT: brand */}
-              <div className="header-left-brand flex min-w-0 shrink-0 items-center overflow-visible">
-                <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex min-w-0 flex-col overflow-visible leading-tight text-left">
-                  <span className="text-4xl md:text-5xl font-semibold tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">CashCaddies</span>
-                  <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
-                  <Tooltip
-                    content={
-                      <>
-                        Covers entry fees if your golfer withdraws, is disqualified, or does not start.
-                      </>
-                    }
-                  >
-                    <span className="cursor-pointer text-sm text-emerald-400">Safety Coverage Fund</span>
-                  </Tooltip>
+            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-4 overflow-visible px-6 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+              {/* LEFT: brand + Portal */}
+              <div className="flex min-w-0 shrink-0 items-center gap-4 overflow-visible md:gap-6">
+                <div className="header-left-brand flex min-w-0 shrink-0 items-center overflow-visible">
+                  <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
+                  <div className="flex min-w-0 flex-col overflow-visible leading-tight text-left">
+                    <span className="text-4xl md:text-5xl font-semibold tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+                      CashCaddies
+                    </span>
+                    <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
+                    <Tooltip
+                      content={
+                        <>
+                          Covers entry fees if your golfer withdraws, is disqualified, or does not start.
+                        </>
+                      }
+                    >
+                      <span className="cursor-pointer text-sm text-emerald-400">Safety Coverage Fund</span>
+                    </Tooltip>
+                  </div>
                 </div>
+                <Tooltip content={<>Portal to CashCaddies Coveted Contests</>}>
+                  <Link
+                    href="/portal"
+                    className="inline-flex items-center rounded-lg border border-emerald-500/30 px-4 py-2 text-sm font-semibold text-emerald-400 transition hover:border-emerald-400"
+                  >
+                    Portal
+                  </Link>
+                </Tooltip>
               </div>
 
-              {/* CENTER: Portal */}
+              {/* CENTER: golf ball */}
               <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
-                  <Tooltip content={<>Portal to CashCaddies Coveted Contests</>}>
-                    <Link
-                      href="/portal"
-                      className="inline-flex cursor-pointer items-center rounded-lg border border-white/10 bg-[#111827] px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-emerald-500/40"
-                      aria-label="Portal to CashCaddies Coveted Contests"
-                    >
-                      Portal
-                    </Link>
-                  </Tooltip>
+                  {golfBallElement}
                 </div>
               </div>
 
-              {/* RIGHT: nav | spacer | wallet + profile */}
+              {/* RIGHT: nav + wallet + profile */}
               <div className="flex min-w-0 shrink-0 items-center">
                 <div className="flex min-w-0 shrink-0 items-center">{ccMainNav}</div>
                 <div className="w-6 shrink-0 md:w-14" aria-hidden />
