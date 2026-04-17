@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { getProfile } from "@/lib/getProfile";
 import { isAdmin } from "@/lib/permissions";
@@ -27,6 +27,8 @@ type Props = {
   onContestPatched?: (contestId: string, patch: Partial<LobbyContestRow>) => void;
   onContestRemoved?: (contestId: string) => void;
   onRefresh?: (opts?: { initial?: boolean }) => Promise<void>;
+  /** Opens contest details (e.g. modal) when the row is activated */
+  onRowClick?: () => void;
 };
 
 function stopRowNavigation(e: MouseEvent) {
@@ -40,8 +42,8 @@ export function LobbyContestTableRow({
   onContestPatched,
   onContestRemoved,
   onRefresh,
+  onRowClick,
 }: Props) {
-  const router = useRouter();
   const { user } = useAuth();
   const [entering, setEntering] = useState(false);
   const [entryError, setEntryError] = useState<string | null>(null);
@@ -92,8 +94,8 @@ export function LobbyContestTableRow({
         ? isAdmin(profile?.role)
         : false;
 
-  const go = () => {
-    router.push(href);
+  const handleRowActivate = () => {
+    onRowClick?.();
   };
 
   const refreshContests = async () => {
@@ -202,7 +204,7 @@ export function LobbyContestTableRow({
   const onRowKeyDown = (e: KeyboardEvent<HTMLTableRowElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      go();
+      handleRowActivate();
     }
   };
 
@@ -326,10 +328,10 @@ export function LobbyContestTableRow({
   return (
     <tr
       ref={rowRef}
-      role="link"
+      role="button"
       tabIndex={0}
-      aria-label={`View contest ${contest.name}`}
-      onClick={go}
+      aria-label={`View details for ${contest.name}`}
+      onClick={handleRowActivate}
       onKeyDown={onRowKeyDown}
       className={`
         border-b border-[#232a33] transition-all duration-300
@@ -399,6 +401,7 @@ export function LobbyContestTableRow({
           <Link
             href={href}
             className="inline-flex shrink-0 items-center justify-center rounded border border-[#2f3640] bg-[#1c2128] px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#c5cdd5] hover:bg-[#232a33] sm:px-4 sm:text-sm"
+            onClick={(e) => e.stopPropagation()}
           >
             View Contest
           </Link>
@@ -415,7 +418,10 @@ export function LobbyContestTableRow({
               ${!entering && !isEntered && !isFull ? "bg-blue-600 text-white hover:bg-blue-500" : ""}
               ${justEntered ? "ring-2 ring-green-400" : ""}
             `}
-            onClick={handleEnterContest}
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleEnterContest(e);
+            }}
             disabled={entering || isFull || isEntered}
           >
             {entering ? "Entering..." : isEntered ? "✓ Entered" : isFull ? "Full" : "Enter"}

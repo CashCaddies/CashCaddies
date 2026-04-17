@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { LobbyContestPayoutRow, LobbyContestRow } from "@/lib/contest-lobby-shared";
+import { formatLobbyEntryFeeUsd } from "@/lib/contest-lobby-shared";
 import { LobbyAdminActions } from "@/components/lobby-admin-actions";
 import { LobbyContestTableRow } from "@/components/lobby-contest-table-row";
 import { getProfile } from "@/lib/getProfile";
@@ -78,6 +79,7 @@ export function LobbyPageContent() {
   const [error, setError] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
+  const [selectedContest, setSelectedContest] = useState<LobbyContestRow | null>(null);
 
   const loadContests = useCallback(async (opts?: { initial?: boolean }) => {
     const initial = opts?.initial === true;
@@ -147,6 +149,11 @@ export function LobbyPageContent() {
 
   const admin = isAdmin(profile?.role);
 
+  const modalContest =
+    selectedContest != null
+      ? (contests.find((c) => c.id === selectedContest.id) ?? selectedContest)
+      : null;
+
   if (loading) {
     return <div className="p-4">Loading contests...</div>;
   }
@@ -212,6 +219,7 @@ export function LobbyPageContent() {
                 onContestPatched={patchContest}
                 onContestRemoved={removeContest}
                 onRefresh={loadContests}
+                onRowClick={() => setSelectedContest(contest)}
               />
             ))}
           </tbody>
@@ -222,6 +230,52 @@ export function LobbyPageContent() {
         Contests load from Supabase · Entry counts are paid entries · Safety Pool = platform pool balance ·
         Protected % = entries with a protected golfer ÷ total entries · Prize pool = entry fee × entries
       </p>
+
+      {modalContest ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setSelectedContest(null)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-lg bg-white p-6 text-slate-900 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contest-details-title"
+          >
+            <h2 id="contest-details-title" className="mb-4 text-xl font-bold">
+              {modalContest.name}
+            </h2>
+
+            <div className="space-y-2 text-sm">
+              <div>
+                Entry Fee:{" "}
+                {formatLobbyEntryFeeUsd(modalContest.entry_fee ?? modalContest.entry_fee_usd)}
+              </div>
+              <div>
+                Entries: {modalContest.current_entries ?? modalContest.entry_count} /{" "}
+                {modalContest.max_entries}
+              </div>
+              <div>
+                Prize Pool:{" "}
+                {modalContest.prize_pool != null && String(modalContest.prize_pool).trim() !== ""
+                  ? formatLobbyEntryFeeUsd(modalContest.prize_pool)
+                  : "—"}
+              </div>
+              <div>Status: {modalContest.status ?? "—"}</div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedContest(null)}
+              className="mt-4 w-full rounded bg-gray-800 py-2 text-white"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
