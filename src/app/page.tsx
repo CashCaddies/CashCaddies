@@ -6,12 +6,12 @@ export default function Page() {
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
       <ClosedBetaClient />
 
-      <div className="mx-auto mb-24 mt-16 w-full max-w-4xl px-6">
+      <div className="mx-auto mb-24 mt-20 w-full max-w-4xl px-6">
         <div className="rounded-2xl border border-white/10 bg-[#0b1220]/80 p-8 text-center shadow-lg">
           <h2 className="mb-3 text-2xl font-bold text-white">Questions?</h2>
 
           <p className="mb-6 text-gray-400">
-            Learn how CashCaddies works, how protection works, and what makes our contests different.
+            Learn how CashCaddies works, including the Portal, tiers, and protection system.
           </p>
 
           <Link
