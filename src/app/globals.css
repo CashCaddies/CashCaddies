@@ -173,7 +173,7 @@ body {
   text-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
 }
 
-/* Header — DFS bar: LEFT brand | CENTER nav (flex) | RIGHT fund + wallet + account */
+/* Header — DFS bar: LEFT brand | CENTER portal ball | RIGHT nav + wallet + account */
 .headerContainer {
   display: flex;
   align-items: center;
