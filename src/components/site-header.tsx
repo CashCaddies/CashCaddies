@@ -78,12 +78,15 @@ export function SiteHeader() {
               <div className="header-left-brand flex min-w-0 shrink-0 items-center gap-6 md:gap-8">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                 <div className="relative shrink-0">
-                  <img
-                    src="/logo.png?v=1"
-                    alt="CashCaddies"
-                    className="h-24 w-24 rounded-md object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)] md:h-28 md:w-28"
-                    loading="eager"
-                  />
+                  <div className="logo-sweep-wrapper">
+                    <img
+                      src="/logo.png?v=1"
+                      alt="CashCaddies"
+                      className="h-24 w-24 rounded-md object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)] md:h-28 md:w-28"
+                      loading="eager"
+                    />
+                    <div className="logo-sweep" aria-hidden />
+                  </div>
                 </div>
 
                 <div className="flex min-w-0 flex-col leading-tight">
