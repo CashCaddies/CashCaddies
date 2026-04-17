@@ -32,7 +32,7 @@ export function SiteHeader() {
   const pathname = usePathname() ?? "";
 
   const ccMainNav = (
-    <div className="ccMainNav flex min-h-0 shrink-0 items-center justify-end overflow-x-auto">
+    <div className="ccMainNav flex min-h-0 shrink-0 items-center overflow-x-auto">
       <div className="flex items-center gap-4" role="navigation" aria-label="Primary">
         {navItems.map((item) => {
           const isActive = item.isActive(pathname);
@@ -61,7 +61,7 @@ export function SiteHeader() {
   const headerRight = (authControls: ReactNode, premiumTag: ReactNode | null) => (
     <div className="headerRight flex flex-col items-end gap-1 flex-shrink-0">
       <span className="text-[11px] uppercase tracking-wider text-yellow-400">Premium Golf DFS</span>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {premiumTag}
         <HeaderStats />
         {authControls}
@@ -74,39 +74,38 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center gap-3 overflow-visible px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-              <div className="min-w-0 flex-1" aria-hidden />
-              <div className="header-brand-center flex shrink-0 items-center gap-6 md:gap-10">
-                <div className="flex items-center gap-6">
-                  <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                  <div className="relative shrink-0">
-                    <img
-                      src="/logo.png?v=1"
-                      alt="CashCaddies"
-                      className="h-24 w-24 rounded-md object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)] md:h-28 md:w-28"
-                      loading="eager"
-                    />
-                  </div>
-
-                  <div className="flex flex-col leading-tight">
-                    <span className="text-4xl font-semibold tracking-tight text-emerald-400 md:text-5xl">
-                      CashCaddies
-                    </span>
-                    <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
-                    <span className="mt-1 text-sm uppercase tracking-wider text-emerald-300">
-                      Safety Coverage Fund
-                    </span>
-                  </div>
+            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-4 overflow-visible px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+              <div className="header-left-brand flex min-w-0 shrink-0 items-center gap-6 md:gap-8">
+                <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
+                <div className="relative shrink-0">
+                  <img
+                    src="/logo.png?v=1"
+                    alt="CashCaddies"
+                    className="h-24 w-24 rounded-md object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)] md:h-28 md:w-28"
+                    loading="eager"
+                  />
                 </div>
 
-                <div className="header-portal-golf-shell flex shrink-0 min-w-fit items-center justify-center">
+                <div className="flex min-w-0 flex-col leading-tight">
+                  <span className="text-4xl font-semibold tracking-tight text-emerald-400 md:text-5xl">
+                    CashCaddies
+                  </span>
+                  <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
+                  <span className="mt-1 text-sm uppercase tracking-wider text-emerald-300">
+                    Safety Coverage Fund
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex min-w-0 shrink-0 items-center gap-5 md:gap-6">
+                <div className="header-portal-golf-shell flex shrink-0 items-center justify-center">
                   <Link
                     href="/portal"
                     title="CashCaddies Portal to qualified contests"
                     className="group flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
                     aria-label="Open portal"
                   >
-                    <div className="perspective relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
+                    <div className="perspective relative flex h-20 w-20 items-center justify-center">
                       <div className="golf-ball-3d relative h-full w-full">
                         <Image
                           src="/golf-ball.png"
@@ -114,18 +113,16 @@ export function SiteHeader() {
                           fill
                           className="object-contain transition-transform duration-200 group-hover:scale-105"
                           priority
-                          sizes="(max-width: 768px) 80px, 96px"
+                          sizes="80px"
                         />
                       </div>
                     </div>
                   </Link>
                 </div>
+                {ccMainNav}
               </div>
 
-              <div className="flex min-w-0 flex-1 items-center justify-end gap-4 md:gap-6">
-                {ccMainNav}
-                {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
-              </div>
+              <div className="shrink-0">{headerRight(ctx.authControls, ctx.premiumHeaderTag)}</div>
             </div>
             <HeaderFundBar />
           </>

@@ -187,7 +187,7 @@ body {
   z-index: 2;
 }
 
-.header-brand-center {
+.header-left-brand {
   position: relative;
   z-index: 2;
 }
@@ -1488,8 +1488,8 @@ header * {
 /* Portal golf ball + centered brand: beat header * overflow-y:hidden for hover scale */
 header .header-portal-golf-shell,
 header .header-portal-golf-shell *,
-header .header-brand-center,
-header .header-brand-center * {
+header .header-left-brand,
+header .header-left-brand * {
   overflow-x: visible !important;
   overflow-y: visible !important;
 }
