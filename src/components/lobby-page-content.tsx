@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { LobbyContestPayoutRow, LobbyContestRow } from "@/lib/contest-lobby-shared";
 import { LobbyAdminActions } from "@/components/lobby-admin-actions";
 import { LobbyContestTableRow } from "@/components/lobby-contest-table-row";
@@ -74,40 +74,62 @@ function normalizeLobbyRows(raw: unknown[]): LobbyContestRow[] {
 export function LobbyPageContent() {
   const [contests, setContests] = useState<LobbyContestRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
 
-  useEffect(() => {
-    const fetchContests = async () => {
+  const loadContests = useCallback(async (opts?: { initial?: boolean }) => {
+    const initial = opts?.initial === true;
+    if (initial) {
       setLoading(true);
       setError(null);
+    } else {
+      setRefreshing(true);
+    }
 
-      if (!supabase) {
-        console.error("Contest fetch error: Supabase client unavailable");
+    if (!supabase) {
+      console.error("Contest fetch error: Supabase client unavailable");
+      if (initial) {
         setError("Failed to load contests");
         setContests([]);
         setLoading(false);
-        return;
       }
+      setRefreshing(false);
+      return;
+    }
 
-      const { data, error: fetchError } = await supabase
-        .from("contests")
-        .select("*")
-        .order("created_at", { ascending: false });
+    const { data, error: fetchError } = await supabase
+      .from("contests")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      if (fetchError) {
-        console.error("Contest fetch error:", fetchError);
+    if (fetchError) {
+      console.error("Contest fetch error:", fetchError);
+      if (initial) {
         setError("Failed to load contests");
         setContests([]);
-      } else {
-        setContests(normalizeLobbyRows(data ?? []));
       }
+    } else {
+      setContests(normalizeLobbyRows(data ?? []));
+    }
 
+    if (initial) {
       setLoading(false);
-    };
+    }
+    setRefreshing(false);
+  }, []);
 
-    void fetchContests();
+  useEffect(() => {
+    void loadContests({ initial: true });
+  }, [loadContests]);
+
+  const patchContest = useCallback((contestId: string, patch: Partial<LobbyContestRow>) => {
+    setContests((prev) => prev.map((c) => (c.id === contestId ? { ...c, ...patch } : c)));
+  }, []);
+
+  const removeContest = useCallback((contestId: string) => {
+    setContests((prev) => prev.filter((c) => c.id !== contestId));
   }, []);
 
   useEffect(() => {
@@ -151,10 +173,11 @@ export function LobbyPageContent() {
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-0">
             <button
               type="button"
-              className="rounded border border-amber-600/50 bg-[#1c2128] px-3 py-1 text-xs font-semibold text-amber-100 hover:bg-[#252b33]"
-              onClick={() => window.location.reload()}
+              className="rounded border border-amber-600/50 bg-[#1c2128] px-3 py-1 text-xs font-semibold text-amber-100 hover:bg-[#252b33] disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => void loadContests({ initial: false })}
+              disabled={refreshing}
             >
-              FORCE REFRESH
+              {refreshing ? "Refreshing…" : "FORCE REFRESH"}
             </button>
             <span className="rounded border border-[#2f3640] bg-[#1c2128] px-3 py-1 text-xs font-semibold text-[#c5cdd5]">
               Classic
@@ -181,7 +204,14 @@ export function LobbyPageContent() {
           </thead>
           <tbody className="text-[#e8ecf0]">
             {contests?.map((contest, index) => (
-              <LobbyContestTableRow key={contest.id} contest={contest} index={index} viewerRole={profile?.role ?? null} />
+              <LobbyContestTableRow
+                key={contest.id}
+                contest={contest}
+                index={index}
+                viewerRole={profile?.role ?? null}
+                onContestPatched={patchContest}
+                onContestRemoved={removeContest}
+              />
             ))}
           </tbody>
         </table>

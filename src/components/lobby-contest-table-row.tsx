@@ -23,16 +23,20 @@ type Props = {
   index: number;
   /** When provided by lobby shell, avoids duplicate profile fetch and timing issues */
   viewerRole?: string | null;
+  /** Merge server-side updates into lobby list without full page reload */
+  onContestPatched?: (contestId: string, patch: Partial<LobbyContestRow>) => void;
+  onContestRemoved?: (contestId: string) => void;
 };
 
 function stopRowNavigation(e: MouseEvent) {
   e.stopPropagation();
 }
 
-export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
+export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatched, onContestRemoved }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const [entering, setEntering] = useState(false);
+  const [entryError, setEntryError] = useState<string | null>(null);
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const searchParams = useSearchParams();
@@ -79,23 +83,23 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
     router.push(href);
   };
 
-  const handleEnterContest = async (e: any) => {
+  const handleEnterContest = async (e: MouseEvent) => {
     e.stopPropagation();
+    setEntryError(null);
 
     if (!user?.id) {
-      alert("You must be logged in");
+      setEntryError("Sign in to enter contests.");
       return;
     }
 
     if (!supabase) {
-      alert("System error");
+      setEntryError("Unable to connect. Try again.");
       return;
     }
 
     setEntering(true);
 
     try {
-      // Check if already entered
       const { data: existing } = await supabase
         .from("contest_entries")
         .select("id")
@@ -104,18 +108,16 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         .maybeSingle();
 
       if (existing) {
-        alert("Already entered");
+        setEntryError("You're already in this contest.");
         return;
       }
 
-      // Prevent overfill
-      if ((contest.current_entries ?? contest.entry_count ?? 0) >= contest.max_entries) {
-        alert("Contest is full");
-        setEntering(false);
+      const prevCount = contest.current_entries ?? contest.entry_count ?? 0;
+      if (prevCount >= contest.max_entries) {
+        setEntryError("This contest is full.");
         return;
       }
 
-      // Create entry (basic version, no wallet logic yet)
       const { error } = await supabase.from("contest_entries").insert({
         user_id: user.id,
         contest_id: contest.id,
@@ -123,15 +125,15 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
 
       if (error) {
         console.error("Entry error:", error);
-        alert("Failed to enter contest");
+        setEntryError("Unable to enter contest. Try again.");
         return;
       }
 
-      // Increment entry count
+      const nextCount = prevCount + 1;
       const { error: updateError } = await supabase
         .from("contests")
         .update({
-          current_entries: (contest.current_entries ?? contest.entry_count ?? 0) + 1,
+          current_entries: nextCount,
         })
         .eq("id", contest.id);
 
@@ -139,10 +141,13 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         console.error("Contest entry count update error:", updateError);
       }
 
-      window.location.reload();
+      onContestPatched?.(contest.id, {
+        current_entries: nextCount,
+        entry_count: nextCount,
+      });
     } catch (err) {
       console.error("Unexpected error:", err);
-      alert("Something went wrong");
+      setEntryError("Something went wrong. Try again.");
     } finally {
       setEntering(false);
     }
@@ -200,7 +205,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         if (error) {
           console.error(error);
         } else {
-          window.location.reload();
+          onContestRemoved?.(contest.id);
           return;
         }
       }
@@ -230,7 +235,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
           if (row && row.ok === false) {
             console.error(data);
           } else {
-            window.location.reload();
+            onContestPatched?.(contest.id, { status: "settled", has_settlement: true });
             return;
           }
         }
@@ -305,7 +310,11 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
       </td>
       <td className="px-3 py-3.5 align-middle text-[#c5cdd5]">{formatContestStartDate(contest.starts_at)}</td>
       <td className="px-4 py-3.5 pr-5 text-right align-middle sm:px-5" onClick={stopRowNavigation}>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-col items-end gap-1">
+          {entryError ? (
+            <p className="max-w-[14rem] text-right text-[11px] leading-snug text-red-400">{entryError}</p>
+          ) : null}
+          <div className="flex flex-wrap items-center justify-end gap-2">
           <Link
             href={href}
             className="inline-flex shrink-0 items-center justify-center rounded border border-[#2f3640] bg-[#1c2128] px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#c5cdd5] hover:bg-[#232a33] sm:px-4 sm:text-sm"
@@ -352,6 +361,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
               </button>
             </>
           )}
+          </div>
         </div>
       </td>
     </tr>
