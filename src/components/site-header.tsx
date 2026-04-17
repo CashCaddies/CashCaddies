@@ -127,14 +127,20 @@ export function SiteHeader() {
                     aria-label="Open portal"
                   >
                     <div className="relative h-16 w-16 transition-transform duration-300 group-hover:scale-110 md:h-20 md:w-20">
-                      <Image
-                        src="/golf-ball.png"
-                        alt="Portal"
-                        fill
-                        className="object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.45)] will-change-transform"
-                        priority
-                        sizes="(max-width: 768px) 64px, 80px"
+                      <div
+                        className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-900/20 to-transparent opacity-60 blur-md"
+                        aria-hidden
                       />
+                      <div className="absolute inset-0 z-10">
+                        <Image
+                          src="/golf-ball.png"
+                          alt="Portal"
+                          fill
+                          className="object-contain mix-blend-normal drop-shadow-[0_8px_18px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.45)] transition-all duration-300"
+                          priority
+                          sizes="(max-width: 768px) 64px, 80px"
+                        />
+                      </div>
                     </div>
                   </Link>
                 </div>
