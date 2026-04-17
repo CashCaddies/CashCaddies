@@ -1481,8 +1481,8 @@ header {
 /* 🔥 Remove ANY vertical scrollbar in header/nav */
 header,
 header * {
-  overflow-y: hidden !important;
   max-height: none !important;
+  overflow: visible !important;
 }
 
 /* Portal golf ball + centered brand: beat header * overflow-y:hidden for hover scale */
