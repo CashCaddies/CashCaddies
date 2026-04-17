@@ -1494,23 +1494,31 @@ header .header-brand-center * {
   overflow-y: visible !important;
 }
 
-/* Golf ball portal — slow idle spin, faster on .group:hover */
-.golf-ball-spin {
-  animation: golfSpin 12s linear infinite;
+/* Golf ball portal — 3D globe-style spin (tilt + Y rotation), faster on .group:hover */
+.perspective {
+  perspective: 800px;
+}
+
+.golf-ball-3d {
   transform-style: preserve-3d;
+  animation: golfSpin3D 10s linear infinite;
   will-change: transform;
 }
 
-.group:hover .golf-ball-spin {
-  animation: golfSpin 4s linear infinite;
+.group:hover .golf-ball-3d {
+  animation: golfSpin3D 4s linear infinite;
 }
 
-@keyframes golfSpin {
+.golf-ball-3d img {
+  filter: brightness(1.05) contrast(1.1);
+}
+
+@keyframes golfSpin3D {
   0% {
-    transform: rotate(0deg);
+    transform: rotateX(15deg) rotateY(0deg);
   }
   100% {
-    transform: rotate(360deg);
+    transform: rotateX(15deg) rotateY(360deg);
   }
 }
 
