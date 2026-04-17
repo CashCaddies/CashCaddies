@@ -70,11 +70,11 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="w-full overflow-x-visible overflow-y-visible">
+    <header className="relative w-full overflow-x-visible overflow-y-visible">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-3 px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-3 overflow-visible px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
               <div className="headerLeft flex min-w-0 shrink-0 items-center gap-5 md:gap-8">
                 <div className="flex items-center gap-6">
                   <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
@@ -99,13 +99,13 @@ export function SiteHeader() {
                 </div>
 
                 <div className="header-portal-golf-shell flex shrink-0 min-w-fit items-center justify-center">
-                  <div className="relative z-10 flex shrink-0 items-center justify-center group">
+                  <div className="header-portal-tooltip-wrap relative flex items-center justify-center group">
                     <Link
                       href="/portal"
-                      className="flex shrink-0 items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
+                      className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
                       aria-label="Open portal"
                     >
-                      <div className="relative flex h-16 w-16 items-center justify-center md:h-20 md:w-20">
+                      <div className="relative h-16 w-16 md:h-20 md:w-20">
                         <Image
                           src="/golf-ball.png"
                           alt="Portal"
@@ -118,7 +118,7 @@ export function SiteHeader() {
                     </Link>
                     <div
                       role="tooltip"
-                      className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-black/80 px-3 py-1.5 text-xs text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100"
+                      className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-black/90 px-3 py-1.5 text-xs text-white opacity-0 transition-all duration-200 group-hover:opacity-100"
                     >
                       CashCaddies Portal to qualified contests
                     </div>

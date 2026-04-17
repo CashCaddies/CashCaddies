@@ -1480,9 +1480,11 @@ header * {
   max-height: none !important;
 }
 
-/* Portal golf ball: global header * overflow-y:hidden clips hover scale — restore visible overflow here only */
+/* Portal golf ball + tooltip: global header * overflow-y:hidden clips hover — restore visible overflow here only */
 header .header-portal-golf-shell,
-header .header-portal-golf-shell * {
+header .header-portal-golf-shell *,
+header .header-portal-tooltip-wrap,
+header .header-portal-tooltip-wrap * {
   overflow-x: visible !important;
   overflow-y: visible !important;
 }
