@@ -106,7 +106,7 @@ export function SiteHeader() {
                     aria-label="Open portal"
                   >
                     <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
-                      <div className="golf-ball-roll relative h-full w-full">
+                      <div className="golf-ball-pulse relative h-full w-full">
                         <Image
                           src="/golf-ball.png"
                           alt="Portal"

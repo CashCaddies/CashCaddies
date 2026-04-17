@@ -1494,25 +1494,37 @@ header .header-left-brand * {
   overflow-y: visible !important;
 }
 
-/* Golf ball portal — in-place roll (2D), faster on .group:hover */
-.golf-ball-roll {
-  animation: golfRoll 2.5s linear infinite;
-  will-change: transform;
+/* Golf ball portal — metallic pulse (no spin); stronger shimmer on .group:hover */
+.golf-ball-pulse {
+  animation: golfPulse 3.5s ease-in-out infinite;
+  will-change: filter;
 }
 
-.group:hover .golf-ball-roll {
-  animation: golfRoll 1.2s linear infinite;
+.group:hover .golf-ball-pulse {
+  animation: golfPulseHover 2s ease-in-out infinite;
 }
 
-@keyframes golfRoll {
+@keyframes golfPulse {
   0% {
-    transform: rotate(0deg) translateY(0px);
+    filter: brightness(1) saturate(1);
   }
   50% {
-    transform: rotate(180deg) translateY(-2px);
+    filter: brightness(1.15) saturate(1.2);
   }
   100% {
-    transform: rotate(360deg) translateY(0px);
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes golfPulseHover {
+  0% {
+    filter: brightness(1.05) saturate(1.1);
+  }
+  50% {
+    filter: brightness(1.25) saturate(1.35);
+  }
+  100% {
+    filter: brightness(1.05) saturate(1.1);
   }
 }
 
