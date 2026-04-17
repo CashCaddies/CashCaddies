@@ -37,6 +37,8 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
   const { user } = useAuth();
   const [entering, setEntering] = useState(false);
   const [entryError, setEntryError] = useState<string | null>(null);
+  /** Current user already has a row in contest_entries for this contest */
+  const [userHasEntry, setUserHasEntry] = useState(false);
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const searchParams = useSearchParams();
@@ -55,6 +57,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
     : Math.max(0, Math.floor(Number(contest.entry_count) || 0));
   const current = Math.min(currentBase, max);
   const isFull = current >= max;
+  const isEntered = userHasEntry;
   const protectedCount = Math.max(0, Math.trunc(Number(contest.protected_entries_count ?? 0)));
   const protectedPctLabel = formatProtectedEntriesPercent(currentBase, protectedCount);
   const safetyPoolUsd = contest.safety_pool_usd ?? 0;
@@ -94,6 +97,10 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
     e.stopPropagation();
     setEntryError(null);
 
+    if (isFull || isEntered) {
+      return;
+    }
+
     if (!user?.id) {
       setEntryError("Sign in to enter contests.");
       return;
@@ -124,6 +131,14 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
             : typeof row.error === "string" && row.error.trim() !== ""
               ? row.error
               : "Unable to enter contest. Try again.";
+        const already =
+          /already/i.test(msg) ||
+          String(row.error ?? "").toLowerCase() === "already_entered" ||
+          String(row.message ?? "").toLowerCase() === "already_entered";
+        if (already) {
+          setUserHasEntry(true);
+          return;
+        }
         setEntryError(msg);
         return;
       }
@@ -133,6 +148,7 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
           ? Math.max(0, Math.floor(row.current_entries))
           : (contest.current_entries ?? contest.entry_count ?? 0) + 1;
 
+      setUserHasEntry(true);
       onContestPatched?.(contest.id, {
         current_entries: nextCount,
         entry_count: nextCount,
@@ -151,6 +167,28 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
       go();
     }
   };
+
+  useEffect(() => {
+    if (!user?.id || !supabase) {
+      setUserHasEntry(false);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("contest_entries")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("contest_id", contest.id)
+        .maybeSingle();
+      if (!cancelled) {
+        setUserHasEntry(!!data);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, contest.id]);
 
   useEffect(() => {
     if (!isCreatedContest) return;
@@ -315,11 +353,20 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
           </Link>
           <button
             type="button"
-            className="inline-flex shrink-0 items-center justify-center rounded border border-emerald-600/50 bg-emerald-950/40 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-200 hover:bg-emerald-950/60 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm"
+            className={`
+              inline-flex shrink-0 items-center justify-center
+              w-full md:w-auto rounded px-4 py-2
+              text-xs font-bold uppercase tracking-wide sm:text-sm
+              disabled:cursor-not-allowed disabled:opacity-70
+              ${entering ? "bg-blue-600 text-white" : ""}
+              ${!entering && isEntered ? "bg-green-600 text-white cursor-not-allowed" : ""}
+              ${!entering && !isEntered && isFull ? "bg-gray-500 text-white cursor-not-allowed" : ""}
+              ${!entering && !isEntered && !isFull ? "bg-blue-600 text-white hover:bg-blue-500" : ""}
+            `}
             onClick={handleEnterContest}
-            disabled={entering}
+            disabled={entering || isFull || isEntered}
           >
-            {entering ? "Entering…" : "Enter"}
+            {entering ? "Entering..." : isEntered ? "Entered" : isFull ? "Full" : "Enter"}
           </button>
           {admin ? (
             <AdminContestControls
