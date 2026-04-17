@@ -58,7 +58,7 @@ export default function RootLayout({
             <SupabaseProvider>
               <AppProviders>
                 {/* No overflow-y on this wrapper — it clipped header tooltips (portal golf ball). Body scrolls. */}
-                <div className="flex min-h-[100dvh] flex-1 flex-col">
+                <div className="flex min-h-[100dvh] flex-1 flex-col overflow-visible">
                   <SiteHeader />
                   <SoftLaunchCountdown />
                   <ConditionalBetaBanner />
