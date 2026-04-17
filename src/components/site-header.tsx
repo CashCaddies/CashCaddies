@@ -77,7 +77,7 @@ export function SiteHeader() {
           src="/golf-ball.png"
           alt="Portal"
           fill
-          className="object-contain"
+          className="pointer-events-none object-contain"
           priority
           sizes="(max-width: 768px) 80px, 96px"
         />
