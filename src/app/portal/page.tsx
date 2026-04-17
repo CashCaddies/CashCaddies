@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ContestLifecycleStatusBadge, ContestLockCountdown } from "@/components/contest-card";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
+import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
 import { createClientNoStore } from "@/lib/supabase/server";
 
 type PortalFrequency = "weekly" | "biweekly" | "monthly";
@@ -23,6 +24,18 @@ const FREQUENCY_SECTIONS: Array<{ key: PortalFrequency; title: string }> = [
   { key: "biweekly", title: "BI-WEEKLY PORTAL" },
   { key: "monthly", title: "MONTHLY PORTAL" },
 ];
+
+const TIER_UNAVAILABLE: Record<PortalFrequency, string> = {
+  weekly: "Weekly contests unavailable — fund threshold not met.",
+  biweekly: "Bi-weekly contests unavailable — fund threshold not met.",
+  monthly: "Monthly contests unavailable — fund threshold not met.",
+};
+
+const TIER_AVAILABLE: Record<PortalFrequency, string> = {
+  weekly: "Weekly contests available",
+  biweekly: "Bi-weekly contests available",
+  monthly: "Monthly contests available",
+};
 
 function formatMoney(value: number | string | null | undefined): string {
   const n = Number(value ?? 0);
@@ -53,6 +66,12 @@ function formatStartDate(iso: string): string {
 export const dynamic = "force-dynamic";
 
 export default async function PortalPage() {
+  const totalFund = 5000;
+  const requiredBuffer = 3000;
+
+  const surplus = calculateSurplus(totalFund, requiredBuffer);
+  const unlocked = getUnlockedTiers(surplus);
+
   const supabase = await createClientNoStore();
   const { data, error } = await supabase
     .from("contests")
@@ -90,13 +109,35 @@ export default async function PortalPage() {
         </div>
       ) : null}
 
+      {surplus === 0 && (
+        <p className="text-gray-400">
+          No contests available — fund has not exceeded protection requirements yet.
+        </p>
+      )}
+
+      {surplus > 0 && unlocked.length === 0 && (
+        <p className="text-gray-400">
+          Fund is growing. Portal contests unlock as surplus increases.
+        </p>
+      )}
+
       {FREQUENCY_SECTIONS.map((section) => (
         <section key={section.key} className="space-y-3">
           <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-violet-200">{section.title}</h2>
-          {groups[section.key].length === 0 ? (
-            <div className="rounded-xl border border-slate-800 bg-[#0f1419] px-4 py-5 text-sm text-slate-400">
-              No portal contests currently listed.
+
+          {section.key === "weekly" && unlocked.includes("weekly") && (
+            <div className="rounded-lg border border-white/10 p-4">
+              <h3 className="text-lg font-semibold text-white">Weekly Portal</h3>
+              <p className="mt-1 text-slate-300">
+                Money Added: {formatMoney(getOverlayAmount(surplus, "weekly"))}
+              </p>
             </div>
+          )}
+
+          {!unlocked.includes(section.key) ? (
+            <p className="text-gray-400">{TIER_UNAVAILABLE[section.key]}</p>
+          ) : groups[section.key].length === 0 ? (
+            <div className="text-slate-300">{TIER_AVAILABLE[section.key]}</div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {groups[section.key].map((contest) => {
