@@ -77,16 +77,14 @@ export function SiteHeader() {
             <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-4 overflow-visible px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
               <div className="header-left-brand flex min-w-0 shrink-0 items-center gap-6 md:gap-8">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="relative shrink-0">
-                  <div className="logo-sweep-wrapper">
-                    <img
-                      src="/logo.png?v=1"
-                      alt="CashCaddies"
-                      className="h-24 w-24 rounded-md object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)] md:h-28 md:w-28"
-                      loading="eager"
-                    />
-                    <div className="logo-sweep" aria-hidden />
-                  </div>
+                <div className="logo-sweep-wrapper shrink-0">
+                  <img
+                    src="/logo.png"
+                    alt="CashCaddies"
+                    className="h-20 w-20 rounded-md object-contain md:h-24 md:w-24"
+                    loading="eager"
+                  />
+                  <div className="logo-sweep" aria-hidden />
                 </div>
 
                 <div className="flex min-w-0 flex-col leading-tight">
@@ -109,7 +107,7 @@ export function SiteHeader() {
                     aria-label="Open portal"
                   >
                     <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
-                      <div className="golf-ball-pulse relative h-full w-full">
+                      <div className="golf-ball-roll relative h-full w-full">
                         <Image
                           src="/golf-ball.png"
                           alt="Portal"

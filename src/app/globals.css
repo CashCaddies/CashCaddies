@@ -1494,37 +1494,26 @@ header .header-left-brand * {
   overflow-y: visible !important;
 }
 
-/* Golf ball portal — metallic pulse (no spin); stronger shimmer on .group:hover */
-.golf-ball-pulse {
-  animation: golfPulse 3.5s ease-in-out infinite;
-  will-change: filter;
+/* Golf ball portal — rolling spin; faster on .group:hover */
+.golf-ball-roll {
+  animation: golfRoll 3s linear infinite;
+  will-change: transform;
 }
 
-.group:hover .golf-ball-pulse {
-  animation: golfPulseHover 2s ease-in-out infinite;
+.group:hover .golf-ball-roll {
+  animation: golfRoll 1.5s linear infinite;
 }
 
-@keyframes golfPulse {
+.golf-ball-roll-hover {
+  animation: golfRoll 1.5s linear infinite;
+}
+
+@keyframes golfRoll {
   0% {
-    filter: brightness(1) saturate(1);
-  }
-  50% {
-    filter: brightness(1.15) saturate(1.2);
+    transform: rotate(0deg);
   }
   100% {
-    filter: brightness(1) saturate(1);
-  }
-}
-
-@keyframes golfPulseHover {
-  0% {
-    filter: brightness(1.05) saturate(1.1);
-  }
-  50% {
-    filter: brightness(1.25) saturate(1.35);
-  }
-  100% {
-    filter: brightness(1.05) saturate(1.1);
+    transform: rotate(360deg);
   }
 }
 
@@ -1539,25 +1528,25 @@ header .header-left-brand * {
 .logo-sweep {
   position: absolute;
   top: 0;
-  left: -150%;
-  width: 60%;
+  left: -120%;
+  width: 40%;
   height: 100%;
   background: linear-gradient(
     120deg,
     transparent 0%,
-    rgba(255, 215, 0, 0.15) 40%,
-    rgba(255, 215, 0, 0.35) 50%,
-    rgba(255, 215, 0, 0.15) 60%,
+    rgba(255, 215, 0, 0.08) 45%,
+    rgba(255, 215, 0, 0.18) 50%,
+    rgba(255, 215, 0, 0.08) 55%,
     transparent 100%
   );
-  transform: skewX(-20deg);
+  transform: skewX(-18deg);
   animation: logoSweep 7s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes logoSweep {
   0% {
-    left: -150%;
+    left: -120%;
   }
   100% {
     left: 150%;
