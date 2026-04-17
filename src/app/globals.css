@@ -1521,22 +1521,30 @@ header .header-left-brand * {
 .logo-sweep-wrapper {
   position: relative;
   display: inline-block;
-  overflow: hidden;
+  width: fit-content;
+  height: fit-content;
+  overflow: hidden; /* CRITICAL */
+  isolation: isolate; /* prevents bleed into siblings */
   border-radius: 8px;
+}
+
+.logo-sweep-wrapper img {
+  position: relative;
+  z-index: 1;
 }
 
 .logo-sweep {
   position: absolute;
   top: 0;
-  left: -120%;
-  width: 40%;
+  left: -100%;
+  width: 120%; /* NOT huge */
   height: 100%;
   background: linear-gradient(
     120deg,
     transparent 0%,
-    rgba(255, 215, 0, 0.08) 45%,
-    rgba(255, 215, 0, 0.18) 50%,
-    rgba(255, 215, 0, 0.08) 55%,
+    rgba(255, 215, 0, 0.06) 45%,
+    rgba(255, 215, 0, 0.15) 50%,
+    rgba(255, 215, 0, 0.06) 55%,
     transparent 100%
   );
   transform: skewX(-18deg);
@@ -1546,7 +1554,7 @@ header .header-left-brand * {
 
 @keyframes logoSweep {
   0% {
-    left: -120%;
+    left: -100%;
   }
   100% {
     left: 150%;

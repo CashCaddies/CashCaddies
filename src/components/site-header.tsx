@@ -77,11 +77,11 @@ export function SiteHeader() {
             <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-4 overflow-visible px-8 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
               <div className="header-left-brand flex min-w-0 shrink-0 items-center gap-6 md:gap-8">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="logo-sweep-wrapper shrink-0">
+                <div className="logo-sweep-wrapper">
                   <img
                     src="/logo.png"
                     alt="CashCaddies"
-                    className="h-20 w-20 rounded-md object-contain md:h-24 md:w-24"
+                    className="h-20 w-20 md:h-24 md:w-24 object-contain rounded-md block"
                     loading="eager"
                   />
                   <div className="logo-sweep" aria-hidden />
