@@ -1,12 +1,32 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-/**
- * Passthrough (no Supabase, no redirects): the previous middleware awaited
- * `getSession` + `profiles` on every matched route and redirected unapproved users —
- * that blocked navigations for seconds. Restore closed-beta gating when you have a
- * faster strategy (cached JWT claims, edge config, or client-only gates).
- */
-export function middleware(_request: NextRequest) {
+export function middleware(req: NextRequest) {
+  const url = req.nextUrl;
+
+  // Allow homepage + auth routes
+  if (
+    url.pathname === "/" ||
+    url.pathname.startsWith("/login") ||
+    url.pathname.startsWith("/auth")
+  ) {
+    return NextResponse.next();
+  }
+
+  // Supabase SSR stores session in `sb-<project-ref>-auth-token` (and legacy names)
+  const hasSession = req.cookies.getAll().some(
+    (c) =>
+      !!c.value &&
+      (c.name.includes("-auth-token") ||
+        c.name === "sb-access-token" ||
+        c.name === "sb:token"),
+  );
+
+  // If NOT logged in → redirect to homepage
+  if (!hasSession) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return NextResponse.next();
 }
 
@@ -14,14 +34,8 @@ export const config = {
   matcher: [
     "/lobby/:path*",
     "/dashboard/:path*",
-    "/lineups/:path*",
-    "/leaderboard/:path*",
-    "/contests/:path*",
-    "/contest/:path*",
-    "/lineup/:path*",
+    "/portal/:path*",
     "/profile/:path*",
-    "/wallet/:path*",
-    "/admin/:path*",
-    "/lineup-builder/:path*",
+    "/faq/:path*",
   ],
 };
