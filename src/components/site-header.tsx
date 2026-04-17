@@ -98,16 +98,12 @@ export function SiteHeader() {
               <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
                   <Tooltip
-                    content={
-                      <>
-                        Protected entries. If a golfer WD/DQ/DNS, your entry fee is covered.
-                      </>
-                    }
+                    content={<>Portal to CashCaddies Coveted Contests</>}
                   >
                     <Link
                       href="/portal"
                       className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
-                      aria-label="Open portal"
+                      aria-label="Portal to CashCaddies Coveted Contests"
                     >
                       <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
                         <div className="golf-ball-roll relative h-full w-full">
