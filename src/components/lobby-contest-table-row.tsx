@@ -26,13 +26,21 @@ type Props = {
   /** Merge server-side updates into lobby list without full page reload */
   onContestPatched?: (contestId: string, patch: Partial<LobbyContestRow>) => void;
   onContestRemoved?: (contestId: string) => void;
+  onRefresh?: (opts?: { initial?: boolean }) => Promise<void>;
 };
 
 function stopRowNavigation(e: MouseEvent) {
   e.stopPropagation();
 }
 
-export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatched, onContestRemoved }: Props) {
+export function LobbyContestTableRow({
+  contest,
+  index,
+  viewerRole,
+  onContestPatched,
+  onContestRemoved,
+  onRefresh,
+}: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const [entering, setEntering] = useState(false);
@@ -84,6 +92,11 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
 
   const go = () => {
     router.push(href);
+  };
+
+  const refreshContests = async () => {
+    if (!onRefresh) return;
+    await onRefresh({ initial: false });
   };
 
   type EnterContestRpcRow = {
@@ -153,6 +166,15 @@ export function LobbyContestTableRow({ contest, index, viewerRole, onContestPatc
         current_entries: nextCount,
         entry_count: nextCount,
       });
+
+      const rpcMissingCount =
+        row == null ||
+        typeof row.current_entries !== "number" ||
+        !Number.isFinite(row.current_entries);
+      const wasNearFull = max > 0 && current >= max - 1;
+      if (rpcMissingCount || wasNearFull) {
+        await refreshContests();
+      }
     } catch (err) {
       console.error("Unexpected error:", err);
       setEntryError("Something went wrong. Try again.");

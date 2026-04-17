@@ -211,6 +211,7 @@ export function LobbyPageContent() {
                 viewerRole={profile?.role ?? null}
                 onContestPatched={patchContest}
                 onContestRemoved={removeContest}
+                onRefresh={loadContests}
               />
             ))}
           </tbody>
