@@ -15,31 +15,9 @@ const navItems = [
     isActive: (p: string) => p === "/lobby" || p.startsWith("/lobby/"),
   },
   {
-    href: "/contests",
-    label: "Contests",
-    isActive: (p: string) =>
-      p === "/contests" ||
-      p.startsWith("/contests/") ||
-      p === "/dashboard/contests" ||
-      p.startsWith("/dashboard/contests/"),
-  },
-  {
-    href: "/lineups",
-    label: "Lineups",
-    isActive: (p: string) =>
-      p === "/lineups" ||
-      p.startsWith("/lineups/") ||
-      p === "/dashboard/lineups" ||
-      p.startsWith("/dashboard/lineups/"),
-  },
-  {
     href: "/dashboard",
     label: "Dashboard",
-    isActive: (p: string) =>
-      p === "/dashboard" ||
-      (p.startsWith("/dashboard/") &&
-        !p.startsWith("/dashboard/contests") &&
-        !p.startsWith("/dashboard/lineups")),
+    isActive: (p: string) => p === "/dashboard" || p.startsWith("/dashboard/"),
   },
 ] as const;
 
