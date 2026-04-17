@@ -79,11 +79,13 @@ export function SiteHeader() {
   );
 
   const headerRight = (authControls: ReactNode, premiumTag: ReactNode | null) => (
-    <div className="headerRight flex shrink-0 items-center gap-4">
-      {premiumTag}
-      <HeaderStats />
+    <div className="headerRight flex flex-col items-end gap-1 flex-shrink-0">
       <span className="text-[11px] uppercase tracking-wider text-yellow-400">Premium Golf DFS</span>
-      {authControls}
+      <div className="flex items-center gap-3">
+        {premiumTag}
+        <HeaderStats />
+        {authControls}
+      </div>
     </div>
   );
 
