@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const ogImageUrl = "/cashcaddies-square.png";
+const ogImageUrl = "/logo.png?v=1";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cashcaddies.com"),

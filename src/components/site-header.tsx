@@ -94,7 +94,7 @@ export function SiteHeader() {
     <div className="headerRight flex shrink-0 items-center justify-end gap-4">
       {premiumTag}
       <HeaderStats />
-      <span className="mr-4 shrink-0 text-[11px] uppercase tracking-wide text-yellow-400">
+      <span className="mr-4 text-[11px] uppercase tracking-wide text-yellow-400">
         Premium Golf DFS
       </span>
       {authControls}
@@ -102,31 +102,30 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-white/10 bg-gradient-to-b from-slate-950 to-slate-900">
+    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-white/10 bg-slate-950">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-7xl items-center gap-4 justify-between px-8 py-6">
+            <div className="headerContainer mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between gap-4 px-4 py-2">
               <div className="min-w-0 shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-4">
-                    <div className="logo-crop flex-shrink-0">
-                      <img
-                        src="/cashcaddies-square.png"
-                        alt="CashCaddies"
-                        className="logo-img"
-                      />
-                    </div>
-
-                    <div className="flex flex-col leading-tight">
-                      <span className="text-2xl font-semibold text-emerald-400">CashCaddies</span>
-                      <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <img
+                      src="/logo.png?v=1"
+                      alt="CashCaddies"
+                      className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain rounded-md"
+                    />
                   </div>
-                  <span className="text-[11px] uppercase tracking-wide text-emerald-300">
-                    Safety Coverage Fund
-                  </span>
+
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-2xl font-semibold text-emerald-400">CashCaddies</span>
+                    <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
+
+                    <span className="text-[11px] uppercase tracking-wide text-emerald-300">
+                      Safety Coverage Fund
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-2 hidden md:block">{brandLinks}</div>
               </div>

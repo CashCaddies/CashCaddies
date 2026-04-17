@@ -18,6 +18,20 @@ const nextConfig: NextConfig = {
     ],
   },
   generateBuildId: async () => Date.now().toString(),
+
+  async headers() {
+    return [
+      {
+        source: "/:all*\\.(png|jpg|jpeg|svg|webp)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, must-revalidate",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
