@@ -117,12 +117,10 @@ export function SiteHeader() {
                   <Tooltip content={<>Portal to CashCaddies Coveted Contests</>}>
                     <Link
                       href="/portal"
-                      className="group relative block origin-center cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-105"
+                      className="group block cursor-pointer transition hover:scale-105"
                       aria-label="Portal to CashCaddies Coveted Contests"
                     >
-                      <div className="rounded-xl transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.25)]">
-                        {golfBallElement}
-                      </div>
+                      {golfBallElement}
                     </Link>
                   </Tooltip>
                 </div>

@@ -5,6 +5,7 @@ import { Shield } from "lucide-react";
 import { FounderBadge } from "@/components/founder-badge";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { hasPermission, isAdmin, isSeniorAdmin } from "@/lib/permissions";
 
@@ -47,6 +48,7 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
   const rootRef = useRef<HTMLDivElement>(null);
   /** Direct `profiles` fetch â€” backup if parent props lag or omit role / founding_tester. */
   const [profileState, setProfile] = useState<UserMenuProfile | null>(null);
+  const [authUser, setAuthUser] = useState<User | null>(null);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -59,7 +61,10 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user || !mounted) return;
+      if (!mounted) return;
+      setAuthUser(user ?? null);
+
+      if (!user) return;
 
       const { data: profile, error } = await supabase
         .from("profiles")
@@ -122,7 +127,23 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
     profile?.founding_tester === true || clientFoundingTester === true;
 
   const avatarSrc = profile?.avatar_url?.trim() || "/default-avatar.svg";
-  const displayName = (profile?.username?.trim() || label.replace(/^@/, "")).trim() || "Account";
+
+  const metaUsername =
+    authUser?.user_metadata &&
+    typeof authUser.user_metadata.username === "string" &&
+    authUser.user_metadata.username.trim() !== ""
+      ? authUser.user_metadata.username.trim()
+      : "";
+  const emailLocal = authUser?.email?.split("@")[0]?.trim() ?? "";
+  const profileUsername = (profile?.username?.trim() || profileState?.username?.trim() || "").trim();
+  const labelHandle = label.replace(/^@/, "").trim();
+
+  const displayName =
+    profileUsername ||
+    metaUsername ||
+    emailLocal ||
+    labelHandle ||
+    "Account";
 
   const adminBadgeLabel = isSeniorAdminUser ? "SENIOR" : "ADMIN";
 
