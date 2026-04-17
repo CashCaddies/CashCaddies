@@ -1487,6 +1487,26 @@ header .header-portal-golf-shell * {
   overflow-y: visible !important;
 }
 
+/* Golf ball portal — slow idle spin, faster on .group:hover */
+.golf-ball-spin {
+  animation: golfSpin 12s linear infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.group:hover .golf-ball-spin {
+  animation: golfSpin 4s linear infinite;
+}
+
+@keyframes golfSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* Remove scrollbar UI completely (Chrome) */
 header *::-webkit-scrollbar {
   display: none;
