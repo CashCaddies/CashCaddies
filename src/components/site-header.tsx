@@ -112,19 +112,13 @@ export function SiteHeader() {
               {/* CENTER: Portal (golf ball) */}
               <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
-                  <Tooltip
-                    content={
-                      <>Click here to access the CashCaddies Coveted Contest Portal</>
-                    }
-                  >
+                  <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
                     <Link
                       href="/portal"
-                      className="group relative inline-flex cursor-pointer"
+                      className="portal-golf-trigger inline-flex cursor-pointer"
                       aria-label="Click here to access the CashCaddies Coveted Contest Portal"
                     >
-                      <div className="relative z-10 transition duration-200 hover:scale-105">
-                        {golfBallElement}
-                      </div>
+                      <div className="transition duration-200 hover:scale-105">{golfBallElement}</div>
                     </Link>
                   </Tooltip>
                 </div>

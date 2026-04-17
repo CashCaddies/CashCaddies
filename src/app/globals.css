@@ -1500,7 +1500,7 @@ header .header-left-brand * {
   will-change: transform;
 }
 
-.group:hover .golf-ball-roll {
+.portal-golf-trigger:hover .golf-ball-roll {
   animation: golfRoll 1.5s linear infinite;
 }
 
