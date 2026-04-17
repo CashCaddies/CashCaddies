@@ -10,7 +10,7 @@ import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 export type DfsPremiumViewer = {
   /** Combined gate for advanced tools. */
   hasPremiumToolsAccess: boolean;
-  /** Paying or admin-granted `is_premium` still within period (excludes beta-only). */
+  /** Paying premium while `premium_expires_at` is in the future (excludes beta-only). */
   isPremiumSubscriber: boolean;
   isDfsBetaTester: boolean;
 };
@@ -35,7 +35,7 @@ export async function getDfsPremiumViewerForRequest(): Promise<DfsPremiumViewer>
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("is_beta_tester,is_premium,premium_expires_at")
+      .select("is_beta_tester,premium_expires_at")
       .eq("id", user.id)
       .maybeSingle();
 

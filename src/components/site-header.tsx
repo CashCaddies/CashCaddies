@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderAuthSection } from "@/components/header-auth-section";
+import { Tooltip } from "@/components/ui/tooltip";
 import { HeaderFundBar } from "@/components/header-fund-bar";
 import { HeaderStats } from "@/components/header-stats";
 
@@ -81,32 +82,47 @@ export function SiteHeader() {
                 <div className="flex flex-col leading-tight text-left">
                   <span className="text-4xl md:text-5xl font-semibold tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">CashCaddies</span>
                   <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
-                  <span className="text-sm text-emerald-300">Safety Coverage Fund</span>
+                  <Tooltip
+                    content={
+                      <>
+                        Covers entry fees if your golfer withdraws, is disqualified, or does not start.
+                      </>
+                    }
+                  >
+                    <span className="cursor-pointer text-sm text-emerald-400">Safety Coverage Fund</span>
+                  </Tooltip>
                 </div>
               </div>
 
               {/* CENTER: portal golf ball */}
               <div className="flex min-w-0 flex-1 justify-center px-2 md:px-4">
                 <div className="header-portal-golf-shell flex shrink-0 items-center justify-center">
-                  <Link
-                    href="/portal"
-                    title="CashCaddies Portal to qualified contests"
-                    className="group flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
-                    aria-label="Open portal"
+                  <Tooltip
+                    content={
+                      <>
+                        Protected entries. If a golfer WD/DQ/DNS, your entry fee is covered.
+                      </>
+                    }
                   >
-                    <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
-                      <div className="golf-ball-roll relative h-full w-full">
-                        <Image
-                          src="/golf-ball.png"
-                          alt="Portal"
-                          fill
-                          className="object-contain"
-                          priority
-                          sizes="(max-width: 768px) 80px, 96px"
-                        />
+                    <Link
+                      href="/portal"
+                      className="group flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
+                      aria-label="Open portal"
+                    >
+                      <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
+                        <div className="golf-ball-roll relative h-full w-full">
+                          <Image
+                            src="/golf-ball.png"
+                            alt="Portal"
+                            fill
+                            className="object-contain"
+                            priority
+                            sizes="(max-width: 768px) 80px, 96px"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </Tooltip>
                 </div>
               </div>
 

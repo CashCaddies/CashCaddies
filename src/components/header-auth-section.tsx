@@ -44,7 +44,6 @@ export function HeaderAuthSection({ render }: Props) {
   const paidPremiumActive =
     Boolean(wallet) &&
     hasActivePaidPremium({
-      is_premium: wallet?.is_premium,
       premium_expires_at: wallet?.premium_expires_at ?? null,
     });
 

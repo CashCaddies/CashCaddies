@@ -7,10 +7,10 @@ import {
   toggleBetaUser,
   toggleFoundingTester,
   toggleProfileIsBetaTester,
-  toggleProfileIsPremium,
 } from "@/app/admin/user-actions";
 import { FounderBadge } from "@/components/founder-badge";
 import { useWallet } from "@/hooks/use-wallet";
+import { hasActivePaidPremium } from "@/lib/access-control";
 import { hasPermission } from "@/lib/permissions";
 
 type AdminUserRow = {
@@ -23,7 +23,7 @@ type AdminUserRow = {
   beta_user: boolean | null;
   founding_tester: boolean | null;
   is_beta_tester: boolean | null;
-  is_premium: boolean | null;
+  premium_expires_at: string | null;
   role: string | null;
 };
 
@@ -126,7 +126,9 @@ export function AdminUsersTable({ users }: Props) {
                   {row.founding_tester ? <FounderBadge className="mx-auto" /> : <span className="text-slate-600">—</span>}
                 </td>
                 <td className="px-4 py-3.5 text-center text-slate-300">{row.is_beta_tester ? "Yes" : "No"}</td>
-                <td className="px-4 py-3.5 text-center text-slate-300">{row.is_premium ? "Yes" : "No"}</td>
+                <td className="px-4 py-3.5 text-center text-slate-300">
+                  {hasActivePaidPremium({ premium_expires_at: row.premium_expires_at }) ? "Yes" : "No"}
+                </td>
                 <td className="px-4 py-3.5 text-center text-slate-300">{row.role?.trim() ? row.role : "user"}</td>
                 <td className="px-4 py-3.5">
                   <div className="flex flex-wrap justify-end gap-2">
@@ -171,14 +173,6 @@ export function AdminUsersTable({ users }: Props) {
                       className="rounded border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-100 hover:bg-slate-700 disabled:opacity-50"
                     >
                       Toggle DFS beta
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => runAction(row.id, () => toggleProfileIsPremium(row.id))}
-                      className="rounded border border-amber-800/60 bg-amber-950/50 px-2.5 py-1.5 text-xs font-semibold text-amber-100 hover:bg-amber-950/70 disabled:opacity-50"
-                    >
-                      Toggle Premium
                     </button>
                   </div>
                   {statusByUser[row.id] ? (

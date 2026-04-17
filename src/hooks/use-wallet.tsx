@@ -128,7 +128,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             beta_user: false,
             founding_tester: false,
             is_beta_tester: false,
-            is_premium: false,
           });
           if (insertErr && insertErr.code !== "23505") {
             setError("");

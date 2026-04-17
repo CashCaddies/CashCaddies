@@ -8,9 +8,7 @@ export type ProfileRow = {
   beta_user?: boolean;
   /** Advanced DFS tools (tee waves, ownership); admin-granted. */
   is_beta_tester?: boolean;
-  /** Paid premium; same advanced DFS access. */
-  is_premium?: boolean;
-  /** Stripe current period end (ISO); null = no expiry / admin grant. */
+  /** Stripe current period end (ISO); paid premium active while in the future. */
   premium_expires_at?: string | null;
   /** Beta admin tooling; optional until loaded from profiles. */
   founding_tester?: boolean;
@@ -37,7 +35,6 @@ export function normalizeProfileRow(row: {
   username?: string | null;
   beta_user?: boolean | null;
   is_beta_tester?: boolean | null;
-  is_premium?: boolean | null;
   premium_expires_at?: string | null;
   beta_status?: string | null;
   founding_tester?: boolean | null;
@@ -64,7 +61,6 @@ export function normalizeProfileRow(row: {
     username: typeof row.username === "string" && row.username.trim() !== "" ? row.username.trim() : "",
     beta_user: row.beta_user === true,
     is_beta_tester: row.is_beta_tester === true,
-    is_premium: row.is_premium === true,
     premium_expires_at:
       typeof row.premium_expires_at === "string" && row.premium_expires_at.trim() !== ""
         ? row.premium_expires_at.trim()

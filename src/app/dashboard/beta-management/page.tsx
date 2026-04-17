@@ -8,7 +8,6 @@ import {
   setProfileBetaPriority,
   toggleAdmin,
   toggleProfileIsBetaTester,
-  toggleProfileIsPremium,
   updateProfileInviteSource,
 } from "@/app/admin/user-actions";
 import { FounderBadge } from "@/components/founder-badge";
@@ -24,6 +23,7 @@ import type { BetaPriority } from "@/lib/beta-priority";
 import { BETA_PRIORITIES, parseBetaPriority } from "@/lib/beta-priority";
 import { INVITE_SOURCES, type InviteSource, parseInviteSource } from "@/lib/invite-source";
 import { APP_CONFIG_DEFAULT_MAX_BETA_USERS, APP_CONFIG_KEY_MAX_BETA_USERS, parseConfigNumber } from "@/lib/config";
+import { hasActivePaidPremium } from "@/lib/access-control";
 import { supabase } from "@/lib/supabase/client";
 
 type BetaUserRow = {
@@ -36,7 +36,7 @@ type BetaUserRow = {
   beta_notes: string | null;
   created_at: string | null;
   is_beta_tester: boolean;
-  is_premium: boolean;
+  premium_expires_at: string | null;
   beta_priority: BetaPriority;
   invite_source: InviteSource;
   founding_tester: boolean;
@@ -76,7 +76,7 @@ export default function BetaManagementPage() {
     const { data, error: qError } = await supabase
       .from("profiles")
       .select(
-        "id,email,username,beta_status,role,beta_notes,beta_user,created_at,is_beta_tester,is_premium,beta_priority,invite_source,founding_tester",
+        "id,email,username,beta_status,role,beta_notes,beta_user,created_at,is_beta_tester,premium_expires_at,beta_priority,invite_source,founding_tester",
       )
       .order("created_at", { ascending: false });
     if (qError) {
@@ -95,7 +95,10 @@ export default function BetaManagementPage() {
       beta_notes: typeof r.beta_notes === "string" ? r.beta_notes : null,
       created_at: typeof r.created_at === "string" ? r.created_at : null,
       is_beta_tester: r.is_beta_tester === true,
-      is_premium: r.is_premium === true,
+      premium_expires_at:
+        typeof r.premium_expires_at === "string" && r.premium_expires_at.trim() !== ""
+          ? r.premium_expires_at.trim()
+          : null,
       beta_priority: parseBetaPriority(r.beta_priority),
       invite_source: parseInviteSource(r.invite_source),
       founding_tester: r.founding_tester === true,
@@ -585,7 +588,8 @@ function DfsPremiumToggles({
     <div className="mt-3 rounded-lg border border-slate-700/80 bg-slate-950/40 px-3 py-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Advanced DFS tools</p>
       <p className="mt-1 text-xs text-slate-400">
-        DFS beta: {row.is_beta_tester ? "on" : "off"} Â· Premium: {row.is_premium ? "on" : "off"}
+        DFS beta: {row.is_beta_tester ? "on" : "off"} · Paid premium:{" "}
+        {hasActivePaidPremium({ premium_expires_at: row.premium_expires_at }) ? "on" : "off"}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button
@@ -602,21 +606,6 @@ function DfsPremiumToggles({
           }}
         >
           Toggle DFS beta tools
-        </button>
-        <button
-          type="button"
-          disabled={busy || pending}
-          className="rounded-md border border-amber-700/50 bg-amber-950/40 px-2.5 py-1.5 text-xs font-semibold text-amber-100 hover:bg-amber-950/60 disabled:opacity-50"
-          onClick={() => {
-            setMsg(null);
-            startTransition(async () => {
-              const r = await toggleProfileIsPremium(userId);
-              setMsg(r.ok ? r.message : r.error);
-              if (r.ok) onReload();
-            });
-          }}
-        >
-          Toggle Premium
         </button>
       </div>
       {msg ? <p className="mt-2 text-xs text-emerald-300/95">{msg}</p> : null}

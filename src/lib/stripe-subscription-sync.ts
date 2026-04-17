@@ -14,10 +14,6 @@ function customerIdFromSubscription(sub: Stripe.Subscription): string | null {
   return null;
 }
 
-function subscriptionGrantsPremium(sub: Stripe.Subscription): boolean {
-  return sub.status === "active" || sub.status === "trialing";
-}
-
 /**
  * Upsert `profiles` premium + Stripe ids from a Subscription object.
  * Resolves user id from explicitUserId, subscription metadata, stripe_subscription_id, or stripe_customer_id.
@@ -33,7 +29,6 @@ export async function syncProfilePremiumFromSubscription(
   }
 
   const periodEndIso = new Date(sub.current_period_end * 1000).toISOString();
-  const premium = subscriptionGrantsPremium(sub);
 
   let userId =
     (explicitUserId && explicitUserId.trim()) ||
@@ -65,7 +60,6 @@ export async function syncProfilePremiumFromSubscription(
       .update({
         stripe_customer_id: customerId,
         stripe_subscription_id: null,
-        is_premium: false,
         premium_expires_at: periodEndIso,
         updated_at: nowIso,
       })
@@ -78,7 +72,6 @@ export async function syncProfilePremiumFromSubscription(
     .update({
       stripe_customer_id: customerId,
       stripe_subscription_id: sub.id,
-      is_premium: premium,
       premium_expires_at: periodEndIso,
       updated_at: nowIso,
     })
@@ -98,7 +91,6 @@ export async function clearProfilePremiumForEndedSubscription(
     .from("profiles")
     .update({
       stripe_subscription_id: null,
-      is_premium: false,
       premium_expires_at: periodEndIso,
       updated_at: nowIso,
       ...(customerId ? { stripe_customer_id: customerId } : {}),

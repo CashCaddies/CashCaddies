@@ -1,33 +1,32 @@
 /**
  * Premium / beta access for advanced DFS surfaces (tee waves, ownership, filters).
  * - `is_beta_tester`: admin-granted free premium tools (no Stripe).
- * - `is_premium` + `premium_expires_at`: paid (Stripe) or admin-granted; expiry gates paid access after period.
+ * - `premium_expires_at`: Stripe billing period end; active paid premium while this instant is in the future.
  */
 
 export type DfsPremiumProfileSlice = {
   is_beta_tester?: boolean | null;
-  is_premium?: boolean | null;
-  /** When set, paid premium access ends after this instant (Stripe current_period_end). */
+  /** Stripe `current_period_end` (ISO). Paid premium is active while this is in the future. */
   premium_expires_at?: string | null;
 };
 
 /**
- * Paid (or admin-flagged) premium with optional Stripe billing period.
- * Beta-only users (`is_beta_tester` without `is_premium`) are false here.
+ * Active paid premium (Stripe) inferred from `premium_expires_at` only.
+ * Beta-only users (`is_beta_tester` without a future `premium_expires_at`) are false here.
  */
 export function hasActivePaidPremium(
-  row: Pick<DfsPremiumProfileSlice, "is_premium" | "premium_expires_at"> | null | undefined,
+  row: Pick<DfsPremiumProfileSlice, "premium_expires_at"> | null | undefined,
 ): boolean {
-  if (!row || row.is_premium !== true) {
+  if (!row) {
     return false;
   }
   const exp = row.premium_expires_at;
   if (exp == null || String(exp).trim() === "") {
-    return true;
+    return false;
   }
   const t = Date.parse(String(exp));
   if (!Number.isFinite(t)) {
-    return true;
+    return false;
   }
   return t > Date.now();
 }

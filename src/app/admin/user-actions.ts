@@ -161,7 +161,7 @@ export async function grantBetaFunds(user_id: string, amount: number): Promise<G
 
 async function toggleFlag(
   user_id: string,
-  field: "beta_user" | "founding_tester" | "is_beta_tester" | "is_premium",
+  field: "beta_user" | "founding_tester" | "is_beta_tester",
 ): Promise<ActionResult> {
   const auth = await requireAdminActor();
   if (!auth.ok) {
@@ -287,52 +287,6 @@ export async function toggleFoundingTester(user_id: string): Promise<ActionResul
 
 export async function toggleProfileIsBetaTester(user_id: string): Promise<ActionResult> {
   return toggleFlag(user_id, "is_beta_tester");
-}
-
-export async function toggleProfileIsPremium(user_id: string): Promise<ActionResult> {
-  const auth = await requireAdminActor();
-  if (!auth.ok) {
-    return { ok: false, error: auth.error };
-  }
-
-  const targetId = String(user_id ?? "").trim();
-  if (!targetId) {
-    return { ok: false, error: "Invalid user id." };
-  }
-
-  const admin = createServiceRoleClient();
-  if (!admin) {
-    return { ok: false, error: "Server role is not configured." };
-  }
-
-  const { data: current, error: curErr } = await admin
-    .from("profiles")
-    .select("id,is_premium")
-    .eq("id", targetId)
-    .maybeSingle();
-  if (curErr || !current) {
-    return { ok: false, error: "User not found." };
-  }
-
-  const nextValue = !(current as { is_premium?: boolean }).is_premium;
-  const nowIso = new Date().toISOString();
-  const payload: Record<string, unknown> = {
-    is_premium: nextValue,
-    updated_at: nowIso,
-  };
-  if (nextValue) {
-    payload.premium_expires_at = null;
-  }
-
-  const { error: upErr } = await admin.from("profiles").update(payload).eq("id", targetId);
-  if (upErr) {
-    return { ok: false, error: upErr.message };
-  }
-
-  revalidatePath("/admin");
-  revalidatePath("/dashboard/beta-management");
-  revalidatePath("/premium");
-  return { ok: true, message: `is_premium set to ${nextValue ? "true" : "false"}.` };
 }
 
 export type BetaQueueUpdate = { approvedCount: number; maxBetaUsers: number };
