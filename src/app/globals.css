@@ -1517,50 +1517,6 @@ header .header-left-brand * {
   }
 }
 
-/* Header logo — subtle gold light sweep (metallic reflection) */
-.logo-sweep-wrapper {
-  position: relative;
-  display: inline-block;
-  width: fit-content;
-  height: fit-content;
-  overflow: hidden; /* CRITICAL */
-  isolation: isolate; /* prevents bleed into siblings */
-  border-radius: 8px;
-}
-
-.logo-sweep-wrapper img {
-  position: relative;
-  z-index: 1;
-}
-
-.logo-sweep {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 120%; /* NOT huge */
-  height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(255, 215, 0, 0.06) 45%,
-    rgba(255, 215, 0, 0.15) 50%,
-    rgba(255, 215, 0, 0.06) 55%,
-    transparent 100%
-  );
-  transform: skewX(-18deg);
-  animation: logoSweep 7s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes logoSweep {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 150%;
-  }
-}
-
 /* Remove scrollbar UI completely (Chrome) */
 header *::-webkit-scrollbar {
   display: none;
