@@ -12,6 +12,9 @@ export type CreateContestInput = {
   startDate: string;
   contestType?: string;
   status?: string;
+  isPortal?: boolean;
+  portalFrequency?: "weekly" | "biweekly" | "monthly";
+  overlayAmount?: number;
 };
 
 export type CreateContestResult = { ok: true } | { ok: false; error: string };
@@ -23,10 +26,24 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
   const startsAt = String(input.startDate ?? "").trim();
   const requesterUserId = String(input.requesterUserId ?? "").trim();
   const contestState = normalizeContestStateForInsert(input.status);
+  const isPortal = Boolean(input.isPortal);
+  const overlayAmount = Number(input.overlayAmount ?? 0);
+  const portalFrequency = isPortal ? input.portalFrequency ?? null : null;
 
   if (!name) return { ok: false, error: "Contest name is required." };
   if (!Number.isFinite(entryFee) || entryFee < 0) return { ok: false, error: "Entry fee must be 0 or greater." };
   if (!Number.isFinite(maxEntries) || maxEntries < 1) return { ok: false, error: "Max entries must be at least 1." };
+  if (!Number.isFinite(overlayAmount) || overlayAmount < 0) {
+    return { ok: false, error: "Overlay amount must be 0 or greater." };
+  }
+  if (
+    portalFrequency &&
+    portalFrequency !== "weekly" &&
+    portalFrequency !== "biweekly" &&
+    portalFrequency !== "monthly"
+  ) {
+    return { ok: false, error: "Portal frequency must be weekly, biweekly, or monthly." };
+  }
   if (!startsAt) return { ok: false, error: "Start date is required." };
   if (!requesterUserId) return { ok: false, error: "Missing requester user id." };
 
@@ -63,6 +80,10 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
     starts_at: startsAt,
     created_by: requesterUserId,
     created_at: createdAt,
+    is_portal: isPortal,
+    portal_frequency: portalFrequency,
+    overlay_amount: Math.round(overlayAmount * 100) / 100,
+    is_featured: isPortal,
   });
 
   if (error) {

@@ -4,6 +4,9 @@ export type Contest = {
   prizePool: number;
   entryFee: number;
   entries: number;
+  is_portal?: boolean;
+  portal_frequency?: "weekly" | "biweekly" | "monthly";
+  overlay_amount?: number;
 };
 
 export type Golfer = {
