@@ -99,7 +99,7 @@ export function SiteHeader() {
                 </div>
 
                 <div className="header-portal-golf-shell flex shrink-0 min-w-fit items-center justify-center">
-                  <div className="header-portal-tooltip-wrap relative flex items-center justify-center group">
+                  <div className="header-tooltip-wrap group flex items-center justify-center">
                     <Link
                       href="/portal"
                       className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
@@ -116,10 +116,7 @@ export function SiteHeader() {
                         />
                       </div>
                     </Link>
-                    <div
-                      role="tooltip"
-                      className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-black/90 px-3 py-1.5 text-xs text-white opacity-0 transition-all duration-200 group-hover:opacity-100"
-                    >
+                    <div className="header-tooltip" role="tooltip">
                       CashCaddies Portal to qualified contests
                     </div>
                   </div>
