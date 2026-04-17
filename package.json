@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "node -e \"try{require('child_process').execSync('git config core.hooksPath githooks',{stdio:'ignore'})}catch(e){}\"",
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
