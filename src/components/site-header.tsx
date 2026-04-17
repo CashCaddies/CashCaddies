@@ -77,9 +77,9 @@ export function SiteHeader() {
           <>
             <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 items-center overflow-visible px-6 py-6 md:py-8 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
               {/* LEFT: brand */}
-              <div className="header-left-brand flex min-w-0 shrink-0 items-center">
+              <div className="header-left-brand flex min-w-0 shrink-0 items-center overflow-visible">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex flex-col leading-tight text-left">
+                <div className="flex min-w-0 flex-col overflow-visible leading-tight text-left">
                   <span className="text-4xl md:text-5xl font-semibold tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">CashCaddies</span>
                   <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
                   <Tooltip
@@ -95,8 +95,8 @@ export function SiteHeader() {
               </div>
 
               {/* CENTER: portal golf ball */}
-              <div className="flex min-w-0 flex-1 justify-center px-2 md:px-4">
-                <div className="header-portal-golf-shell flex shrink-0 items-center justify-center">
+              <div className="flex min-w-0 flex-1 justify-center overflow-visible px-2 md:px-4">
+                <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
                   <Tooltip
                     content={
                       <>
@@ -106,7 +106,7 @@ export function SiteHeader() {
                   >
                     <Link
                       href="/portal"
-                      className="group flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
+                      className="flex items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
                       aria-label="Open portal"
                     >
                       <div className="relative flex h-20 w-20 items-center justify-center md:h-24 md:w-24">

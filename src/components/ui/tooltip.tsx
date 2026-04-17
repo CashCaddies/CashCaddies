@@ -10,17 +10,11 @@ export function Tooltip({
   content: ReactNode;
 }) {
   return (
-    <div
-      data-header-tooltip
-      className="group/headerTooltip relative z-[100] inline-flex overflow-visible"
-    >
+    <div className="group relative inline-flex">
       {children}
 
-      <div
-        className="pointer-events-none absolute inset-0 z-[9999] flex items-start justify-center opacity-0 transition-all delay-0 duration-200 ease-out group-hover/headerTooltip:opacity-100 group-hover/headerTooltip:delay-75"
-        role="tooltip"
-      >
-        <div className="relative mt-16 w-64 rounded-xl border border-emerald-500/20 bg-[#0b1220]/95 px-4 py-3 text-center text-xs text-white shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-md">
+      <div className="pointer-events-none absolute left-1/2 top-full z-[9999] mt-3 -translate-x-1/2 translate-y-1 opacity-0 transition-all duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="relative w-64 rounded-xl border border-emerald-500/20 bg-[#0b1220]/95 px-4 py-3 text-center text-xs text-white shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-md">
           {content}
 
           <div

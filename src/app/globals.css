@@ -1494,13 +1494,6 @@ header .header-left-brand * {
   overflow-y: visible !important;
 }
 
-/* Header tooltips — must not be clipped by header * overflow-y:hidden */
-header [data-header-tooltip],
-header [data-header-tooltip] * {
-  overflow-x: visible !important;
-  overflow-y: visible !important;
-}
-
 /* Golf ball portal — rolling spin; faster on .group:hover */
 .golf-ball-roll {
   animation: golfRoll 3s linear infinite;
