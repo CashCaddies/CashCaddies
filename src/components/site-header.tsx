@@ -78,7 +78,7 @@ export function SiteHeader() {
               <div className="header-left-brand min-w-0 shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                 <div className="flex flex-col leading-tight text-left">
-                  <span className="text-4xl font-semibold text-emerald-400 md:text-5xl">CashCaddies</span>
+                  <span className="text-4xl md:text-5xl font-semibold tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">CashCaddies</span>
                   <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
                   <span className="text-sm text-emerald-300">Safety Coverage Fund</span>
                 </div>
