@@ -106,24 +106,24 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between px-6 py-4">
+            <div className="headerContainer mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between px-6 py-6">
               <div className="min-w-0 shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-6">
                   <div className="flex-shrink-0">
                     <img
                       src="/logo.png?v=1"
                       alt="CashCaddies"
-                      className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 object-contain rounded-md"
+                      className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 object-contain rounded-md"
                       loading="eager"
                     />
                   </div>
 
                   <div className="flex flex-col leading-tight">
-                    <span className="text-2xl font-semibold text-emerald-400 tracking-tight">
+                    <span className="text-3xl font-semibold text-emerald-400 tracking-tight">
                       CashCaddies
                     </span>
-                    <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
+                    <span className="text-sm text-gray-400">Daily Fantasy Golf Platform</span>
                     <span className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
                       Safety Coverage Fund
                     </span>
