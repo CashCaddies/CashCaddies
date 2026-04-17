@@ -120,29 +120,31 @@ export function SiteHeader() {
                   </div>
                 </div>
 
-                <div className="header-portal-golf-shell flex items-center justify-center shrink-0 min-w-fit">
-                  <Link
-                    href="/portal"
-                    className="flex shrink-0 items-center justify-center group"
-                    aria-label="Open portal"
-                  >
-                    <div className="relative h-16 w-16 transition-transform duration-300 group-hover:scale-110 md:h-20 md:w-20">
-                      <div
-                        className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-900/20 to-transparent opacity-60 blur-md"
-                        aria-hidden
-                      />
-                      <div className="absolute inset-0 z-10">
+                <div className="header-portal-golf-shell flex shrink-0 min-w-fit items-center justify-center">
+                  <div className="relative z-10 flex shrink-0 items-center justify-center group">
+                    <Link
+                      href="/portal"
+                      className="flex shrink-0 items-center justify-center rounded-md p-1 transition-colors hover:bg-white/5"
+                      aria-label="Open portal"
+                    >
+                      <div className="relative flex h-16 w-16 items-center justify-center md:h-20 md:w-20">
                         <Image
                           src="/golf-ball.png"
                           alt="Portal"
                           fill
-                          className="object-contain mix-blend-normal drop-shadow-[0_8px_18px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.45)] transition-all duration-300"
+                          className="object-contain transition-transform duration-200 group-hover:scale-105"
                           priority
                           sizes="(max-width: 768px) 64px, 80px"
                         />
                       </div>
+                    </Link>
+                    <div
+                      role="tooltip"
+                      className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-black/80 px-3 py-1.5 text-xs text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100"
+                    >
+                      CashCaddies Portal to qualified contests
                     </div>
-                  </Link>
+                  </div>
                 </div>
               </div>
 
