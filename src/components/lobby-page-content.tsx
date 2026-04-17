@@ -5,7 +5,6 @@ import type { LobbyContestRow } from "@/lib/contest-lobby-shared";
 import { LobbyAdminActions } from "@/components/lobby-admin-actions";
 import { LobbyEmptyState } from "@/components/lobby-empty-state";
 import { LobbyContestTableRow } from "@/components/lobby-contest-table-row";
-import { PortalEntry } from "@/components/portal-entry";
 import { getProfile } from "@/lib/getProfile";
 import { isAdmin } from "@/lib/permissions";
 
@@ -78,10 +77,6 @@ export function LobbyPageContent({ contests, error }: Props) {
           {error}
         </div>
       )}
-
-      <div className="border-x border-b border-[#2a3039] bg-[#0f1419] p-4 sm:p-6">
-        <PortalEntry />
-      </div>
 
       <div className="overflow-x-auto border-x border-b border-[#2a3039] bg-[#0f1419]">
         <table className="w-full min-w-[920px] table-fixed border-collapse text-left text-sm">
