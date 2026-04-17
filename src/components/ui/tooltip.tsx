@@ -20,7 +20,7 @@ export function Tooltip({
       {children}
 
       {open && (
-        <div className="pointer-events-none absolute bottom-full left-1/2 z-[9999] mb-3 -translate-x-1/2">
+        <div className="absolute bottom-full left-1/2 z-[9999] mb-4 -translate-x-1/2 pointer-events-none">
           <div className="max-w-[18rem] rounded-lg border border-emerald-500/20 bg-[#0b1220] px-3 py-2 text-center text-xs leading-snug text-white shadow-lg">
             {content}
           </div>
