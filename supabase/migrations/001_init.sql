@@ -1,25 +1,53 @@
--- CONTESTS TABLE
-create table if not exists contests (
-  id uuid primary key default gen_random_uuid(),
-  name text,
-  entry_fee numeric,
-  max_entries int,
-  current_entries int default 0,
-  start_date timestamp,
-  created_at timestamp default now()
-);
+-- Seed test contests (runs after 00000000000000_baseline.sql).
+-- Do not recreate `contests` / `contest_entries` here — full DDL lives in the baseline + later migrations.
+-- Status `open` matches baseline CHECK until 20260411200000 normalizes lifecycle values.
 
--- CONTEST ENTRIES TABLE
-create table if not exists contest_entries (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid,
-  contest_id uuid,
-  created_at timestamp default now()
-);
-
--- SEED DATA
-insert into contests (name, entry_fee, max_entries, current_entries, start_date)
-values
-  ('RBC $500 High Roller', 500, 2, 0, now() + interval '1 day'),
-  ('RBC $5 Single Entry', 5, 1, 0, now() + interval '1 day'),
-  ('RBC $20 3-Max', 20, 3, 0, now() + interval '1 day');
+INSERT INTO public.contests (
+  name,
+  entry_fee,
+  entry_fee_usd,
+  max_entries,
+  max_entries_per_user,
+  start_date,
+  starts_at,
+  start_time,
+  status,
+  entries_open_at
+)
+VALUES
+  (
+    'RBC $500 High Roller',
+    500,
+    500,
+    2,
+    1,
+    (now() + interval '1 day')::timestamp,
+    (now() + interval '1 day')::timestamp,
+    (now() + interval '1 day'),
+    'open',
+    now()
+  ),
+  (
+    'RBC $5 Single Entry',
+    5,
+    5,
+    1,
+    1,
+    (now() + interval '1 day')::timestamp,
+    (now() + interval '1 day')::timestamp,
+    (now() + interval '1 day'),
+    'open',
+    now()
+  ),
+  (
+    'RBC $20 3-Max',
+    20,
+    20,
+    3,
+    1,
+    (now() + interval '1 day')::timestamp,
+    (now() + interval '1 day')::timestamp,
+    (now() + interval '1 day'),
+    'open',
+    now()
+  );
