@@ -28,7 +28,7 @@ export function HeaderAuthSection({ render }: Props) {
   const { user, isReady } = useAuth();
   const { wallet, fullUser, loading: walletLoading } = useWallet();
 
-  const deciding = !isReady || (user != null && walletLoading);
+  const deciding = !isReady;
   const hasBetaAccess =
     Boolean(user) &&
     hasClosedBetaAppAccess(
@@ -90,6 +90,8 @@ export function HeaderAuthSection({ render }: Props) {
         Login
       </Link>
     );
+  } else if (walletLoading) {
+    authControls = <UserMenu profile={menuProfile} label={label} premiumSubscriber={paidPremiumActive} />;
   } else if (!hasBetaAccess) {
     authControls = <UserMenu profile={menuProfile} label={label} locked />;
   } else {
