@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export type GolferRow = {
   id: string;
@@ -15,8 +15,7 @@ export async function fetchGolfersForLineup(): Promise<{
   error: string | null;
 }> {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+        const { data, error } = await supabase
       .from("golfers")
       .select("id,name,salary,fantasy_points,withdrawn")
       .order("salary", { ascending: false });

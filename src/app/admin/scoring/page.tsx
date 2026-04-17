@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { AdminScoringForm } from "@/components/admin-scoring-form";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export default async function AdminScoringPage() {
   let golfers: { id: string; name: string; fantasy_points: number }[] = [];
   let loadError: string | null = null;
 
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.from("golfers").select("id,name,fantasy_points").order("name");
+        const { data, error } = await supabase.from("golfers").select("id,name,fantasy_points").order("name");
     if (error) {
       loadError = error.message;
     } else {

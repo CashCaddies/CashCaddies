@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export type AddAdminBetaFundsResult =
   | { ok: true; accountBalance: number }
@@ -13,8 +13,7 @@ export async function addAdminBetaFunds(amount: number): Promise<AddAdminBetaFun
     return { ok: false, error: "Invalid amount." };
   }
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {

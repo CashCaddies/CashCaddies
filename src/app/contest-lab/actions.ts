@@ -13,7 +13,7 @@ import {
   type SimulationScenario,
 } from "@/lib/contest-lab/simulation-engine";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/permissions";
 
 const MAX_SIMS_PER_ENTRY = 3;
@@ -105,8 +105,7 @@ export async function getContestLabEntryStatus(entryId: string | null): Promise<
     return { enabled: false, remaining: null };
   }
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
@@ -138,8 +137,7 @@ export async function listSimulationHistory(entryId: string): Promise<
     return { ok: true, rows: [] };
   }
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
@@ -268,8 +266,7 @@ export async function runContestLabSimulation(payload: {
     return { ok: false, error: "Contest Lab is not enabled." };
   }
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {

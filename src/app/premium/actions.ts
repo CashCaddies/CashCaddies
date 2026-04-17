@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { getAppBaseUrl, getPremiumPriceId, getStripe } from "@/lib/stripe";
 
@@ -11,8 +11,7 @@ export type PremiumCheckoutResult = { ok: true; url: string } | { ok: false; err
  * Caller redirects the browser to the returned URL.
  */
 export async function createPremiumCheckoutSession(): Promise<PremiumCheckoutResult> {
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user?.id) {

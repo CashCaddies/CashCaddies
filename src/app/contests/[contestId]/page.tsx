@@ -6,7 +6,7 @@ import { ensureContestEntryProtection } from "@/lib/entry-protection-server";
 import { fetchLobbyContestById, formatLobbyEntryFeeUsd } from "@/lib/contest-lobby-fetch";
 import { formatContestStartDate } from "@/lib/contest-lobby-shared";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +27,7 @@ export default async function ContestDetailPage({ params }: Props) {
   }
 
   try {
-    const supabase = await createClient();
-    await ensureContestEntryProtection(supabase, id);
+        await ensureContestEntryProtection(supabase, id);
   } catch {
     /* no-op */
   }

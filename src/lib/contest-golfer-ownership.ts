@@ -1,6 +1,6 @@
 import { unstable_noStore } from "next/cache";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
@@ -30,8 +30,7 @@ export async function getContestGolferOwnershipForViewer(contestIdRaw: string): 
   }
 
   try {
-    const supabase = await createClient();
-    const hasAccess = await currentUserHasContestAccess(supabase);
+        const hasAccess = await currentUserHasContestAccess(supabase);
     if (!hasAccess) {
       return [];
     }

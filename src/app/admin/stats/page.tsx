@@ -3,12 +3,11 @@ import Link from "next/link";
 import { getAdminNewFeedbackCount } from "@/app/admin/feedback/actions";
 import { AdminHubNav } from "@/components/admin-hub-nav";
 import { AdminDashboardMetricsPanel } from "@/components/admin-dashboard-metrics-panel";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/permissions";
 
 export default async function AdminStatsPage() {
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {

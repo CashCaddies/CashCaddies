@@ -1,7 +1,7 @@
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export type ContestSafetyPoolStats = {
   /** Global `insurance_pool.total_balance`. */
@@ -25,9 +25,7 @@ export async function fetchContestSafetyPoolStats(contestIdRaw: string): Promise
   }
 
   try {
-    const supabase = await createClient();
-
-    const { usd: poolUsd } = await fetchInsurancePoolBalanceUsd(supabase);
+        const { usd: poolUsd } = await fetchInsurancePoolBalanceUsd(supabase);
 
     const { data: ceRow, error: ceErr } = await supabase
       .from("contests")

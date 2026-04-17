@@ -4,7 +4,7 @@ import {
   hasDfsPremiumAccess,
   type DfsPremiumProfileSlice,
 } from "@/lib/access-control";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 export type DfsPremiumViewer = {
@@ -25,8 +25,7 @@ export async function getDfsPremiumViewerForRequest(): Promise<DfsPremiumViewer>
   };
 
   try {
-    const supabase = await createClient();
-    const {
+        const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {

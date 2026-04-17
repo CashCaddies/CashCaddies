@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
 
 function entryFeeDisplay(usd: number): string {
@@ -53,8 +53,7 @@ export async function loadContestForLineupPage(contestIdRaw: string | undefined)
   }
 
   try {
-    const supabase = await createClient();
-    let { data, error: contestLoadErr } = await supabase
+        let { data, error: contestLoadErr } = await supabase
       .from("contests")
       .select("id, name, entry_fee_usd, starts_at, late_swap_enabled, status, uses_sim_pool, salary_cap")
       .eq("id", contestId)

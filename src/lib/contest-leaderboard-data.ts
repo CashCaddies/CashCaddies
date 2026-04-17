@@ -2,7 +2,7 @@ import { unstable_noStore } from "next/cache";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { ensureContestEntryProtection } from "@/lib/entry-protection-server";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import {
   isMissingColumnOrSchemaError,
   isPostgrestRelationshipOrEmbedError,
@@ -117,8 +117,7 @@ export async function getLeaderboardForContest(contestId: string): Promise<Leade
       return { rows: [] };
     }
 
-    const supabase = await createClient();
-    const hasAccess = await currentUserHasContestAccess(supabase);
+        const hasAccess = await currentUserHasContestAccess(supabase);
     if (!hasAccess) {
       return { rows: [] };
     }

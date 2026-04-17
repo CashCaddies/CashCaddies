@@ -5,7 +5,7 @@ import { FeedbackAdminTable } from "@/app/admin/feedback/feedback-admin-table";
 import { getAdminNewFeedbackCount, listBetaFeedbackAdmin } from "@/app/admin/feedback/actions";
 import type { BetaFeedbackAdminRow } from "@/app/admin/feedback/feedback-admin-types";
 import { AdminHubNav } from "@/components/admin-hub-nav";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/permissions";
 
 type PageProps = {
@@ -13,8 +13,7 @@ type PageProps = {
 };
 
 export default async function AdminFeedbackPage({ searchParams }: PageProps) {
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {

@@ -1,7 +1,7 @@
 import { unstable_noStore } from "next/cache";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import type { TeeWave } from "@/lib/golf-tee-times";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
 
 /** Per-golfer contest scoring row for the DFS golfer leaderboard. */
@@ -73,8 +73,7 @@ export async function getGolferLeaderboardForContest(contestId: string): Promise
       return { rows: [] };
     }
 
-    const supabase = await createClient();
-    const hasAccess = await currentUserHasContestAccess(supabase);
+        const hasAccess = await currentUserHasContestAccess(supabase);
     if (!hasAccess) {
       return { rows: [] };
     }

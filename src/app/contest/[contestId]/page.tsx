@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ContestLeaderboardLive } from "@/app/contest/[contestId]/contest-leaderboard-live";
 import { getContestLeaderboard } from "@/lib/supabase/queries/getContestLeaderboard";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,8 +16,7 @@ export default async function ContestLeaderboardPage(props: PageProps) {
 
   const { rows, contestExists } = await getContestLeaderboard(id);
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   const currentUserId = user?.id ?? null;

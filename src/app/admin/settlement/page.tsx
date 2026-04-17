@@ -4,7 +4,7 @@ import { AdminInsuranceForm } from "@/components/admin-insurance-form";
 import { AdminPayoutHistoryTable } from "@/components/admin-payout-history";
 import { AdminProtectionEngineForm } from "@/components/admin-protection-engine-form";
 import { AdminSettlementForm } from "@/components/admin-settlement-form";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 type PageProps = {
   searchParams: Promise<{ payout?: string }>;
@@ -15,8 +15,7 @@ export default async function AdminSettlementPage({ searchParams }: PageProps) {
   let loadError: string | null = null;
 
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.from("contests").select("id, name").order("starts_at", { ascending: false });
+        const { data, error } = await supabase.from("contests").select("id, name").order("starts_at", { ascending: false });
     if (error) {
       loadError = error.message;
     } else {

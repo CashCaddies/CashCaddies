@@ -5,7 +5,7 @@ import { fetchDraftLineupsForContest } from "@/lib/contest-enter";
 import { getPayEntryBlockedBannerForUser } from "@/lib/contest-entry-eligibility";
 import { loadContestForLineupPage } from "@/lib/contest-resolve";
 import { tierFromPoints, type TierName } from "@/lib/loyalty";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 type PageProps = {
   params: Promise<{ contestId: string }>;
@@ -24,8 +24,7 @@ export default async function EnterContestPage(props: PageProps) {
   let tier: TierName = "Bronze";
   let payEntryBlockedBanner: string | null = null;
   try {
-    const supabase = await createClient();
-    const {
+        const {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {

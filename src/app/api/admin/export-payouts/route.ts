@@ -1,7 +1,7 @@
 import { getPayoutHistory } from "@/lib/admin/get-payout-history";
 import { formatPayoutUserDisplay } from "@/lib/admin/payout-profile-display";
 import { isAdmin } from "@/lib/permissions";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +30,7 @@ function safeFilenameSegment(contestId: string): string {
 }
 
 export async function GET(req: Request) {
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
 

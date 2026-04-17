@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export type DraftLineupPlayer = {
   id: string;
@@ -26,8 +26,7 @@ export async function fetchDraftLineupsForContest(contestId: string): Promise<{
   }
 
   try {
-    const supabase = await createClient();
-    const select = `
+        const select = `
         id,
         created_at,
         total_salary,

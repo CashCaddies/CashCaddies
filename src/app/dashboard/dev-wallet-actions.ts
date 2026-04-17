@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export type AddDevTestFundsResult =
   | { ok: true; accountBalance: number }
@@ -15,8 +15,7 @@ export async function addDevTestFunds100(): Promise<AddDevTestFundsResult> {
     return { ok: false, error: "Not available outside development." };
   }
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {

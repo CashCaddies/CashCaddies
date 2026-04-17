@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { validateUsernameFormat } from "@/lib/username";
 
 export type UpdateUsernameResult = { ok: true } | { ok: false; error: string };
@@ -12,8 +12,7 @@ export async function updateProfileUsername(raw: string): Promise<UpdateUsername
     return v;
   }
 
-  const supabase = await createClient();
-  const {
+    const {
     data: { user },
   } = await supabase.auth.getUser();
 
