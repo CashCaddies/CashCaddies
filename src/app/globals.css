@@ -1494,39 +1494,25 @@ header .header-left-brand * {
   overflow-y: visible !important;
 }
 
-/* Golf ball portal — calm globe float; full rotation on .group:hover */
-.perspective {
-  perspective: 900px;
-}
-
-.golf-ball-globe {
-  transform-style: preserve-3d;
-  animation: globeFloat 8s ease-in-out infinite;
+/* Golf ball portal — in-place roll (2D), faster on .group:hover */
+.golf-ball-roll {
+  animation: golfRoll 2.5s linear infinite;
   will-change: transform;
 }
 
-.group:hover .golf-ball-globe {
-  animation: globeRotate 6s linear infinite;
+.group:hover .golf-ball-roll {
+  animation: golfRoll 1.2s linear infinite;
 }
 
-@keyframes globeFloat {
+@keyframes golfRoll {
   0% {
-    transform: rotateX(18deg) rotateY(-10deg);
+    transform: rotate(0deg) translateY(0px);
   }
   50% {
-    transform: rotateX(18deg) rotateY(10deg);
+    transform: rotate(180deg) translateY(-2px);
   }
   100% {
-    transform: rotateX(18deg) rotateY(-10deg);
-  }
-}
-
-@keyframes globeRotate {
-  0% {
-    transform: rotateX(18deg) rotateY(0deg);
-  }
-  100% {
-    transform: rotateX(18deg) rotateY(360deg);
+    transform: rotate(360deg) translateY(0px);
   }
 }
 
