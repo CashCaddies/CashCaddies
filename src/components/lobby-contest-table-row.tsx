@@ -108,6 +108,13 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         return;
       }
 
+      // Prevent overfill
+      if ((contest.current_entries ?? contest.entry_count ?? 0) >= contest.max_entries) {
+        alert("Contest is full");
+        setEntering(false);
+        return;
+      }
+
       // Create entry (basic version, no wallet logic yet)
       const { error } = await supabase.from("contest_entries").insert({
         user_id: user.id,
@@ -120,7 +127,19 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
         return;
       }
 
-      alert("Entered contest successfully");
+      // Increment entry count
+      const { error: updateError } = await supabase
+        .from("contests")
+        .update({
+          current_entries: (contest.current_entries ?? contest.entry_count ?? 0) + 1,
+        })
+        .eq("id", contest.id);
+
+      if (updateError) {
+        console.error("Contest entry count update error:", updateError);
+      }
+
+      window.location.reload();
     } catch (err) {
       console.error("Unexpected error:", err);
       alert("Something went wrong");
