@@ -16,7 +16,7 @@ import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
 import { supabase } from "@/lib/supabase/client";
 import { AdminContestControls } from "@/components/admin-contest-controls";
 import { ContestFullBadge, ContestLifecycleStatusBadge, ContestLockCountdown } from "@/components/contest-card";
-import { EnterContestButton } from "@/components/enter-contest-button";
+import { useAuth } from "@/contexts/auth-context";
 
 type Props = {
   contest: LobbyContestRow;
@@ -31,6 +31,8 @@ function stopRowNavigation(e: MouseEvent) {
 
 export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
+  const [entering, setEntering] = useState(false);
   const [profile, setProfile] = useState<{ role: string | null } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const searchParams = useSearchParams();
@@ -68,6 +70,56 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
 
   const go = () => {
     router.push(href);
+  };
+
+  const handleEnterContest = async (e: any) => {
+    e.stopPropagation();
+
+    if (!user?.id) {
+      alert("You must be logged in");
+      return;
+    }
+
+    if (!supabase) {
+      alert("System error");
+      return;
+    }
+
+    setEntering(true);
+
+    try {
+      // Check if already entered
+      const { data: existing } = await supabase
+        .from("contest_entries")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("contest_id", contest.id)
+        .maybeSingle();
+
+      if (existing) {
+        alert("Already entered");
+        return;
+      }
+
+      // Create entry (basic version, no wallet logic yet)
+      const { error } = await supabase.from("contest_entries").insert({
+        user_id: user.id,
+        contest_id: contest.id,
+      });
+
+      if (error) {
+        console.error("Entry error:", error);
+        alert("Failed to enter contest");
+        return;
+      }
+
+      alert("Entered contest successfully");
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      alert("Something went wrong");
+    } finally {
+      setEntering(false);
+    }
   };
 
   const onRowKeyDown = (e: KeyboardEvent<HTMLTableRowElement>) => {
@@ -235,15 +287,14 @@ export function LobbyContestTableRow({ contest, index, viewerRole }: Props) {
           >
             View Contest
           </Link>
-          <EnterContestButton
-            contestId={contest.id}
-            contestName={contest.name}
-            entryFeeUsd={entryFeeUsd}
-            contestMaxEntries={max}
-            contestEntryCount={current}
-            contestStatus={contest.status}
-            maxEntriesPerUser={contest.max_entries_per_user}
-          />
+          <button
+            type="button"
+            className="inline-flex shrink-0 items-center justify-center rounded border border-emerald-600/50 bg-emerald-950/40 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-200 hover:bg-emerald-950/60 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm"
+            onClick={handleEnterContest}
+            disabled={entering}
+          >
+            {entering ? "Entering…" : "Enter"}
+          </button>
           {admin ? (
             <AdminContestControls
               contestId={contest.id}
