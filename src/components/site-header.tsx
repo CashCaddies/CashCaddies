@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { HeaderAuthSection } from "@/components/header-auth-section";
@@ -90,31 +92,50 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="w-full overflow-x-visible overflow-y-hidden">
+    <header className="w-full overflow-x-visible overflow-y-visible">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between px-8 py-4 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-              <div className="flex items-center gap-4 flex-shrink-0">
-                <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex-shrink-0">
-                  <img
-                    src="/logo.png?v=1"
-                    alt="CashCaddies"
-                    className="h-14 w-14 object-contain rounded-md"
-                    loading="eager"
-                  />
+            <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between gap-3 px-8 py-4 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+              <div className="headerLeft flex min-w-0 shrink-0 items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-4">
+                  <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
+                  <div className="flex-shrink-0">
+                    <img
+                      src="/logo.png?v=1"
+                      alt="CashCaddies"
+                      className="h-14 w-14 object-contain rounded-md"
+                      loading="eager"
+                    />
+                  </div>
+
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-2xl font-semibold text-emerald-400 tracking-tight">
+                      CashCaddies
+                    </span>
+                    <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
+                      Safety Coverage Fund
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex flex-col leading-tight">
-                  <span className="text-2xl font-semibold text-emerald-400 tracking-tight">
-                    CashCaddies
-                  </span>
-                  <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
-                  <span className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
-                    Safety Coverage Fund
-                  </span>
-                </div>
+                <Link
+                  href="/portal"
+                  className="flex shrink-0 items-center justify-center group"
+                  aria-label="Open portal"
+                >
+                  <div className="relative h-10 w-10 md:h-12 md:w-12 transition-transform duration-300 group-hover:scale-110">
+                    <Image
+                      src="/golf-ball.png"
+                      alt="Portal"
+                      fill
+                      className="object-contain drop-shadow-[0_0_6px_rgba(16,185,129,0.35)]"
+                      priority
+                      sizes="(max-width: 768px) 40px, 48px"
+                    />
+                  </div>
+                </Link>
               </div>
 
               {ccMainNav}
