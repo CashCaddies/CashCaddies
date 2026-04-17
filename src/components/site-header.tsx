@@ -42,7 +42,7 @@ const navItems = [
 ] as const;
 
 const navButtonBase =
-  "px-4 py-2 rounded-md border text-sm font-medium whitespace-nowrap transition";
+  "px-4 py-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition whitespace-nowrap";
 
 /**
  * Full DFS header when user has beta or admin access.
@@ -52,8 +52,8 @@ export function SiteHeader() {
   const pathname = usePathname() ?? "";
 
   const ccMainNav = (
-    <div className="ccMainNav flex min-h-0 min-w-0 flex-1 justify-center overflow-x-auto">
-      <nav className="flex items-center gap-4" aria-label="Primary">
+    <div className="ccMainNav flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-x-auto">
+      <div className="flex items-center gap-3" role="navigation" aria-label="Primary">
         {navItems.map((item) => {
           const isActive = item.isActive(pathname);
           return (
@@ -66,20 +66,20 @@ export function SiteHeader() {
               }}
               className={`${navButtonBase} ${
                 isActive
-                  ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300"
-                  : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                  ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300 hover:bg-emerald-950/45"
+                  : "text-slate-200"
               }`}
             >
               {item.label}
             </button>
           );
         })}
-      </nav>
+      </div>
     </div>
   );
 
   const headerRight = (authControls: ReactNode, premiumTag: ReactNode | null) => (
-    <div className="headerRight flex shrink-0 items-center gap-5">
+    <div className="headerRight flex shrink-0 items-center gap-4">
       {premiumTag}
       <HeaderStats />
       <span className="text-[11px] uppercase tracking-wider text-yellow-400">Premium Golf DFS</span>
@@ -88,12 +88,12 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="w-full overflow-x-visible overflow-y-hidden border-b border-yellow-500/20 bg-[#020617]">
+    <header className="w-full overflow-x-visible overflow-y-hidden">
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between px-8 py-6">
-              <div className="flex items-center gap-5 flex-shrink-0">
+            <div className="headerContainer mx-auto flex w-full max-w-[1400px] min-w-0 items-center justify-between px-8 py-4 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+              <div className="flex items-center gap-4 flex-shrink-0">
                 <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                 <div className="flex-shrink-0">
                   <img
@@ -105,10 +105,10 @@ export function SiteHeader() {
                 </div>
 
                 <div className="flex flex-col leading-tight">
-                  <span className="text-3xl font-semibold text-emerald-400 tracking-tight">
+                  <span className="text-2xl font-semibold text-emerald-400 tracking-tight">
                     CashCaddies
                   </span>
-                  <span className="text-sm text-gray-400">Daily Fantasy Golf Platform</span>
+                  <span className="text-xs text-gray-400">Daily Fantasy Golf Platform</span>
                   <span className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
                     Safety Coverage Fund
                   </span>

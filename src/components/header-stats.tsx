@@ -17,7 +17,7 @@ export function HeaderStats() {
     <div className="headerStats">
       <Link
         href="/wallet"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold text-sm transition hover:bg-yellow-500/15"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 text-sm font-semibold transition hover:bg-yellow-500/15"
         prefetch
         title="Open wallet"
         aria-label={`Wallet, account balance ${walletDisplay}. Open wallet.`}

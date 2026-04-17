@@ -49,12 +49,9 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   box-sizing: border-box;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  background:
-    linear-gradient(var(--cc-bg), var(--cc-bg)) padding-box,
-    linear-gradient(90deg, #00ff88, #ffd700, #00ff88) border-box;
-  animation: borderGlow 2.5s ease-in-out infinite;
+  border: none;
+  border-radius: 0;
+  background: var(--cc-bg);
   padding-left: calc(16px + env(safe-area-inset-left));
   padding-right: calc(16px + env(safe-area-inset-right));
   padding-top: 12px;
@@ -63,13 +60,6 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-container {
-    animation: none;
-    box-shadow: none;
-  }
 }
 
 .section {
@@ -1499,25 +1489,3 @@ header *::-webkit-scrollbar {
 header * {
   scrollbar-width: none;
 }
-
-@keyframes borderGlow {
-  0% {
-    box-shadow:
-      0 0 6px #00ff88,
-      0 0 12px #00ff88,
-      0 0 6px #ffd700;
-  }
-  50% {
-    box-shadow:
-      0 0 12px #00ff88,
-      0 0 24px #00ff88,
-      0 0 12px #ffd700;
-  }
-  100% {
-    box-shadow:
-      0 0 6px #00ff88,
-      0 0 12px #00ff88,
-      0 0 6px #ffd700;
-  }
-}
-
