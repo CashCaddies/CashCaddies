@@ -33,7 +33,7 @@ export function SiteHeader() {
 
   const ccMainNav = (
     <div className="ccMainNav flex min-h-0 shrink-0 items-center overflow-x-auto">
-      <div className="flex items-center gap-4" role="navigation" aria-label="Primary">
+      <div className="flex items-center gap-4 md:gap-6" role="navigation" aria-label="Primary">
         {navItems.map((item) => {
           const isActive = item.isActive(pathname);
           return (
@@ -61,7 +61,7 @@ export function SiteHeader() {
   const headerRight = (authControls: ReactNode, premiumTag: ReactNode | null) => (
     <div className="headerRight flex flex-col items-end gap-1 flex-shrink-0">
       <span className="text-[11px] uppercase tracking-wider text-yellow-400">Premium Golf DFS</span>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 md:gap-5">
         {premiumTag}
         <HeaderStats />
         {authControls}
@@ -110,10 +110,13 @@ export function SiteHeader() {
                 </div>
               </div>
 
-              {/* RIGHT: nav + wallet / profile */}
-              <div className="flex min-w-0 shrink-0 items-center gap-5 md:gap-6">
-                {ccMainNav}
-                {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
+              {/* RIGHT: nav | spacer | wallet + profile */}
+              <div className="flex min-w-0 shrink-0 items-center">
+                <div className="flex min-w-0 shrink-0 items-center">{ccMainNav}</div>
+                <div className="w-6 shrink-0 md:w-14" aria-hidden />
+                <div className="flex min-w-0 shrink-0 items-center gap-3 md:gap-5">
+                  {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
+                </div>
               </div>
             </div>
             <HeaderFundBar />
