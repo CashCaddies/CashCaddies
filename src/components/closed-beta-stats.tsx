@@ -12,68 +12,70 @@ type BetaStats = {
   approvedUsers: Array<{ username: string }>;
 };
 
+const emptyStats: BetaStats = {
+  approved: 0,
+  waiting: 0,
+  founders: 0,
+  maxBetaUsers: APP_CONFIG_DEFAULT_MAX_BETA_USERS,
+  approvedUsers: [],
+};
+
+function normalizeStats(json: Partial<BetaStats>): BetaStats {
+  return {
+    approved: Number(json.approved ?? 0),
+    waiting: Number(json.waiting ?? 0),
+    founders: Number(json.founders ?? 0),
+    maxBetaUsers: Number(json.maxBetaUsers ?? APP_CONFIG_DEFAULT_MAX_BETA_USERS),
+    approvedUsers: Array.isArray(json.approvedUsers)
+      ? json.approvedUsers.map((u) => ({
+          username: typeof u?.username === "string" ? u.username : "",
+        }))
+      : [],
+  };
+}
+
 export function ClosedBetaStats() {
-  const [stats, setStats] = useState<BetaStats | null>(null);
+  const [data, setData] = useState<BetaStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch("/api/closed-beta/stats", { cache: "no-store" });
-        if (!res.ok) {
-          if (!cancelled) {
-            setStats({
-              approved: 0,
-              waiting: 0,
-              founders: 0,
-              maxBetaUsers: APP_CONFIG_DEFAULT_MAX_BETA_USERS,
-              approvedUsers: [],
-            });
-          }
-          return;
-        }
-        const json = (await res.json()) as Partial<BetaStats>;
-        if (!cancelled) {
-          setStats({
-            approved: Number(json.approved ?? 0),
-            waiting: Number(json.waiting ?? 0),
-            founders: Number(json.founders ?? 0),
-            maxBetaUsers: Number(json.maxBetaUsers ?? APP_CONFIG_DEFAULT_MAX_BETA_USERS),
-            approvedUsers: Array.isArray(json.approvedUsers)
-              ? json.approvedUsers.map((u) => ({
-                  username: typeof u?.username === "string" ? u.username : "",
-                }))
-              : [],
-          });
-        }
-      } catch {
-        if (!cancelled) {
-          setStats({
-            approved: 0,
-            waiting: 0,
-            founders: 0,
-            maxBetaUsers: APP_CONFIG_DEFAULT_MAX_BETA_USERS,
-            approvedUsers: [],
-          });
-        }
-      }
-    })();
+    setLoading(true);
+    fetch("/api/closed-beta/stats", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error("stats unavailable");
+        return res.json() as Promise<Partial<BetaStats>>;
+      })
+      .then((json) => {
+        if (!cancelled) setData(normalizeStats(json));
+      })
+      .catch(() => {
+        if (!cancelled) setData(emptyStats);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const loading = stats == null;
-  const approved = stats?.approved ?? 0;
-  const waiting = stats?.waiting ?? 0;
-  const founders = stats?.founders ?? 0;
-  const maxBetaUsers = stats?.maxBetaUsers ?? APP_CONFIG_DEFAULT_MAX_BETA_USERS;
-  const approvedUsers = stats?.approvedUsers ?? [];
+  if (loading || data == null) {
+    return (
+      <div className="mt-6 rounded-lg border border-slate-800 bg-slate-950/50 p-4">
+        <p className="text-center text-sm font-semibold text-white">Beta Access Stats</p>
+        <div className="mt-3 flex justify-center">
+          <div className="text-gray-500 text-sm">Loading stats...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const { approved, waiting, founders, maxBetaUsers, approvedUsers } = data;
 
   return (
     <div className="mt-6 rounded-lg border border-slate-800 bg-slate-950/50 p-4">
       <p className="text-center text-sm font-semibold text-white">Beta Access Stats</p>
-      {loading ? <p className="mt-3 text-center text-sm text-slate-400">Loading beta stats...</p> : null}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Approved / cap</p>

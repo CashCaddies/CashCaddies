@@ -115,6 +115,7 @@ export function SiteHeader() {
                       src="/logo.png?v=1"
                       alt="CashCaddies"
                       className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain rounded-md"
+                      loading="eager"
                     />
                   </div>
 
