@@ -1,10 +1,8 @@
 "use server";
 
-import { createServerClient } from "@supabase/ssr";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import type { BetaPriority } from "@/lib/beta-priority";
 import { isBetaPriority } from "@/lib/beta-priority";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -27,7 +25,6 @@ export type GrantBetaFundsResult =
 const ALLOWED_AMOUNTS = [10, 50, 100] as const;
 
 async function requireAdminActor() {
-  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -48,7 +45,6 @@ async function requireAdminActor() {
 }
 
 async function requireSeniorAdminActor() {
-  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -300,35 +296,6 @@ export type BetaApprovalActionResult =
   | ({ ok: true; success: true } & BetaQueueUpdate)
   | { ok: false; error: string };
 
-/**
- * Authenticated Supabase client for server actions (reads session from cookies).
- * `@/lib/supabase/server` stubs `getUser()` during stabilization — do not use for auth checks.
- */
-async function createSupabaseServerActionClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-  if (!url || !anon) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.");
-  }
-  const cookieStore = await cookies();
-  return createServerClient(url, anon, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        } catch {
-          /* cookies may be read-only in some Server Component contexts */
-        }
-      },
-    },
-  });
-}
-
 // DEBUG: beta approval role gate disabled — restore before production.
 // const BETA_APPROVE_ALLOWED_PROFILE_ROLES = new Set([
 //   "admin",
@@ -340,7 +307,6 @@ async function createSupabaseServerActionClient() {
 async function requireApproveBetaActorFromSession(): Promise<
   { ok: true; actorId: string } | { ok: false; error: string }
 > {
-  const supabase = await createSupabaseServerActionClient();
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData?.user) {
     return { ok: false, error: "Not signed in." };
@@ -372,12 +338,11 @@ async function requireApproveBetaActorFromSession(): Promise<
 async function requireSeniorAdminSessionForConfig(): Promise<
   | {
       ok: true;
-      supabase: Awaited<ReturnType<typeof createSupabaseServerActionClient>>;
+      supabase: SupabaseClient;
       actorId: string;
     }
   | { ok: false; error: string }
 > {
-  const supabase = await createSupabaseServerActionClient();
   const {
     data: { user },
     error: userErr,

@@ -1,5 +1,6 @@
-/**
- * Single browser Supabase client for the whole app. Defined once in
- * `supabase-provider.tsx` (module scope) — import from here everywhere else.
- */
-export { supabase } from "@/lib/supabase-provider";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

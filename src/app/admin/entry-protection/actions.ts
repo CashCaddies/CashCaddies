@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { isAdmin } from "@/lib/permissions";
 
@@ -16,13 +16,6 @@ export async function adminToggleEntryProtectionForced(
   const eid = entryId.trim();
   if (!cid || !eid) {
     return { ok: false, error: "Missing contest or entry id." };
-  }
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured." };
   }
 
   const {

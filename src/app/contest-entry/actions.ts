@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { assertContestEntryEligible } from "@/lib/contest-entry-eligibility";
 import { parseContestUuid } from "@/lib/contest-id";
@@ -24,13 +24,6 @@ export async function createContestEntry(payload: {
   protectionEnabled: boolean;
   lineupId?: string | null;
 }): Promise<CreateContestEntryResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

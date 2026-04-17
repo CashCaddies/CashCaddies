@@ -1,7 +1,7 @@
 "use server";
 
 import { getBetaCapacitySnapshot } from "@/lib/config";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export type BetaMgmtApproveResult =
@@ -15,13 +15,6 @@ export async function approveBetaUser(targetId: string): Promise<BetaMgmtApprove
   const id = typeof targetId === "string" ? targetId.trim() : "";
   if (!id) {
     return { ok: false, error: "Missing profile id." };
-  }
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
   }
 
   const {
@@ -54,13 +47,6 @@ export async function toggleFoundingTester(targetId: string): Promise<BetaMgmtAc
   const id = typeof targetId === "string" ? targetId.trim() : "";
   if (!id) {
     return { ok: false, error: "Missing profile id." };
-  }
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
   }
 
   const {

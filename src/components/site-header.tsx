@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { MouseEvent, ReactNode } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { Tooltip } from "@/components/ui/tooltip";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -33,8 +33,6 @@ const navButtonBase =
 export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
-  const supabase = createClient();
-
   async function handlePortalClick(e: MouseEvent<HTMLDivElement>) {
     e.preventDefault();
 

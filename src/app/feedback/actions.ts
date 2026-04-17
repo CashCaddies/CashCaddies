@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 const MAX_LEN = 2000;
 const TITLE_MAX = 200;
@@ -46,13 +46,6 @@ export async function submitBetaFeedback(payload: {
   }
 
   const issue_page = clipOptional(payload.issue_page, PAGE_MAX);
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
-  }
 
   const {
     data: { user },

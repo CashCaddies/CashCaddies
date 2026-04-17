@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { isRelationMissingOrNotExposedError } from "@/lib/supabase-missing-column";
 
 export async function markProtectionNotificationRead(
@@ -10,13 +10,6 @@ export async function markProtectionNotificationRead(
   const id = notificationId?.trim();
   if (!id) {
     return { ok: false, error: "Missing notification." };
-  }
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server error." };
   }
 
   const {
@@ -51,13 +44,6 @@ export async function swapProtectedGolferAction(input: {
   oldGolferId: string;
   newGolferId: string;
 }): Promise<SwapProtectedGolferResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server error." };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

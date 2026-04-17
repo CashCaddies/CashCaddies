@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { refundContestEntryCharge, type DebitSnapshot } from "@/lib/contest-entry-payment";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { resolveContestEntryForSubmit } from "@/lib/contest-resolve";
@@ -24,18 +24,19 @@ import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const DEFAULT_LINEUP_SALARY_CAP = 50_000;
 const ROSTER_MAX = 6;
 
 async function getContestLineupConstraints(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  sb: SupabaseClient,
   contestId: string | null | undefined,
 ): Promise<{ usesSimPool: boolean; salaryCap: number }> {
   if (!contestId) {
     return { usesSimPool: false, salaryCap: DEFAULT_LINEUP_SALARY_CAP };
   }
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("contests")
     .select("uses_sim_pool, salary_cap")
     .eq("id", contestId)
@@ -75,7 +76,7 @@ export type SubmitLineupResult =
 
 async function rollbackContestEntry(opts: {
   admin: ReturnType<typeof createServiceRoleClient>;
-  supabase: Awaited<ReturnType<typeof createClient>>;
+  supabase: SupabaseClient;
   userId: string;
   snapshot: DebitSnapshot;
   reason: string;
@@ -101,12 +102,6 @@ export async function submitLineup(payload: {
   golfers: LineupGolferInput[];
   contestId: string;
 }): Promise<SubmitLineupResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -325,12 +320,6 @@ export async function saveLineupDraft(payload: {
   /** When set, replace this draft’s roster (must be yours, not yet entered). */
   lineupId?: string | null;
 }): Promise<SubmitLineupResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -523,13 +512,6 @@ export async function editContestEntryLineup(payload: {
   contestId: string;
   golfers: LineupGolferInput[];
 }): Promise<SubmitLineupResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -754,13 +736,6 @@ export async function enterContestWithSavedLineup(payload: {
   contestId: string;
   lineupId: string;
 }): Promise<EnterWithSavedLineupResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

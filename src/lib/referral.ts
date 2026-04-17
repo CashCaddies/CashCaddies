@@ -9,7 +9,7 @@ export async function applyReferral(userId: string, code: string): Promise<Apply
 }
 
 /**
- * When you already have a `SupabaseClient` (e.g. server `createClient()`), pass it here.
+ * When you already have a `SupabaseClient` (e.g. shared `supabase` from `@/lib/supabase/client`), pass it here.
  * `apply_referral` requires the session to match `userId` unless using service role.
  */
 export async function applyReferralWithClient(

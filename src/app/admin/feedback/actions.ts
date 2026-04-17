@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import {
   ADMIN_FEEDBACK_STATUSES,
   type AdminFeedbackStatus,
@@ -156,13 +156,6 @@ async function listBetaFeedbackAdminFromTables(
 export async function listBetaFeedbackAdmin(
   filter: "all" | "new" = "all",
 ): Promise<{ ok: true; rows: BetaFeedbackAdminRow[] } | { ok: false; error: string }> {
-  let supabase: SupabaseClient;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
-  }
-
   const p_filter = filter === "new" ? "new" : "all";
 
   const primary = await supabase.rpc("admin_user_list_beta_feedback", {
@@ -201,13 +194,6 @@ export async function listBetaFeedbackAdmin(
 export async function getAdminNewFeedbackCount(): Promise<
   { ok: true; count: number } | { ok: false; error: string }
 > {
-  let supabase: SupabaseClient;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
-  }
-
   const { data, error } = await supabase.rpc("admin_user_new_feedback_count");
   if (!error) {
     const n = typeof data === "number" ? data : Number(data ?? 0);
@@ -246,13 +232,6 @@ export async function updateBetaFeedbackAdminStatus(
     return { ok: false, error: "Invalid status." };
   }
 
-  let supabase: SupabaseClient;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
-  }
-
   const { error } = await supabase.rpc("admin_user_update_beta_feedback_status", {
     p_feedback_id: feedbackId,
     p_status: status,
@@ -277,13 +256,6 @@ export async function bulkUpdateFeedbackAdminStatus(
   }
   if (status === "new" || !ADMIN_FEEDBACK_STATUSES.includes(status)) {
     return { ok: false, error: "Invalid status." };
-  }
-
-  let supabase: SupabaseClient;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Server configuration error." };
   }
 
   for (const feedbackId of feedbackIds) {

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import type { LineupPlayerClaimRow } from "@/lib/lineup-players";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { assertAccountBalanceCreditAllowed } from "@/lib/wallet-limit";
@@ -185,13 +185,6 @@ export async function submitProtectionClaim(payload: {
   golferId: string;
   resolution: ProtectionResolution;
 }): Promise<SubmitProtectionClaimResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

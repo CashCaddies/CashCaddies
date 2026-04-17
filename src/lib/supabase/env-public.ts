@@ -36,14 +36,12 @@ export function parsePublicSupabaseEnv(
     const parsed = new URL(url);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       warnOnce(
-        "[Supabase] Invalid NEXT_PUBLIC_SUPABASE_URL: must be a full URL using http: or https: (e.g. https://xxxx.supabase.co).",
+        "[Supabase] Invalid NEXT_PUBLIC_SUPABASE_URL: must be a full URL using http: or https:.",
       );
       return null;
     }
   } catch {
-    warnOnce(
-      "[Supabase] Invalid NEXT_PUBLIC_SUPABASE_URL: must be a full URL string (e.g. https://xxxx.supabase.co).",
-    );
+    warnOnce("[Supabase] Invalid NEXT_PUBLIC_SUPABASE_URL: must be a full URL string.");
     return null;
   }
 

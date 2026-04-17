@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { refundContestEntryCharge } from "@/lib/contest-entry-payment";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { resolveContestEntryForSubmit } from "@/lib/contest-resolve";
@@ -34,12 +34,6 @@ export async function precheckContestEntryCapacity(
   if (!id) {
     return { ok: false, error: "Invalid contest id." };
   }
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
-  }
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -65,13 +59,6 @@ export async function confirmLobbyContestEntry(payload: {
   const contestId = parseContestUuid(payload.contestId);
   if (!contestId || !lineupId) {
     return { ok: false, error: "Missing contest or lineup." };
-  }
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { ok: false, error: "Supabase is not configured on the server." };
   }
 
   const {

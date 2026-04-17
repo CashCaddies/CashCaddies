@@ -5,7 +5,7 @@ import { getPayEntryBlockedBannerForUser } from "@/lib/contest-entry-eligibility
 import { loadContestForLineupPage } from "@/lib/contest-resolve";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { loadDraftLineupForEditor, loadLatestDraftLineupForContest } from "@/lib/lineup-draft-load";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,6 @@ async function payEntryBannerForContest(resolvedId: string): Promise<string | nu
     return null;
   }
   try {
-    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -117,7 +116,6 @@ export default async function LineupPage(props: LineupPageProps) {
   }
 
   if (entryTrim) {
-    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

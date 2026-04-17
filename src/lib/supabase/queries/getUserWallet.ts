@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 
 export type UserWalletTransaction = {
   id: string;
@@ -23,13 +23,6 @@ function num(v: unknown): number {
  * Current session: `profiles.account_balance` and latest 20 `transactions` rows (newest first).
  */
 export async function getUserWallet(): Promise<GetUserWalletResult> {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { account_balance: 0, transactions: [], userId: null };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

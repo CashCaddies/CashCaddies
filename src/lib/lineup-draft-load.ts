@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { lineupHasContestEntry } from "@/lib/lineup-permissions";
 
 /** Per-slot state for late swap (entered lineups). */
@@ -45,13 +45,6 @@ export async function loadLatestDraftLineupForContest(contestIdRaw: string): Pro
     return { status: "not_found" };
   }
 
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return { status: "not_found" };
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -81,13 +74,6 @@ export async function loadLatestDraftLineupForContest(contestIdRaw: string): Pro
 export async function loadDraftLineupForEditor(lineupIdRaw: string): Promise<LoadDraftLineupForEditorResult> {
   const lineupId = lineupIdRaw?.trim();
   if (!lineupId) {
-    return { status: "not_found" };
-  }
-
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
     return { status: "not_found" };
   }
 

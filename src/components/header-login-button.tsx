@@ -1,6 +1,6 @@
 import Link from "next/link";
 import UserMenu from "@/components/UserMenu";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
 import { hasClosedBetaAppAccess } from "@/lib/closed-beta-access";
 
 const buttonClass =
@@ -10,17 +10,6 @@ const buttonClass =
  * Header control: "Login" when signed out; signed-in users get the avatar user menu.
  */
 export async function HeaderLoginButton() {
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    return (
-      <Link href="/login" className={buttonClass}>
-        Login
-      </Link>
-    );
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -1,8 +1,7 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
+import { supabase } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/permissions";
 
 /** Shape of `public.admin_dashboard_metrics()` JSON (snake_case keys from Postgres). */
@@ -30,39 +29,19 @@ function num(v: unknown): number {
  * Calls `admin_dashboard_metrics` (service role RPC). Requires signed-in admin session.
  */
 export async function getAdminMetrics(): Promise<GetAdminMetricsResult> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-  if (!url || !anon) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) {
     return { ok: false, error: "Missing Supabase configuration." };
   }
-
-  const cookieStore = await cookies();
-  const authClient = createServerClient(url, anon, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        } catch {
-          /* ignore when cookies are read-only */
-        }
-      },
-    },
-  });
 
   const {
     data: { user },
     error: authErr,
-  } = await authClient.auth.getUser();
+  } = await supabase.auth.getUser();
   if (authErr || !user) {
     return { ok: false, error: "Not signed in." };
   }
 
-  const { data: profile } = await authClient.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
   if (!isAdmin(profile?.role)) {
     return { ok: false, error: "Admin access required." };
   }
