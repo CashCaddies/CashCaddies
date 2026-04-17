@@ -99,14 +99,12 @@ export function SiteHeader() {
                     CashCaddies
                   </span>
                   <span className="text-base text-gray-400">Daily Fantasy Golf Platform</span>
-                  <Tooltip
-                    content={
-                      <>
-                        Covers entry fees if your golfer withdraws, is disqualified, or does not start.
-                      </>
-                    }
-                  >
-                    <span className="cursor-pointer text-sm text-emerald-400">Safety Coverage Fund</span>
+                  <Tooltip content={<>Click here to access our FAQ</>}>
+                    <Link href="/faq" className="cursor-pointer">
+                      <span className="text-sm text-emerald-400 transition hover:text-emerald-300">
+                        Safety Coverage Fund
+                      </span>
+                    </Link>
                   </Tooltip>
                 </div>
               </div>
