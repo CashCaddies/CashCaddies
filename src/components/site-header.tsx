@@ -173,24 +173,23 @@ export function SiteHeader() {
 
   const handlePortalClick = async () => {
     if (portalAudioRef.current) {
-      portalAudioRef.current.currentTime = 0;
-      portalAudioRef.current.play().catch(() => {});
-    }
-    setLoadingPortal(true);
-    try {
-      const { data } = await supabase.auth.getUser();
-
-      if (!data?.user) {
-        router.push("/login");
-        return;
+      try {
+        portalAudioRef.current.currentTime = 0;
+        await portalAudioRef.current.play();
+      } catch (e) {
+        // ignore autoplay errors
       }
-
-      router.push("/portal");
-    } catch {
-      // ignore
-    } finally {
-      setLoadingPortal(false);
     }
+
+    setTimeout(() => {
+      setLoadingPortal(true);
+
+      if (!sessionUser) {
+        router.push("/login");
+      } else {
+        router.push("/portal");
+      }
+    }, 120);
   };
 
   const getInitials = (email?: string) => {
