@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { fetchAdminCommandCenterStats } from "@/app/admin/command-center-stats";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
+import ResponsesTable from "@/components/admin/responses-table";
 import { AdminTriggerSettlement } from "@/components/admin-trigger-settlement";
 import { isAdmin } from "@/lib/permissions";
 
@@ -132,6 +133,8 @@ export default function AdminControlCenterPage() {
       </div>
 
       <AdminTriggerSettlement />
+
+      <ResponsesTable />
     </div>
   );
 }
