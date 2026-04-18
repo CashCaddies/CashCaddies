@@ -53,60 +53,64 @@ export function SiteHeader() {
         render={(ctx) => (
           <>
             <div className="w-full border-b border-[#1f2937] bg-[#020617]">
-              <div className="mx-auto flex max-w-7xl items-center px-4 py-3">
-                {/* LEFT — brand + portal */}
-                <div className="flex min-w-fit items-center gap-4">
-                  <h1 className="text-2xl font-semibold tracking-tight text-green-400 md:text-3xl">CashCaddies</h1>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Portal"
-                    onClick={handlePortalClick}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.currentTarget.click();
-                      }
-                    }}
-                    className="flex cursor-pointer items-center justify-center"
-                  >
-                    <img
-                      src="/golf-ball.png"
-                      alt="Portal"
-                      className="h-16 w-16 object-contain transition hover:scale-105 md:h-20 md:w-20"
-                    />
+              <div className="mx-auto max-w-7xl px-4 py-3">
+                <div className="flex w-full items-center">
+                  {/* LEFT — brand */}
+                  <div className="flex min-w-fit items-center gap-3">
+                    <h1 className="text-2xl font-semibold text-green-400 md:text-3xl">CashCaddies</h1>
                   </div>
-                </div>
 
-                {/* CENTER — Lobby / Dashboard */}
-                <div className="ml-auto hidden items-center gap-4 md:flex" role="navigation" aria-label="Primary">
-                  {navItems.map((item) => {
-                    const isActive = item.isActive(pathname);
-                    return (
-                      <button
-                        key={item.href}
-                        type="button"
-                        aria-current={isActive ? "page" : undefined}
-                        onClick={() => {
-                          window.location.href = item.href;
-                        }}
-                        className={`${navButtonBase} ${
-                          isActive
-                            ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300 hover:bg-emerald-950/45"
-                            : "text-slate-200"
-                        }`}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                  {/* CENTER — ball */}
+                  <div className="flex flex-1 justify-center">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Portal"
+                      onClick={handlePortalClick}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.currentTarget.click();
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <img
+                        src="/golf-ball.png"
+                        alt="Portal"
+                        className="h-14 w-14 object-contain transition hover:scale-105 md:h-16 md:w-16"
+                      />
+                    </div>
+                  </div>
 
-                {/* RIGHT — wallet + premium + auth */}
-                <div className="flex shrink-0 items-center gap-3">
-                  {ctx.premiumHeaderTag}
-                  <HeaderStats />
-                  {ctx.authControls}
+                  {/* RIGHT — nav + wallet + auth */}
+                  <div className="flex shrink-0 items-center gap-3">
+                    <div className="hidden items-center gap-4 md:flex" role="navigation" aria-label="Primary">
+                      {navItems.map((item) => {
+                        const isActive = item.isActive(pathname);
+                        return (
+                          <button
+                            key={item.href}
+                            type="button"
+                            aria-current={isActive ? "page" : undefined}
+                            onClick={() => {
+                              window.location.href = item.href;
+                            }}
+                            className={`${navButtonBase} ${
+                              isActive
+                                ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300 hover:bg-emerald-950/45"
+                                : "text-slate-200"
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {ctx.premiumHeaderTag}
+                    <HeaderStats />
+                    {ctx.authControls}
+                  </div>
                 </div>
               </div>
 
