@@ -121,7 +121,7 @@ export default function PortalPage() {
           playPortalSound();
           setShowTierInfo(true);
         }}
-        className="absolute top-4 right-4 z-50 cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
+        className="absolute top-4 right-4 z-50 cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 will-change-transform hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
       >
         <Image
           src={golfBall}
@@ -273,7 +273,7 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
+          className="cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 will-change-transform hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
         >
           <Image
             src={golfBall}
