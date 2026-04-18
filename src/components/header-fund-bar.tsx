@@ -193,12 +193,12 @@ export function HeaderFundBar() {
 
   return (
     <div
-      className="statusBar mx-4 mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl p-4"
+      className="statusBar mx-4 mt-4 flex items-center justify-between rounded-xl p-4"
       title="Platform status and Safety Coverage Fund. Fund balance covers WD, DQ, DNS when applicable."
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col pr-2">
         <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
           <button
             type="button"
@@ -209,7 +209,7 @@ export function HeaderFundBar() {
             ‹
           </button>
 
-          <div className="statusContent min-w-0 flex-1 justify-center" key={index}>
+          <div className="statusContent min-w-0 flex-1 justify-center overflow-hidden" key={index}>
             {current?.valueMailto ? (
               <div className={rowClassName}>
                 <Icon
@@ -217,7 +217,7 @@ export function HeaderFundBar() {
                   strokeWidth={2}
                   aria-hidden
                 />
-                <span className="min-w-0 text-center transition-all duration-500 ease-in-out">
+                <span className="block min-w-0 flex-1 truncate text-left transition-all duration-500 ease-in-out">
                   <span className="text-lg font-semibold tracking-wide text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.25)] transition-colors duration-200 group-hover:text-yellow-300">
                     {current.label}
                   </span>
@@ -234,7 +234,7 @@ export function HeaderFundBar() {
                   strokeWidth={2}
                   aria-hidden
                 />
-                <span className="min-w-0 text-center transition-all duration-500 ease-in-out">
+                <span className="block min-w-0 flex-1 truncate text-left transition-all duration-500 ease-in-out">
                   <span className="text-lg font-semibold tracking-wide text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.25)] transition-colors duration-200 group-hover:text-yellow-300">
                     {current?.label ?? ""}
                   </span>
@@ -256,7 +256,7 @@ export function HeaderFundBar() {
         </div>
       </div>
 
-      <div className="shrink-0 text-right text-sm font-semibold whitespace-nowrap text-yellow-400 md:text-base">
+      <div className="shrink-0 text-right text-xs font-semibold whitespace-nowrap text-yellow-400 md:text-sm">
         PREMIUM GOLF DFS
       </div>
     </div>
