@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import golfBall from "../../../public/golf-ball.png";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
 import { getTierFromContribution } from "@/lib/tiers";
 import { supabase } from "@/lib/supabase/client";
@@ -21,6 +23,12 @@ function portalFundTestMode(): 0 | 1 | 2 {
 }
 
 export default function PortalPage() {
+  const playPortalSound = () => {
+    const audio = new Audio("/sounds/portal-click.mp3");
+    audio.volume = 0.4;
+    audio.play();
+  };
+
   const [showWelcome, setShowWelcome] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [profile, setProfile] = useState<any>(null);
@@ -34,11 +42,18 @@ export default function PortalPage() {
 
       if (!session?.user?.id) return;
 
-      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
 
       if (data) {
         setProfile(data);
-        if (!data.has_seen_portal_welcome) {
+
+        const hasSeen = localStorage.getItem("cc_portal_welcome_seen");
+
+        if (!hasSeen) {
           setShowWelcome(true);
         }
       }
@@ -103,10 +118,13 @@ export default function PortalPage() {
         <button
           type="button"
           title="Click here for portal breakdown/rules"
-          onClick={() => setShowRules(true)}
+          onClick={() => {
+            playPortalSound();
+            setShowRules(true);
+          }}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition hover:scale-110"
         >
-          ⛳
+          <Image src={golfBall} alt="portal" width={28} height={28} className="rounded-full" />
         </button>
       </div>
 
@@ -161,7 +179,10 @@ export default function PortalPage() {
 
         <div className="pointer-events-none absolute left-0 top-full mt-2 w-72 opacity-0 transition group-hover:opacity-100">
           <div className="rounded border border-gray-800 bg-black p-3 text-xs text-gray-300 shadow-lg">
-            <div className="mb-2 font-semibold text-white">Tier System</div>
+            <div className="mb-2 flex items-center gap-2">
+              <Image src={golfBall} alt="portal" width={28} height={28} className="rounded-full shrink-0" />
+              <div className="font-semibold text-white">Tier System</div>
+            </div>
 
             <p className="mb-2">Your tier is based on total contribution to the protection fund.</p>
 
@@ -202,10 +223,13 @@ export default function PortalPage() {
         <button
           type="button"
           title="Click here for portal contest rules"
-          onClick={() => setShowRules(true)}
+          onClick={() => {
+            playPortalSound();
+            setShowRules(true);
+          }}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
         >
-          ⛳
+          <Image src={golfBall} alt="portal rules" width={36} height={36} />
         </button>
       </div>
 
