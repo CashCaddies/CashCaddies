@@ -13,9 +13,8 @@ export function playCupSound() {
   if (!audio) return;
 
   const now = Date.now();
-
-  // block rapid spam
-  if (now - lastPlayed < 800) return;
+  if (now - lastPlayed < 200) return;
+  lastPlayed = now;
 
   try {
     audio.currentTime = 0;
@@ -26,12 +25,7 @@ export function playCupSound() {
     const playPromise = audio.play();
 
     if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          // ONLY update after success
-          lastPlayed = Date.now();
-        })
-        .catch(() => {});
+      playPromise.catch(() => {});
     }
   } catch {}
 }

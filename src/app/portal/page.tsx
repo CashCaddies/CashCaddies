@@ -121,7 +121,7 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition hover:scale-110"
+          className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white transition hover:scale-110"
         >
           <div className="h-10 w-10 overflow-hidden rounded-full">
             <Image
@@ -129,7 +129,7 @@ export default function PortalPage() {
               alt="portal"
               width={40}
               height={40}
-              className="scale-110 object-cover mix-blend-lighten"
+              className="pointer-events-none object-cover scale-110 mix-blend-lighten"
             />
           </div>
         </button>
@@ -168,7 +168,8 @@ export default function PortalPage() {
       )}
 
       <div className="group relative">
-        <div className="relative mb-10 overflow-hidden rounded-xl border border-green-500/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg shadow-green-500/10">
+        <div className="relative mb-10 overflow-hidden rounded-xl border border-green-500/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg shadow-green-500/10 transition-all duration-300 hover:-translate-y-[2px] hover:shadow-green-500/20">
+          <div className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-20 blur-2xl" />
           {/* subtle glow */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-10 blur-xl" />
 
@@ -182,7 +183,7 @@ export default function PortalPage() {
             {[1, 2, 3, 4, 5].map((tier) => (
               <div
                 key={tier}
-                className={`relative flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 hover:scale-110 ${
+                className={`relative flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-green-500/40 ${
                   userTier >= tier
                     ? "scale-105 bg-green-500 text-black shadow-lg shadow-green-500/30"
                     : "border border-gray-800 bg-gray-900 text-gray-500"
@@ -191,7 +192,7 @@ export default function PortalPage() {
                 {tier}
 
                 {userTier === tier && (
-                  <div className="absolute inset-0 animate-pulse rounded-full ring-2 ring-green-400" />
+                  <div className="absolute inset-0 animate-ping rounded-full opacity-60 ring-2 ring-green-400" />
                 )}
               </div>
             ))}
@@ -207,7 +208,7 @@ export default function PortalPage() {
                   alt="portal"
                   width={40}
                   height={40}
-                  className="scale-110 object-cover mix-blend-lighten"
+                  className="pointer-events-none object-cover scale-110 mix-blend-lighten"
                 />
               </div>
               <div className="font-semibold text-white">Tier System</div>
@@ -275,7 +276,7 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
+          className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
         >
           <div className="h-12 w-12 overflow-hidden rounded-full">
             <Image
@@ -283,7 +284,7 @@ export default function PortalPage() {
               alt="portal rules"
               width={48}
               height={48}
-              className="scale-110 object-cover mix-blend-lighten"
+              className="pointer-events-none object-cover scale-110 mix-blend-lighten"
             />
           </div>
         </button>
