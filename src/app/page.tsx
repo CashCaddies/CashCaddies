@@ -106,16 +106,43 @@ Your update here...`}
 
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingId(a.id);
-                  setEditText(a.content);
-                }}
-                className="shrink-0 text-sm text-yellow-400"
-              >
-                Edit
-              </button>
+              <div className="flex shrink-0 items-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingId(a.id);
+                    setEditText(a.content);
+                  }}
+                  className="text-sm text-yellow-400"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const confirmDelete = confirm("Delete this update?");
+                    if (!confirmDelete) return;
+
+                    const res = await fetch("/api/updates", {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ id: a.id }),
+                    });
+
+                    const json = await res.json();
+
+                    if (!res.ok) {
+                      alert("ERROR: " + json.error);
+                      return;
+                    }
+
+                    setUpdates((prev) => prev.filter((u) => u.id !== a.id));
+                  }}
+                  className="ml-3 text-sm text-red-400"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
 
             {editingId === a.id ? (

@@ -83,3 +83,20 @@ export async function PATCH(req: Request) {
     return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const { id } = await req.json();
+    const supabase = getServiceClient();
+
+    const { error } = await supabase.from("founder_updates").delete().eq("id", id);
+
+    if (error) {
+      return new Response(JSON.stringify({ success: false, error: error.message }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 });
+  }
+}
