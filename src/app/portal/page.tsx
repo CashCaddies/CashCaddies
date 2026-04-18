@@ -46,6 +46,17 @@ export default function PortalPage() {
         </p>
       </header>
 
+      <div className="mb-6 flex justify-center">
+        <div className="group relative cursor-pointer">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white">
+            ?
+          </div>
+          <div className="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded bg-black px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block">
+            Portal Access
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-6">
         {/* Fund Display */}
         <div className="rounded-xl border border-white/10 bg-[#0b1220] p-5 text-center">

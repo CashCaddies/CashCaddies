@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { MouseEvent, ReactNode } from "react";
@@ -96,49 +95,33 @@ export function SiteHeader() {
           <>
             <div className="headerContainer mx-auto w-full max-w-[1600px] min-w-0 overflow-visible border-b border-white/10 bg-[#020617]/80 px-4 py-3 shadow-[0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-md">
               <div className="flex items-center justify-between gap-2">
-                {/* LEFT — logo + subtitle */}
-                <div className="flex min-w-0 flex-col">
-                  <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
+                {/* LEFT — brand text only */}
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="sr-only">CashCaddies</span>
                   <span className="min-w-0 bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-2xl font-bold leading-tight tracking-tight text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] md:text-3xl">
                     CashCaddies
                   </span>
-                  <span className="text-sm text-gray-400 md:text-base">Daily Fantasy Golf Platform</span>
                 </div>
 
                 <div className="flex items-center gap-4 md:gap-6">
-                  {/* CENTER — square + tee (md+) */}
-                  <div className="hidden min-w-0 shrink-0 md:flex md:flex-col md:items-center md:justify-center">
-                    <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Click here to access the CashCaddies Coveted Contest Portal"
-                        onClick={handlePortalClick}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            e.currentTarget.click();
-                          }
-                        }}
-                        className="portal-golf-trigger relative flex cursor-pointer flex-col items-center"
-                      >
-                        <div className="relative z-10 h-16 w-16 md:h-20 md:w-20">
-                          <Image
-                            src="/cashcaddies-square.png"
-                            alt="CashCaddies portal"
-                            fill
-                            className="z-10 object-contain transition duration-200 hover:scale-105"
-                            sizes="(max-width: 768px) 64px, 80px"
-                            priority
-                          />
-                        </div>
-                        <div
-                          className="mt-[-8px] h-8 w-[4px] rounded-full bg-gradient-to-b from-yellow-300 to-yellow-600 shadow-md"
-                          aria-hidden
-                        />
-                      </div>
-                    </Tooltip>
-                  </div>
+                  {/* Portal — tooltip control (replaces logo / golf image) */}
+                  <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Portal Access"
+                      onClick={handlePortalClick}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.currentTarget.click();
+                        }
+                      }}
+                      className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white transition hover:bg-green-500 md:h-12 md:w-12"
+                    >
+                      ?
+                    </div>
+                  </Tooltip>
 
                   {/* RIGHT — Lobby / Dashboard + wallet + profile */}
                   <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-4">
@@ -150,8 +133,8 @@ export function SiteHeader() {
               </div>
 
               {/* SECOND ROW — Safety + Premium (grouped under left) */}
-              <div className="mt-2 flex items-center">
-                <div className="flex items-center gap-2 whitespace-nowrap text-sm md:text-base">
+              <div className="mt-2 pt-1">
+                <div className="flex items-center gap-2 text-sm md:text-base whitespace-nowrap max-w-fit">
                   <Tooltip content={<>Click here to access our FAQ</>}>
                     <Link href="/faq#safety-coverage" className="text-emerald-400/90 transition hover:text-emerald-300">
                       Safety Coverage Fund
