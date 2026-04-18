@@ -10,6 +10,7 @@ type Props = {
   initialRows: ContestLeaderboardRow[];
   currentUserId: string | null;
   initialCurrentRound: number;
+  initialViewerBestScoreForTrend: number | null;
 };
 
 export function ContestLeaderboardLive({
@@ -17,9 +18,13 @@ export function ContestLeaderboardLive({
   initialRows,
   currentUserId,
   initialCurrentRound,
+  initialViewerBestScoreForTrend,
 }: Props) {
   const [rows, setRows] = useState<ContestLeaderboardRow[]>(initialRows);
   const [currentRound, setCurrentRound] = useState(initialCurrentRound);
+  const [viewerBestScoreForTrend, setViewerBestScoreForTrend] = useState<number | null>(
+    initialViewerBestScoreForTrend,
+  );
   const alive = useRef(true);
 
   useEffect(() => {
@@ -38,12 +43,17 @@ export function ContestLeaderboardLive({
   }, [initialCurrentRound]);
 
   useEffect(() => {
+    setViewerBestScoreForTrend(initialViewerBestScoreForTrend);
+  }, [initialViewerBestScoreForTrend]);
+
+  useEffect(() => {
     const tick = async () => {
       try {
         const res = await pollContestLeaderboard(contestId);
         if (!alive.current || !res.contestExists) return;
         setRows(res.rows);
         setCurrentRound(res.currentRound);
+        setViewerBestScoreForTrend(res.viewerBestScoreForTrend);
       } catch {
         /* keep last good rows */
       }
@@ -57,11 +67,14 @@ export function ContestLeaderboardLive({
   const isRound1 = contest.current_round === 1;
 
   const viewerBestScore = useMemo(() => {
+    if (isRound1) return viewerBestScoreForTrend;
     if (currentUserId == null) return null;
     const mine = rows.filter((r) => r.user_id === currentUserId);
     if (mine.length === 0) return null;
-    return Math.max(...mine.map((r) => r.score));
-  }, [rows, currentUserId]);
+    const nums = mine.map((r) => r.score).filter((s): s is number => typeof s === "number" && s !== null);
+    if (nums.length === 0) return null;
+    return Math.max(...nums);
+  }, [isRound1, viewerBestScoreForTrend, rows, currentUserId]);
 
   if (isRound1) {
     return (
@@ -96,7 +109,7 @@ export function ContestLeaderboardLive({
             const isSelf = currentUserId != null && r.user_id === currentUserId;
             return (
               <tr
-                key={`${r.order}-${r.user_id}-${r.entryNumber}-${i}`}
+                key={`${r.entryId}-${r.entryNumber}-${i}`}
                 className={`border-b border-slate-800/80 ${isSelf ? "bg-slate-800" : ""}`}
               >
                 <td className="py-2 pr-2 text-center tabular-nums text-slate-200">{r.order}</td>

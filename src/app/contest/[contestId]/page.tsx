@@ -14,7 +14,7 @@ export default async function ContestLeaderboardPage(props: PageProps) {
   const { contestId } = await props.params;
   const id = contestId?.trim() ?? "";
 
-  const { rows, contestExists, currentRound } = await getContestLeaderboard(id);
+  const { rows, contestExists, currentRound, viewerBestScoreForTrend } = await getContestLeaderboard(id);
 
     const {
     data: { user },
@@ -34,6 +34,7 @@ export default async function ContestLeaderboardPage(props: PageProps) {
         initialRows={rows}
         currentUserId={currentUserId}
         initialCurrentRound={currentRound}
+        initialViewerBestScoreForTrend={viewerBestScoreForTrend}
       />
     </div>
   );

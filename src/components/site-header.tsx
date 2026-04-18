@@ -202,9 +202,10 @@ export function SiteHeader() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        window.location.href = "/login";
+        const next = encodeURIComponent("/portal");
+        window.location.href = `/login?next=${next}`;
       } else {
-        router.push("/lobby");
+        router.push("/portal");
       }
     })();
   };

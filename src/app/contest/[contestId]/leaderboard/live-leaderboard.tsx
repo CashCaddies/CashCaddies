@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 export default function LiveLeaderboard({ contestId }: { contestId: string }) {
   const [data, setData] = useState<LiveLeaderboardRow[]>([]);
   const [currentRound, setCurrentRound] = useState(0);
+  const [viewerBestScoreForTrend, setViewerBestScoreForTrend] = useState<number | null>(null);
   const [viewerUserId, setViewerUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [openEntryId, setOpenEntryId] = useState<string | null>(null);
@@ -58,6 +59,7 @@ export default function LiveLeaderboard({ contestId }: { contestId: string }) {
           if (json.ok) {
             setCurrentRound(json.currentRound);
             setData(json.rows);
+            setViewerBestScoreForTrend(json.viewerBestScoreForTrend);
           }
         }
       } catch (e) {
@@ -123,19 +125,22 @@ export default function LiveLeaderboard({ contestId }: { contestId: string }) {
     };
   }, [contestId]);
 
-  if (error) {
-    return <p className="text-sm text-red-400">{error}</p>;
-  }
-
   const contest = { current_round: currentRound };
   const isRound1 = contest.current_round === 1;
 
   const viewerBestScore = useMemo(() => {
+    if (isRound1) return viewerBestScoreForTrend;
     if (viewerUserId == null) return null;
     const mine = data.filter((r) => r.userId === viewerUserId);
     if (mine.length === 0) return null;
-    return Math.max(...mine.map((r) => r.totalScore));
-  }, [data, viewerUserId]);
+    const nums = mine.map((r) => r.totalScore).filter((s): s is number => s != null);
+    if (nums.length === 0) return null;
+    return Math.max(...nums);
+  }, [isRound1, viewerBestScoreForTrend, data, viewerUserId]);
+
+  if (error) {
+    return <p className="text-sm text-red-400">{error}</p>;
+  }
 
   if (isRound1) {
     return (

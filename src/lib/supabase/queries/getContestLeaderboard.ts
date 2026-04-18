@@ -15,12 +15,15 @@ import {
 
 export type ContestLeaderboardRow = {
   /** 1-based rank by live score (`lineups.total_score`), then entry time, then id — same as payout ordering. */
-  order: number;
+  order: number | null;
+  /** `contest_entries.id` — stable entry id (kept during round 1). */
+  entryId: string;
   /** 1-based position among this user’s entries in the contest. */
   entryNumber: number;
   user_id: string;
   username: string;
-  score: number;
+  /** Omitted from payload during round 1 (null); use `viewerBestScoreForTrend` for the viewer only. */
+  score: number | null;
 };
 
 export type GetContestLeaderboardResult = {
@@ -29,6 +32,8 @@ export type GetContestLeaderboardResult = {
   contestExists: boolean;
   /** From linked `tournaments.current_round` when `contests.tournament_id` is set; otherwise 0. */
   currentRound: number;
+  /** During round 1 only: authenticated viewer’s max lineup score for trend UI (not present in `rows`). */
+  viewerBestScoreForTrend: number | null;
 };
 
 function num(v: unknown): number {
@@ -56,13 +61,13 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
   const contestId = contestIdForRpc(contestIdRaw);
   if (!contestId) {
-    return { rows: [], settled: false, contestExists: false, currentRound: 0 };
+    return { rows: [], settled: false, contestExists: false, currentRound: 0, viewerBestScoreForTrend: null };
   }
 
   try {
         const hasAccess = await currentUserHasContestAccess(supabase);
     if (!hasAccess) {
-      return { rows: [], settled: false, contestExists: false, currentRound: 0 };
+      return { rows: [], settled: false, contestExists: false, currentRound: 0, viewerBestScoreForTrend: null };
     }
 
     const { data: contest, error: contestErr } = await supabase
@@ -72,7 +77,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       .maybeSingle();
 
     if (contestErr || !contest) {
-      return { rows: [], settled: false, contestExists: false, currentRound: 0 };
+      return { rows: [], settled: false, contestExists: false, currentRound: 0, viewerBestScoreForTrend: null };
     }
 
     const settled = String(contest.status ?? "").toLowerCase().trim() === "settled";
@@ -107,7 +112,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
     }
 
     if (entriesErr) {
-      return { rows: [], settled, contestExists: true, currentRound };
+      return { rows: [], settled, contestExists: true, currentRound, viewerBestScoreForTrend: null };
     }
 
     type RawEntry = {
@@ -191,14 +196,41 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
     const rows: ContestLeaderboardRow[] = scored.map((ent, idx) => ({
       order: idx + 1,
+      entryId: ent.id,
       entryNumber: ent.entryNumber,
       user_id: ent.user_id,
       username: ent.username,
       score: ent.score,
     }));
 
-    return { rows, settled, contestExists: true, currentRound };
+    const { data: authData } = await supabase.auth.getUser();
+    const viewerId = authData.user?.id ?? null;
+
+    let viewerBestScoreForTrend: number | null = null;
+    if (currentRound === 1 && viewerId) {
+      const mine = scored.filter((s) => s.user_id === viewerId);
+      if (mine.length > 0) {
+        viewerBestScoreForTrend = Math.max(...mine.map((s) => s.score));
+      }
+    }
+
+    const publicRows: ContestLeaderboardRow[] =
+      currentRound === 1
+        ? rows.map((r) => ({
+            ...r,
+            order: null,
+            score: null,
+          }))
+        : rows;
+
+    return {
+      rows: publicRows,
+      settled,
+      contestExists: true,
+      currentRound,
+      viewerBestScoreForTrend,
+    };
   } catch {
-    return { rows: [], settled: false, contestExists: false, currentRound: 0 };
+    return { rows: [], settled: false, contestExists: false, currentRound: 0, viewerBestScoreForTrend: null };
   }
 }

@@ -23,17 +23,17 @@ import {
 export type LiveLineupPlayerBreakdown = {
   golferId: string;
   playerName: string;
-  /** Live: `golfer_scores.total_score`, else `golfers.fantasy_points`. Sim pool: sum of `sim_results.fantasy_points` per player. */
-  score: number;
+  /** Live: `golfer_scores.total_score`, else `golfers.fantasy_points`. Sim pool: sum of `sim_results.fantasy_points` per player. Null during round 1 in API responses. */
+  score: number | null;
 };
 
 export type LiveLeaderboardRow = {
-  rank: number;
+  rank: number | null;
   entryId: string;
   userId: string;
   username: string;
-  /** From `lineups.total_score` */
-  totalScore: number;
+  /** From `lineups.total_score`. Null during round 1 in API responses. */
+  totalScore: number | null;
   createdAt: string | null;
   /** Roster breakdown; empty if embed blocked or no rows. */
   players: LiveLineupPlayerBreakdown[];
@@ -162,7 +162,13 @@ export function compareLivePreliminaryScore(
 }
 
 export type GetLiveLeaderboardResult =
-  | { ok: true; rows: LiveLeaderboardRow[]; currentRound: number }
+  | {
+      ok: true;
+      rows: LiveLeaderboardRow[];
+      currentRound: number;
+      /** During round 1 only: authenticated viewer’s max lineup score for trend UI (not in `rows`). */
+      viewerBestScoreForTrend: number | null;
+    }
   | { ok: false; error: string };
 
 /**
@@ -266,7 +272,28 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
       };
     });
 
-    return { ok: true, rows, currentRound };
+    const { data: authData } = await supabase.auth.getUser();
+    const viewerId = authData.user?.id ?? null;
+
+    let viewerBestScoreForTrend: number | null = null;
+    if (currentRound === 1 && viewerId) {
+      const mine = rows.filter((r) => r.userId === viewerId);
+      if (mine.length > 0) {
+        viewerBestScoreForTrend = Math.max(...mine.map((r) => r.totalScore ?? 0));
+      }
+    }
+
+    const publicRows: LiveLeaderboardRow[] =
+      currentRound === 1
+        ? rows.map((r) => ({
+            ...r,
+            rank: null,
+            totalScore: null,
+            players: r.players.map((p) => ({ ...p, score: null })),
+          }))
+        : rows;
+
+    return { ok: true, rows: publicRows, currentRound, viewerBestScoreForTrend };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error.";
     return { ok: false, error: msg };
