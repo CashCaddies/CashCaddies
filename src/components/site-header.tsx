@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { playCupSound } from "@/lib/sound";
@@ -33,10 +33,8 @@ const navButtonBase =
  */
 export function SiteHeader() {
   const pathname = usePathname();
-  const prevPathRef = useRef(pathname);
   const router = useRouter();
   const { isReady } = useAuth();
-  const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -71,13 +69,6 @@ export function SiteHeader() {
   useEffect(() => {
     setMenuOpen(false);
     setProfileOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (prevPathRef.current !== pathname) {
-      setIsPortalLoading(false);
-      prevPathRef.current = pathname;
-    }
   }, [pathname]);
 
   useEffect(() => {
@@ -162,24 +153,30 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handlePortalClick = async () => {
-    if (isPortalLoading) return;
-
-    setIsPortalLoading(true);
-
-    playCupSound();
-
+  const handleProtectedNav = async (path: string): Promise<boolean> => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = "/login";
+      return false;
+    }
+    router.push(path);
+    return true;
+  };
 
-    setTimeout(() => {
+  const handleGolfBallClick = () => {
+    playCupSound();
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
-        router.push("/login");
+        window.location.href = "/login";
       } else {
-        router.push("/portal");
+        router.push("/lobby");
       }
-    }, 120);
+    })();
   };
 
   const getInitials = (email?: string) => {
@@ -212,31 +209,24 @@ export function SiteHeader() {
                         <div
                           role="button"
                           tabIndex={0}
-                          aria-busy={isPortalLoading}
                           aria-label="Portal"
-                          onClick={handlePortalClick}
+                          onClick={handleGolfBallClick}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") handlePortalClick();
+                            if (e.key === "Enter") handleGolfBallClick();
                           }}
-                          className={`group relative transition-opacity transition-transform active:scale-95 ${isPortalLoading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+                          className="group relative cursor-pointer transition-opacity transition-transform active:scale-95"
                         >
                           <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
                           <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
                           <img
                             src="/golf-ball.png"
                             alt="Portal"
-                            className={`relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20 ${isPortalLoading ? "scale-95" : ""}`}
+                            className="relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20"
                           />
-                          {isPortalLoading ? (
-                            <div
-                              className="pointer-events-none absolute inset-0 z-[1] rounded-full border-2 border-green-400 animate-ping"
-                              aria-hidden
-                            />
-                          ) : null}
                         </div>
                       </div>
                       <div
-                        onClick={handlePortalClick}
+                        onClick={handleGolfBallClick}
                         className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
                       >
                         Click to enter your qualified contests
@@ -259,11 +249,11 @@ export function SiteHeader() {
                       {navItems.map((item) => {
                         const isActive = item.isActive(pathname ?? "");
                         return (
-                          <Link
+                          <button
                             key={item.href}
-                            href={item.href}
-                            prefetch
+                            type="button"
                             aria-current={isActive ? "page" : undefined}
+                            onClick={() => void handleProtectedNav(item.href)}
                             className={`${navButtonBase} ${
                               isActive
                                 ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300 hover:bg-emerald-950/45"
@@ -271,7 +261,7 @@ export function SiteHeader() {
                             }`}
                           >
                             {item.label}
-                          </Link>
+                          </button>
                         );
                       })}
                     </div>
@@ -334,8 +324,9 @@ export function SiteHeader() {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      router.push("/admin/notifications");
-                                      setNotifOpen(false);
+                                      void handleProtectedNav("/admin/notifications").then((ok) => {
+                                        if (ok) setNotifOpen(false);
+                                      });
                                     }}
                                     className="mt-2 text-green-400"
                                   >
@@ -366,8 +357,9 @@ export function SiteHeader() {
                             <button
                               type="button"
                               onClick={() => {
-                                router.push("/dashboard");
-                                setProfileOpen(false);
+                                void handleProtectedNav("/dashboard").then((ok) => {
+                                  if (ok) setProfileOpen(false);
+                                });
                               }}
                               className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800"
                             >
@@ -377,8 +369,9 @@ export function SiteHeader() {
                             <button
                               type="button"
                               onClick={() => {
-                                router.push("/wallet");
-                                setProfileOpen(false);
+                                void handleProtectedNav("/wallet").then((ok) => {
+                                  if (ok) setProfileOpen(false);
+                                });
                               }}
                               className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800"
                             >
@@ -392,8 +385,9 @@ export function SiteHeader() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    router.push("/admin");
-                                    setProfileOpen(false);
+                                    void handleProtectedNav("/admin").then((ok) => {
+                                      if (ok) setProfileOpen(false);
+                                    });
                                   }}
                                   className="block w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800"
                                 >
@@ -403,8 +397,9 @@ export function SiteHeader() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    router.push("/admin/notifications");
-                                    setProfileOpen(false);
+                                    void handleProtectedNav("/admin/notifications").then((ok) => {
+                                      if (ok) setProfileOpen(false);
+                                    });
                                   }}
                                   className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
                                 >
@@ -460,8 +455,9 @@ export function SiteHeader() {
                           <button
                             type="button"
                             onClick={() => {
-                              router.push("/dashboard");
-                              setMenuOpen(false);
+                              void handleProtectedNav("/dashboard").then((ok) => {
+                                if (ok) setMenuOpen(false);
+                              });
                             }}
                             className="text-left text-white"
                           >
@@ -471,8 +467,9 @@ export function SiteHeader() {
                           <button
                             type="button"
                             onClick={() => {
-                              router.push("/wallet");
-                              setMenuOpen(false);
+                              void handleProtectedNav("/wallet").then((ok) => {
+                                if (ok) setMenuOpen(false);
+                              });
                             }}
                             className="text-left text-white"
                           >
@@ -520,8 +517,9 @@ export function SiteHeader() {
                       <button
                         type="button"
                         onClick={() => {
-                          router.push("/lobby");
-                          setMenuOpen(false);
+                          void handleProtectedNav("/lobby").then((ok) => {
+                            if (ok) setMenuOpen(false);
+                          });
                         }}
                         className="text-left text-white"
                       >
