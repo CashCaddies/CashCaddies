@@ -4,7 +4,7 @@ import { getServiceClient } from "@/lib/supabase/service";
 export async function GET() {
   try {
     const supabase = getServiceClient();
-    const { data } = await supabase.from("updates").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("founder_updates").select("*").order("created_at", { ascending: false });
 
     return NextResponse.json({ updates: data || [] });
   } catch (e) {
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const supabase = getServiceClient();
 
     const { data, error } = await supabase
-      .from("updates")
+      .from("founder_updates")
       .insert([
         {
           title: body.title,
