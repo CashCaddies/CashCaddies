@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const supabase = getServiceClient();
 
     const { data, error } = await supabase
-      .from("updates_BAD")
+      .from("updates")
       .insert([
         {
           title: body.title,
