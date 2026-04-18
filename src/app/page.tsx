@@ -11,6 +11,8 @@ export default function HomePage() {
   const [updates, setUpdates] = useState<any[]>([]);
   const [reply, setReply] = useState("");
   const [activeUpdate, setActiveUpdate] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
   useEffect(() => {
     const check = async () => {
@@ -102,9 +104,58 @@ Your update here...`}
               {new Date(a.created_at).toLocaleString()}
             </div>
 
-            <div className="mb-2 text-lg font-semibold text-white md:text-xl">{a.title}</div>
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(a.id);
+                  setEditText(a.content);
+                }}
+                className="shrink-0 text-sm text-yellow-400"
+              >
+                Edit
+              </button>
+            </div>
 
-            <div className="whitespace-pre-line text-base leading-relaxed text-gray-200 md:text-lg">{a.content}</div>
+            {editingId === a.id ? (
+              <>
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full rounded border border-gray-700 bg-black p-2 text-white"
+                />
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const res = await fetch("/api/updates", {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        id: a.id,
+                        message: editText,
+                      }),
+                    });
+
+                    const json = await res.json();
+
+                    if (!res.ok) {
+                      alert("ERROR: " + json.error);
+                      return;
+                    }
+
+                    setEditingId(null);
+                    location.reload();
+                  }}
+                  className="mt-2 text-sm text-green-400"
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <p className="whitespace-pre-line text-base leading-relaxed text-gray-200 md:text-lg">{a.content}</p>
+            )}
 
             <button
               type="button"
