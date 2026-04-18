@@ -12,6 +12,8 @@ export type ProfileRow = {
   premium_expires_at?: string | null;
   /** Beta admin tooling; optional until loaded from profiles. */
   founding_tester?: boolean;
+  /** Set on `public.profiles.is_founder`. */
+  is_founder?: boolean;
   /** Canonical role field — use `isAdmin(role)` from `@/lib/permissions` for access. */
   role?: string | null;
   /** From `public.profiles.beta_status` (not auth metadata). */
@@ -38,6 +40,7 @@ export function normalizeProfileRow(row: {
   premium_expires_at?: string | null;
   beta_status?: string | null;
   founding_tester?: boolean | null;
+  is_founder?: boolean | null;
   role?: string | null;
   avatar_url?: string | null;
   account_balance?: number | string | null;
@@ -69,6 +72,7 @@ export function normalizeProfileRow(row: {
           : undefined,
     beta_status: typeof row.beta_status === "string" ? row.beta_status : null,
     founding_tester: row.founding_tester === true,
+    is_founder: row.is_founder === true,
     role: typeof row.role === "string" ? row.role : null,
     avatar_url: typeof row.avatar_url === "string" && row.avatar_url.trim() !== "" ? row.avatar_url.trim() : null,
     account_balance: bal,

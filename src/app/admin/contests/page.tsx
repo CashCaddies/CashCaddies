@@ -55,6 +55,7 @@ export default function AdminContestsPage() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [spawnStartTime, setSpawnStartTime] = useState("");
   const [spawnCount, setSpawnCount] = useState("1");
+  const [founderUserEmail, setFounderUserEmail] = useState("");
 
   useEffect(() => {
     const check = async () => {
@@ -247,6 +248,34 @@ export default function AdminContestsPage() {
     setRows(contests);
   };
 
+  const makeFounder = async (email: string) => {
+    if (!supabase) {
+      alert("Supabase client is not available.");
+      return;
+    }
+    const trimmed = email.trim();
+    if (!trimmed) {
+      alert("Enter an email");
+      return;
+    }
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ is_founder: true })
+      .eq("email", trimmed)
+      .select("id");
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    if (!data?.length) {
+      alert("No profile found with that email.");
+      return;
+    }
+
+    alert("User marked as founder");
+  };
+
   return (
     <div className="space-y-6">
       {listNotice ? (
@@ -261,6 +290,27 @@ export default function AdminContestsPage() {
           {listNotice.text}
         </div>
       ) : null}
+      <div className="goldCard p-6">
+        <h2 className="text-lg font-semibold text-white">Founder access</h2>
+        <p className="mt-1 text-sm text-slate-400">Set <code className="text-slate-300">is_founder</code> on a profile by email.</p>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <input
+            placeholder="User Email"
+            type="email"
+            autoComplete="off"
+            className="min-w-[220px] flex-1 rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
+            value={founderUserEmail}
+            onChange={(e) => setFounderUserEmail(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={() => void makeFounder(founderUserEmail)}
+            className="rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-400"
+          >
+            Make Founder
+          </button>
+        </div>
+      </div>
       <div className="goldCard p-6">
         <h2 className="text-xl font-semibold mt-10 mb-4">Create Template</h2>
         <div className="grid gap-4 sm:grid-cols-2">

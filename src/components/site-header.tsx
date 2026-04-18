@@ -36,6 +36,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { isReady, session } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -49,8 +50,32 @@ export function SiteHeader() {
 
   const email = session?.user?.email;
   const owner = isOwner(email);
-  const founder = isFounder(email);
+  const founder = isFounder(profile);
   const isAdmin = owner;
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!supabase) return;
+      if (!session?.user?.id) {
+        setProfile(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) {
+        setProfile(null);
+        return;
+      }
+      setProfile(data ?? null);
+    };
+
+    void loadProfile();
+  }, [session]);
 
   useEffect(() => {
     router.prefetch("/login");
