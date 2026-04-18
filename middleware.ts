@@ -20,21 +20,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const cookies = req.cookies;
-
-  const hasSession =
-    cookies.get("sb-access-token") ||
-    cookies.get("sb-refresh-token") ||
-    cookies.get("supabase-auth-token") ||
-    cookies.get("sb:token") ||
-    cookies.get("sb-access-token.0") ||
-    cookies.get("sb-access-token.1") ||
-    cookies.getAll().some((c) => !!c.value && c.name.includes("-auth-token"));
-
-  if (!hasSession && pathname.startsWith("/dashboard")) {
-    const login = new URL("/login", req.url);
-    login.searchParams.set("next", pathname);
-    return NextResponse.redirect(login);
+  // Allow dashboard access; client-side auth will handle protection
+  if (pathname.startsWith("/dashboard")) {
+    return NextResponse.next();
   }
 
   return NextResponse.next();

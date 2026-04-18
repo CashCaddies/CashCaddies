@@ -19,7 +19,8 @@ export default function useRequireAuth() {
       // NOT logged in → go to login ONLY
       if (!session) {
         if (currentPath !== "/login") {
-          window.location.href = "/login";
+          const next = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?next=${next}`;
         }
         return;
       }

@@ -119,7 +119,10 @@ export function AuthForm({ mode }: Props) {
     } = await supabase.auth.getSession();
 
     if (session) {
-      window.location.href = "/";
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get("next") || "/dashboard";
+
+      window.location.href = next;
     } else {
       setLoading(false);
     }
