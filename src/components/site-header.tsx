@@ -38,6 +38,11 @@ export function SiteHeader() {
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifCounts, setNotifCounts] = useState({
+    approvals: 0,
+    support: 0,
+    bugs: 0,
+  });
 
   useEffect(() => {
     router.prefetch("/login");
@@ -61,6 +66,20 @@ export function SiteHeader() {
     setMenuOpen(false);
     setProfileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const res = await fetch("/api/admin/notifications");
+        const json = await res.json();
+        setNotifCounts(json);
+      } catch (e) {
+        console.error("notif fetch failed");
+      }
+    };
+
+    fetchCounts();
+  }, []);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -103,6 +122,8 @@ export function SiteHeader() {
     if (!email) return "U";
     return email.split("@")[0].slice(0, 2).toUpperCase();
   };
+
+  const isAdmin = sessionUser?.email === "cashcaddies@outlook.com";
 
   return (
     <header className="relative w-full">
@@ -231,6 +252,41 @@ export function SiteHeader() {
                             >
                               Wallet
                             </button>
+
+                            {isAdmin && (
+                              <>
+                                <div className="border-t border-gray-800 my-1" />
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    router.push("/admin");
+                                    setProfileOpen(false);
+                                  }}
+                                  className="block w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800"
+                                >
+                                  Admin Tools
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    router.push("/admin/notifications");
+                                    setProfileOpen(false);
+                                  }}
+                                  className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                                >
+                                  Notifications
+                                  <span className="ml-2 text-green-400 text-xs">
+                                    ({notifCounts.approvals + notifCounts.support + notifCounts.bugs})
+                                  </span>
+                                </button>
+
+                                <div className="pl-4 pb-2 text-xs text-gray-400">
+                                  {`Approvals (${notifCounts.approvals}) • Support (${notifCounts.support}) • Bugs (${notifCounts.bugs})`}
+                                </div>
+                              </>
+                            )}
 
                             <button
                               type="button"
