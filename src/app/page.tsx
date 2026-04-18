@@ -42,8 +42,8 @@ export default function HomePage() {
 
   if (user) {
     return (
-      <div className="mx-auto max-w-3xl space-y-4 p-4">
-        <h2 className="text-xl font-semibold text-green-400">CashCaddies Updates</h2>
+      <div className="mx-auto max-w-3xl px-4">
+        <h1 className="mb-4 text-xl font-semibold text-white md:text-2xl">CashCaddies Updates</h1>
 
         {user?.email === FOUNDER_UPDATES_EMAIL ? (
           <div className="mb-6">
@@ -106,10 +106,14 @@ Your update here...`}
           </div>
         ) : null}
 
-        {updates.map((a) => (
+        {updates.length === 0 ? (
+          <div className="mt-10 text-center text-gray-500">No updates yet. Stay tuned.</div>
+        ) : (
+          <div className="flex flex-col gap-4 md:gap-6">
+            {updates.map((a) => (
           <div
             key={a.id}
-            className="rounded-xl border border-gray-700 bg-[#020617]/80 p-5 shadow-lg"
+            className="rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm transition-all hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10"
           >
             <div className="mb-1 flex items-center justify-end text-xs text-gray-400 md:text-sm">
               {new Date(a.created_at).toLocaleString()}
@@ -208,7 +212,7 @@ Your update here...`}
                 </button>
               </>
             ) : (
-              <p className="whitespace-pre-line text-base leading-relaxed text-gray-200 md:text-lg">{a.content}</p>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200 md:text-base">{a.content}</p>
             )}
 
             <button
@@ -254,7 +258,9 @@ Your update here...`}
               </div>
             )}
           </div>
-        ))}
+            ))}
+          </div>
+        )}
 
         {user && user.email !== FOUNDER_UPDATES_EMAIL ? (
           <p className="mt-4 text-sm text-gray-500">Updates are managed by the CashCaddies team.</p>
