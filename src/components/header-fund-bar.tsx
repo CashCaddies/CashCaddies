@@ -193,12 +193,12 @@ export function HeaderFundBar() {
 
   return (
     <div
-      className="statusBar mx-4 mt-4 flex items-center justify-between rounded-xl p-4"
+      className="statusBar mx-4 mt-4 rounded-xl p-4"
       title="Platform status and Safety Coverage Fund. Fund balance covers WD, DQ, DNS when applicable."
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="flex min-w-0 flex-1 flex-col pr-2">
+      <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
           <button
             type="button"
@@ -254,10 +254,6 @@ export function HeaderFundBar() {
             ›
           </button>
         </div>
-      </div>
-
-      <div className="shrink-0 text-right text-xs font-semibold whitespace-nowrap text-yellow-400 md:text-sm">
-        PREMIUM GOLF DFS
       </div>
     </div>
   );

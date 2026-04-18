@@ -49,7 +49,7 @@ export function SiteHeader() {
   }
 
   const ccMainNav = (
-    <div className="ccMainNav flex min-h-0 w-full shrink-0 flex-col gap-2 md:w-auto md:flex-row md:items-center md:overflow-x-auto">
+    <div className="ccMainNav flex min-h-0 shrink-0 flex-col gap-2 md:flex-row md:items-center md:overflow-x-auto">
       <div
         className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:gap-4 lg:gap-6"
         role="navigation"
@@ -81,25 +81,10 @@ export function SiteHeader() {
 
   const headerRight = (authControls: ReactNode, premiumTag: ReactNode | null) => (
     <div className="headerRight flex w-full flex-shrink-0 flex-col items-end md:w-auto">
-      <div className="flex w-full flex-wrap items-center justify-end gap-3 md:w-auto md:gap-5">
+      <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto md:gap-3">
         {premiumTag}
         <HeaderStats />
         {authControls}
-      </div>
-    </div>
-  );
-
-  const golfBallElement = (
-    <div className="relative ml-2 h-10 w-10 shrink-0 md:h-12 md:w-12">
-      <div className="golf-ball-roll relative h-full w-full">
-        <Image
-          src="/golf-ball.png"
-          alt="Portal"
-          fill
-          className="pointer-events-none object-contain"
-          priority
-          sizes="(max-width: 768px) 40px, 48px"
-        />
       </div>
     </div>
   );
@@ -109,50 +94,65 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="headerContainer mx-auto flex w-full max-w-[1600px] min-w-0 flex-col gap-2 overflow-visible border-b border-white/5 bg-[#020617]/80 px-4 py-3 shadow-[0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-md md:flex-row md:items-center md:justify-between">
-              {/* Brand: title + ball on one row; subtitle + links below */}
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
-                <div className="flex items-center justify-between gap-2">
+            <div className="headerContainer mx-auto w-full max-w-[1600px] min-w-0 overflow-visible border-b border-white/10 bg-[#020617]/80 px-4 py-3 shadow-[0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-md">
+              <div className="flex items-center justify-between gap-2">
+                {/* LEFT — logo + subtitle */}
+                <div className="flex min-w-0 flex-col">
+                  <span className="sr-only">CashCaddies — Daily Fantasy Golf Platform</span>
                   <span className="min-w-0 bg-gradient-to-r from-emerald-400 via-emerald-300 to-yellow-400 bg-clip-text text-2xl font-bold leading-tight tracking-tight text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] md:text-3xl">
                     CashCaddies
                   </span>
-                  <div className="header-portal-golf-shell flex shrink-0 items-center justify-center overflow-visible">
-                    <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Click here to access the CashCaddies Coveted Contest Portal"
-                        onClick={handlePortalClick}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            e.currentTarget.click();
-                          }
-                        }}
-                        className="portal-golf-trigger inline-flex cursor-pointer"
-                      >
-                        <div className="transition duration-200 hover:scale-105">{golfBallElement}</div>
-                      </div>
-                    </Tooltip>
-                  </div>
+                  <span className="text-sm text-gray-400 md:text-base">Daily Fantasy Golf Platform</span>
                 </div>
-                <span className="text-sm text-gray-400 md:text-base">Daily Fantasy Golf Platform</span>
-                <Tooltip content={<>Click here to access our FAQ</>}>
-                  <Link href="/faq" className="cursor-pointer">
-                    <span className="text-sm text-emerald-400 transition hover:text-emerald-300">
-                      Safety Coverage Fund
-                    </span>
-                  </Link>
-                </Tooltip>
+
+                {/* CENTER — square + tee (md+) */}
+                <div className="hidden min-w-0 shrink-0 md:flex md:flex-col md:items-center md:justify-center">
+                  <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Click here to access the CashCaddies Coveted Contest Portal"
+                      onClick={handlePortalClick}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.currentTarget.click();
+                        }
+                      }}
+                      className="portal-golf-trigger relative flex cursor-pointer flex-col items-center"
+                    >
+                      <div className="relative z-10 h-14 w-14 md:h-16 md:w-16">
+                        <Image
+                          src="/cashcaddies-square.png"
+                          alt="CashCaddies portal"
+                          fill
+                          className="object-contain transition duration-200 hover:scale-105"
+                          sizes="(max-width: 768px) 56px, 64px"
+                          priority
+                        />
+                      </div>
+                      <div className="mt-[-6px] h-6 w-[3px] rounded-full bg-yellow-500" aria-hidden />
+                    </div>
+                  </Tooltip>
+                </div>
+
+                {/* RIGHT — Lobby / Dashboard + wallet + profile */}
+                <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-3">
+                  {ccMainNav}
+                  <div className="hidden h-8 w-px shrink-0 bg-white/10 sm:block" aria-hidden />
+                  {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
+                </div>
               </div>
 
-              {/* Nav + wallet + profile */}
-              <div className="mt-2 flex min-w-0 w-full flex-col items-stretch gap-2 md:mt-0 md:w-auto md:flex-row md:items-center md:justify-end md:gap-4">
-                <div className="flex min-w-0 shrink-0 items-center justify-center md:justify-end">{ccMainNav}</div>
-                <div className="hidden w-px shrink-0 self-stretch bg-white/10 md:block" aria-hidden />
-                <div className="flex min-w-0 shrink-0 items-center justify-end gap-3 md:gap-5">
-                  {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
+              {/* SECOND ROW — Safety + Premium (grouped) */}
+              <div className="mt-2 flex items-center justify-between">
+                <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm md:text-base">
+                  <Tooltip content={<>Click here to access our FAQ</>}>
+                    <Link href="/faq#safety-coverage" className="shrink-0 text-emerald-400 transition hover:text-emerald-300">
+                      Safety Coverage Fund
+                    </Link>
+                  </Tooltip>
+                  <span className="shrink-0 font-semibold text-yellow-400">• PREMIUM GOLF DFS</span>
                 </div>
               </div>
             </div>
