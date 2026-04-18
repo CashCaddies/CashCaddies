@@ -72,18 +72,6 @@ export default function PortalPage() {
     void loadContests();
   }, []);
 
-  const handleCloseWelcome = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user?.id) return;
-
-    await supabase.from("profiles").update({ has_seen_portal_welcome: true }).eq("id", session.user.id);
-
-    setShowWelcome(false);
-  };
-
   const TEST_MODE = portalFundTestMode();
 
   let totalFund = 0;
@@ -149,7 +137,10 @@ export default function PortalPage() {
 
           <button
             type="button"
-            onClick={handleCloseWelcome}
+            onClick={() => {
+              localStorage.setItem("cc_portal_welcome_seen", "true");
+              setShowWelcome(false);
+            }}
             className="rounded bg-yellow-500 px-4 py-1 text-sm text-black"
           >
             Got it
