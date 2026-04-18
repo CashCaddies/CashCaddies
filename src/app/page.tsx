@@ -36,7 +36,7 @@ export default function HomePage() {
 
             <div className="mb-1 font-medium text-white">{a.title}</div>
 
-            <div className="text-sm text-gray-400">{a.content}</div>
+            <div className="text-sm text-gray-400 whitespace-pre-line">{a.content}</div>
           </div>
         ))}
       </div>
