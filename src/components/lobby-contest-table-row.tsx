@@ -73,7 +73,7 @@ export function LobbyContestTableRow({
   const protectedCount = Math.max(0, Math.trunc(Number(contest.protected_entries_count ?? 0)));
   const protectedPctLabel = formatProtectedEntriesPercent(currentBase, protectedCount);
   const safetyPoolUsd = contest.safety_pool_usd ?? 0;
-  const fillPct = Math.min(100, (current / max) * 100);
+  const fillPercent = Math.min(100, Math.round((current / max) * 100));
   const perUserLabel = formatPerUserEntryLimit(contest.max_entries_per_user);
   const hasPayouts = contest.payouts.length > 0;
   const lifecycle = resolveEffectiveContestLifecycle({
@@ -385,9 +385,19 @@ export function LobbyContestTableRow({
       </td>
       <td className="px-3 py-3.5 align-middle">
         <div className="flex flex-col items-end gap-1">
-          <span className="tabular-nums text-[#c5cdd5]">{current.toLocaleString()}</span>
-          <div className="h-1 w-full max-w-[7rem] overflow-hidden rounded-full bg-[#2a3039]">
-            <div className="h-full rounded-full bg-[#3d8bfd]/80" style={{ width: `${fillPct}%` }} />
+          <div className="text-xs tabular-nums text-[#c5cdd5]">
+            {current.toLocaleString()} / {max.toLocaleString()} entries
+          </div>
+          <div className="h-2 w-full max-w-[7rem] overflow-hidden rounded-full bg-[#2a3039]">
+            <div
+              className={`
+                h-2 rounded-full
+                ${fillPercent > 80 ? "bg-red-500" : ""}
+                ${fillPercent > 50 && fillPercent <= 80 ? "bg-yellow-500" : ""}
+                ${fillPercent <= 50 ? "bg-green-500" : ""}
+              `}
+              style={{ width: `${fillPercent}%` }}
+            />
           </div>
         </div>
       </td>

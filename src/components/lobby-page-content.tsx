@@ -263,6 +263,50 @@ export function LobbyPageContent() {
                   ? formatLobbyEntryFeeUsd(modalContest.prize_pool)
                   : "—"}
               </div>
+
+              {modalContest.payouts && modalContest.payouts.length > 0 ? (
+                <div className="mt-4">
+                  <div className="mb-2 font-semibold">Payouts</div>
+
+                  <div className="space-y-1 text-sm">
+                    {modalContest.payouts.map((p) => {
+                      const poolRaw = modalContest.prize_pool;
+                      const poolNum =
+                        poolRaw != null && String(poolRaw).trim() !== ""
+                          ? typeof poolRaw === "string"
+                            ? Number.parseFloat(poolRaw)
+                            : Number(poolRaw)
+                          : NaN;
+                      const pct = Number(p.payout_pct);
+                      const shareUsd =
+                        Number.isFinite(poolNum) && Number.isFinite(pct)
+                          ? formatLobbyEntryFeeUsd((poolNum * pct) / 100)
+                          : null;
+
+                      return (
+                        <div key={p.rank_place} className="flex justify-between gap-4">
+                          <span>#{p.rank_place}</span>
+                          <span className="tabular-nums text-right">
+                            {shareUsd != null ? (
+                              <>
+                                {shareUsd}{" "}
+                                <span className="text-slate-500">({pct.toFixed(0)}%)</span>
+                              </>
+                            ) : (
+                              `${pct.toFixed(0)}%`
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-2 text-sm text-gray-500">
+                  Payouts will be shown before contest starts.
+                </div>
+              )}
+
               <div>Status: {modalContest.status ?? "—"}</div>
             </div>
 
