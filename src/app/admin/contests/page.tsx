@@ -48,9 +48,9 @@ export default function AdminContestsPage() {
 
   const [name, setName] = useState("");
   const [entryFee, setEntryFee] = useState("5");
+  const [prizePool, setPrizePool] = useState("");
   const [maxEntries, setMaxEntries] = useState("100");
   const [startDate, setStartDate] = useState("");
-  const [contestType, setContestType] = useState("Classic");
   const [isPortal, setIsPortal] = useState(false);
   const [portalFrequency, setPortalFrequency] = useState<"weekly" | "biweekly" | "monthly">("weekly");
   const [overlayAmount, setOverlayAmount] = useState("0");
@@ -208,6 +208,10 @@ export default function AdminContestsPage() {
                   return;
                 }
 
+                const parsedEntryFee = Number(entryFee) || 0;
+                const parsedPrizePool = Number(prizePool) || 0;
+                const parsedMaxEntries = Number(maxEntries) || 0;
+
                 const createdAt = new Date().toISOString();
                 const payload = {
                   id: crypto.randomUUID(),
@@ -217,9 +221,11 @@ export default function AdminContestsPage() {
                   entries_open_at: createdAt,
                   entry_count: 0,
                   created_by: authUser.id,
-                  entry_fee: Number(entryFee),
-                  entry_fee_usd: Number(entryFee),
-                  max_entries: Number(maxEntries),
+                  entry_fee: parsedEntryFee,
+                  entry_fee_usd: parsedEntryFee,
+                  entry_fee_cents: Math.round(parsedEntryFee * 100),
+                  prize_pool: parsedPrizePool,
+                  max_entries: parsedMaxEntries,
                   starts_at: new Date(startDate).toISOString(),
                   max_entries_per_user: 1,
                   created_at: createdAt,
@@ -291,6 +297,19 @@ export default function AdminContestsPage() {
           </label>
 
           <label className="space-y-1">
+            <span className="text-sm text-slate-300">Prize pool</span>
+            <input
+              value={prizePool}
+              onChange={(e) => setPrizePool(e.target.value)}
+              placeholder="Prize Pool"
+              type="number"
+              min="0"
+              step="0.01"
+              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
+            />
+          </label>
+
+          <label className="space-y-1">
             <span className="text-sm text-slate-300">Max entries</span>
             <input
               type="number"
@@ -311,15 +330,6 @@ export default function AdminContestsPage() {
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               required
-            />
-          </label>
-
-          <label className="space-y-1">
-            <span className="text-sm text-slate-300">Contest type</span>
-            <input
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
-              value={contestType}
-              onChange={(e) => setContestType(e.target.value)}
             />
           </label>
 
