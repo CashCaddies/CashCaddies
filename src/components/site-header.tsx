@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { HeaderAuthSection } from "@/components/header-auth-section";
@@ -43,6 +43,11 @@ export function SiteHeader() {
     support: 0,
     bugs: 0,
   });
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [prevTotal, setPrevTotal] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const isAdmin = sessionUser?.email === "cashcaddies@outlook.com";
 
   useEffect(() => {
     router.prefetch("/login");
@@ -68,22 +73,67 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
+    audioRef.current = new Audio("/sounds/golf-cup.mp3");
+    audioRef.current.volume = 0.5;
+  }, []);
+
+  const playSound = useCallback(() => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const total = notifCounts.approvals + notifCounts.support + notifCounts.bugs;
+
+    if (total > prevTotal && prevTotal !== 0) {
+      playSound();
+    }
+
+    setPrevTotal(total);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [notifCounts] only; prevTotal/playSound per spec
+  }, [notifCounts]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
     const fetchCounts = async () => {
       try {
-        const res = await fetch("/api/admin/notifications");
-        const json = await res.json();
-        setNotifCounts(json);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const res = await fetch("/api/admin/notifications", {
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as { approvals?: number; support?: number; bugs?: number };
+        if (
+          typeof json.approvals === "number" &&
+          typeof json.support === "number" &&
+          typeof json.bugs === "number"
+        ) {
+          setNotifCounts({
+            approvals: json.approvals,
+            support: json.support,
+            bugs: json.bugs,
+          });
+        }
       } catch (e) {
         console.error("notif fetch failed");
       }
     };
 
-    fetchCounts();
-  }, []);
+    void fetchCounts();
+  }, [isAdmin]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setNotifOpen(false);
+      }
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -92,8 +142,14 @@ export function SiteHeader() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const t = e.target;
-      if (t instanceof Element && !t.closest(".profile-dropdown")) {
+      if (
+        t instanceof Element &&
+        !t.closest(".profile-dropdown") &&
+        !t.closest(".notif-panel") &&
+        !t.closest(".notif-bell")
+      ) {
         setProfileOpen(false);
+        setNotifOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
@@ -122,8 +178,6 @@ export function SiteHeader() {
     if (!email) return "U";
     return email.split("@")[0].slice(0, 2).toUpperCase();
   };
-
-  const isAdmin = sessionUser?.email === "cashcaddies@outlook.com";
 
   return (
     <header className="relative w-full">
@@ -215,11 +269,53 @@ export function SiteHeader() {
                     {!isReady ? (
                       ctx.authControls
                     ) : sessionUser ? (
-                      <div className="relative profile-dropdown">
+                      <div className="flex items-center gap-2">
+                        {isAdmin ? (
+                          <div className="relative flex items-center">
+                            <button
+                              type="button"
+                              className="notif-bell relative text-lg text-white"
+                              onClick={() => {
+                                setNotifOpen((o) => !o);
+                                setProfileOpen(false);
+                              }}
+                              aria-label="Notifications"
+                            >
+                              🔔
+                              {notifCounts.approvals + notifCounts.support + notifCounts.bugs > 0 ? (
+                                <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 text-xs text-white">
+                                  {notifCounts.approvals + notifCounts.support + notifCounts.bugs}
+                                </span>
+                              ) : null}
+                            </button>
+                            {notifOpen ? (
+                              <div className="notif-panel absolute right-0 top-full z-50 mt-2 w-72 rounded-md border border-gray-800 bg-black shadow-lg">
+                                <div className="p-3 text-sm text-white">
+                                  <div className="mb-2 font-semibold">Notifications</div>
+                                  <div>Approvals: {notifCounts.approvals}</div>
+                                  <div>Support: {notifCounts.support}</div>
+                                  <div>Bugs: {notifCounts.bugs}</div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      router.push("/admin/notifications");
+                                      setNotifOpen(false);
+                                    }}
+                                    className="mt-2 text-green-400"
+                                  >
+                                    View All
+                                  </button>
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        <div className="relative profile-dropdown">
                         <button
                           type="button"
                           onClick={() => {
                             setMenuOpen(false);
+                            setNotifOpen(false);
                             setProfileOpen(!profileOpen);
                           }}
                           className="rounded-full focus:outline-none focus:ring-2 focus:ring-green-500/50"
@@ -301,6 +397,7 @@ export function SiteHeader() {
                             </button>
                           </div>
                         ) : null}
+                        </div>
                       </div>
                     ) : (
                       <button type="button" onClick={() => router.push("/login")} className="text-sm text-white">
