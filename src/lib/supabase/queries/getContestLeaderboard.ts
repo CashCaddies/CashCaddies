@@ -2,7 +2,7 @@ import { unstable_noStore } from "next/cache";
 import { contestIdForRpc } from "@/lib/contest-rpc-id";
 import { supabase } from "@/lib/supabase/client";
 import { currentUserHasContestAccess } from "@/lib/supabase/beta-access";
-import { compareLivePreliminaryScore } from "@/lib/contest/get-live-leaderboard";
+import { compareLivePreliminaryScore, tournamentCurrentRound } from "@/lib/contest/get-live-leaderboard";
 import {
   contestUsesSimPool,
   entryLineupSimTotalScore,
@@ -27,6 +27,8 @@ export type GetContestLeaderboardResult = {
   rows: ContestLeaderboardRow[];
   settled: boolean;
   contestExists: boolean;
+  /** From linked `tournaments.current_round` when `contests.tournament_id` is set; otherwise 0. */
+  currentRound: number;
 };
 
 function num(v: unknown): number {
@@ -54,26 +56,33 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
 
   const contestId = contestIdForRpc(contestIdRaw);
   if (!contestId) {
-    return { rows: [], settled: false, contestExists: false };
+    return { rows: [], settled: false, contestExists: false, currentRound: 0 };
   }
 
   try {
         const hasAccess = await currentUserHasContestAccess(supabase);
     if (!hasAccess) {
-      return { rows: [], settled: false, contestExists: false };
+      return { rows: [], settled: false, contestExists: false, currentRound: 0 };
     }
 
     const { data: contest, error: contestErr } = await supabase
       .from("contests")
-      .select("id, status")
+      .select("id, status, tournament_id")
       .eq("id", contestId)
       .maybeSingle();
 
     if (contestErr || !contest) {
-      return { rows: [], settled: false, contestExists: false };
+      return { rows: [], settled: false, contestExists: false, currentRound: 0 };
     }
 
     const settled = String(contest.status ?? "").toLowerCase().trim() === "settled";
+    const currentRound = await tournamentCurrentRound(
+      (contest as { tournament_id?: string | null }).tournament_id,
+    );
+
+    if (currentRound === 1) {
+      return { rows: [], settled, contestExists: true, currentRound: 1 };
+    }
 
     const usesSimPool = await contestUsesSimPool(supabase, contestId);
     const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;
@@ -102,7 +111,7 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
     }
 
     if (entriesErr) {
-      return { rows: [], settled, contestExists: true };
+      return { rows: [], settled, contestExists: true, currentRound };
     }
 
     type RawEntry = {
@@ -192,8 +201,8 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       score: ent.score,
     }));
 
-    return { rows, settled, contestExists: true };
+    return { rows, settled, contestExists: true, currentRound };
   } catch {
-    return { rows: [], settled: false, contestExists: false };
+    return { rows: [], settled: false, contestExists: false, currentRound: 0 };
   }
 }

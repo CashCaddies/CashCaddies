@@ -14,7 +14,7 @@ export default async function ContestLeaderboardPage(props: PageProps) {
   const { contestId } = await props.params;
   const id = contestId?.trim() ?? "";
 
-  const { rows, contestExists } = await getContestLeaderboard(id);
+  const { rows, contestExists, currentRound } = await getContestLeaderboard(id);
 
     const {
     data: { user },
@@ -29,7 +29,12 @@ export default async function ContestLeaderboardPage(props: PageProps) {
     <div className="mx-auto max-w-2xl p-6">
       <h1 className="text-xl font-semibold text-white">Contest Leaderboard</h1>
 
-      <ContestLeaderboardLive contestId={id} initialRows={rows} currentUserId={currentUserId} />
+      <ContestLeaderboardLive
+        contestId={id}
+        initialRows={rows}
+        currentUserId={currentUserId}
+        initialCurrentRound={currentRound}
+      />
     </div>
   );
 }

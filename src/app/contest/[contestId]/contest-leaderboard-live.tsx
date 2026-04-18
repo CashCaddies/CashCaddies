@@ -8,10 +8,17 @@ type Props = {
   contestId: string;
   initialRows: ContestLeaderboardRow[];
   currentUserId: string | null;
+  initialCurrentRound: number;
 };
 
-export function ContestLeaderboardLive({ contestId, initialRows, currentUserId }: Props) {
+export function ContestLeaderboardLive({
+  contestId,
+  initialRows,
+  currentUserId,
+  initialCurrentRound,
+}: Props) {
   const [rows, setRows] = useState<ContestLeaderboardRow[]>(initialRows);
+  const [currentRound, setCurrentRound] = useState(initialCurrentRound);
   const alive = useRef(true);
 
   useEffect(() => {
@@ -26,11 +33,16 @@ export function ContestLeaderboardLive({ contestId, initialRows, currentUserId }
   }, [initialRows]);
 
   useEffect(() => {
+    setCurrentRound(initialCurrentRound);
+  }, [initialCurrentRound]);
+
+  useEffect(() => {
     const tick = async () => {
       try {
         const res = await pollContestLeaderboard(contestId);
         if (!alive.current || !res.contestExists) return;
         setRows(res.rows);
+        setCurrentRound(res.currentRound);
       } catch {
         /* keep last good rows */
       }
@@ -39,6 +51,15 @@ export function ContestLeaderboardLive({ contestId, initialRows, currentUserId }
     const id = window.setInterval(() => void tick(), CONTEST_LEADERBOARD_POLL_MS);
     return () => window.clearInterval(id);
   }, [contestId]);
+
+  const contest = { current_round: currentRound };
+  const isRound1 = contest.current_round === 1;
+
+  if (isRound1) {
+    return (
+      <div className="text-center text-gray-400 py-10">Leaderboard unlocks after Round 1</div>
+    );
+  }
 
   if (rows.length === 0) {
     return <p className="mt-8 text-sm text-slate-500">No entries yet</p>;

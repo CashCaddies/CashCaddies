@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 
 export default function LiveLeaderboard({ contestId }: { contestId: string }) {
   const [data, setData] = useState<LiveLeaderboardRow[]>([]);
+  const [currentRound, setCurrentRound] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [openEntryId, setOpenEntryId] = useState<string | null>(null);
 
@@ -46,7 +47,10 @@ export default function LiveLeaderboard({ contestId }: { contestId: string }) {
 
         if (!cancelled) {
           setError(null);
-          setData(json.rows);
+          if (json.ok) {
+            setCurrentRound(json.currentRound);
+            setData(json.rows);
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Request failed.");
@@ -113,6 +117,15 @@ export default function LiveLeaderboard({ contestId }: { contestId: string }) {
 
   if (error) {
     return <p className="text-sm text-red-400">{error}</p>;
+  }
+
+  const contest = { current_round: currentRound };
+  const isRound1 = contest.current_round === 1;
+
+  if (isRound1) {
+    return (
+      <div className="text-center text-gray-400 py-10">Leaderboard unlocks after Round 1</div>
+    );
   }
 
   return (

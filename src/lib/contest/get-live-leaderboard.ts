@@ -57,6 +57,13 @@ function num(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** PGA round index from `tournaments.current_round` when the contest is linked via `contests.tournament_id`. */
+export async function tournamentCurrentRound(tournamentId: string | null | undefined): Promise<number> {
+  if (!tournamentId) return 0;
+  const { data } = await supabase.from("tournaments").select("current_round").eq("id", tournamentId).maybeSingle();
+  return num((data as { current_round?: unknown } | null)?.current_round);
+}
+
 function trimStr(v: unknown): string {
   if (typeof v !== "string") return "";
   const t = v.trim();
@@ -155,7 +162,7 @@ export function compareLivePreliminaryScore(
 }
 
 export type GetLiveLeaderboardResult =
-  | { ok: true; rows: LiveLeaderboardRow[] }
+  | { ok: true; rows: LiveLeaderboardRow[]; currentRound: number }
   | { ok: false; error: string };
 
 /**
@@ -177,6 +184,14 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
     }
 
     await ensureContestEntryProtection(supabase, contestId);
+
+    const { data: contestMeta } = await supabase.from("contests").select("tournament_id").eq("id", contestId).maybeSingle();
+    const currentRound = await tournamentCurrentRound(
+      (contestMeta as { tournament_id?: string | null } | null)?.tournament_id,
+    );
+    if (currentRound === 1) {
+      return { ok: true, rows: [], currentRound: 1 };
+    }
 
     const usesSimPool = await contestUsesSimPool(supabase, contestId);
     const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;
@@ -254,7 +269,7 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
       };
     });
 
-    return { ok: true, rows };
+    return { ok: true, rows, currentRound };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error.";
     return { ok: false, error: msg };
