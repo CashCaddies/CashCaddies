@@ -195,7 +195,7 @@ export function SiteHeader() {
           <>
             <div className="w-full border-b border-[#1f2937] bg-[#020617]">
               <div className="relative mx-auto max-w-7xl px-4 py-3">
-                <div className="flex w-full items-center">
+                <div className="flex w-full items-center justify-between gap-6 md:gap-8">
                   {/* LEFT — brand */}
                   <div className="flex min-w-fit items-center gap-3">
                     <Link
@@ -208,37 +208,44 @@ export function SiteHeader() {
 
                   {/* CENTER — ball */}
                   <div className="flex flex-1 justify-center">
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      aria-busy={loadingPortal}
-                      aria-label="Portal"
-                      onClick={() => {
-                        if (loadingPortal) return;
-                        void handlePortalClick();
-                      }}
-                      onKeyDown={(e) => {
-                        if (loadingPortal) return;
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          void handlePortalClick();
-                        }
-                      }}
-                      className="group relative cursor-pointer transition-transform active:scale-95"
-                    >
-                      <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
-                      <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
-                      <img
-                        src="/golf-ball.png"
-                        alt="Portal"
-                        className={`relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20 ${loadingPortal ? "scale-95 opacity-70" : ""}`}
-                      />
-                      {loadingPortal ? (
+                    <div className="flex min-w-[140px] flex-shrink-0 flex-col items-center justify-center">
+                      <div>
                         <div
-                          className="pointer-events-none absolute inset-0 z-[1] rounded-full border-2 border-green-400 animate-ping"
-                          aria-hidden
-                        />
-                      ) : null}
+                          role="button"
+                          tabIndex={0}
+                          aria-busy={loadingPortal}
+                          aria-label="Portal"
+                          onClick={() => {
+                            if (loadingPortal) return;
+                            void handlePortalClick();
+                          }}
+                          onKeyDown={(e) => {
+                            if (loadingPortal) return;
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              void handlePortalClick();
+                            }
+                          }}
+                          className="group relative cursor-pointer transition-transform active:scale-95"
+                        >
+                          <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
+                          <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
+                          <img
+                            src="/golf-ball.png"
+                            alt="Portal"
+                            className={`relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20 ${loadingPortal ? "scale-95 opacity-70" : ""}`}
+                          />
+                          {loadingPortal ? (
+                            <div
+                              className="pointer-events-none absolute inset-0 z-[1] rounded-full border-2 border-green-400 animate-ping"
+                              aria-hidden
+                            />
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-opacity hover:opacity-80 md:text-xs">
+                        Click to enter your qualified contests
+                      </div>
                     </div>
                   </div>
 
