@@ -9,26 +9,20 @@ export function initSound() {
   }
 }
 
-export function playCupSound() {
-  if (!audio) return;
-
+export const playPortalSound = () => {
   const now = Date.now();
+
+  // allow ~5 plays per second max
   if (now - lastPlayed < 200) return;
   lastPlayed = now;
 
   try {
+    if (!audio) return;
+
     audio.currentTime = 0;
-
-    // slight variation
-    audio.playbackRate = 0.95 + Math.random() * 0.1;
-
-    const playPromise = audio.play();
-
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {});
-    }
+    audio.play().catch(() => {});
   } catch {}
-}
+};
 
 /** Same shared cup / portal tap sound as header golf ball and notifications. */
-export const playPortalSound = playCupSound;
+export const playCupSound = playPortalSound;

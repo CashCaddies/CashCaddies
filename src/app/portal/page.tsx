@@ -123,13 +123,16 @@ export default function PortalPage() {
           }}
           className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white transition hover:scale-110"
         >
-          <div className="h-10 w-10 overflow-hidden rounded-full">
+          <div
+            className="h-10 w-10 overflow-hidden rounded-full border border-gray-800 bg-transparent"
+            style={{ backgroundColor: "transparent" }}
+          >
             <Image
               src={golfBall}
               alt="portal"
               width={40}
               height={40}
-              className="pointer-events-none object-cover scale-110 mix-blend-lighten"
+              className="pointer-events-none object-cover scale-110"
             />
           </div>
         </button>
@@ -169,14 +172,14 @@ export default function PortalPage() {
 
       <div className="group relative">
         <div className="relative mb-10 overflow-hidden rounded-xl border border-green-500/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg shadow-green-500/10 transition-all duration-300 hover:-translate-y-[2px] hover:shadow-green-500/20">
-          <div className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-20 blur-2xl" />
+          <div className="pointer-events-none absolute inset-0 animate-pulse rounded-xl bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-20 blur-2xl" />
           {/* subtle glow */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-10 blur-xl" />
+          <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-10 blur-lg" />
 
-          <div className="relative mb-5 flex items-center justify-between">
+          <div className="absolute right-4 top-4 text-sm font-semibold text-green-400">Tier {userTier}</div>
+
+          <div className="relative mb-5">
             <div className="text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
-
-            <div className="text-sm font-semibold text-green-400">Tier {userTier}</div>
           </div>
 
           <div className="relative flex items-center gap-4">
@@ -199,8 +202,10 @@ export default function PortalPage() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute left-0 top-full mt-2 w-72 opacity-0 transition group-hover:opacity-100">
-          <div className="rounded border border-gray-800 bg-black p-3 text-xs text-gray-300 shadow-lg">
+        <div className="pointer-events-none absolute left-1/2 top-full z-40 mt-3 w-72 -translate-x-1/2 opacity-0 transition group-hover:opacity-100">
+          <div className="relative rounded border border-gray-800 bg-black p-3 text-xs text-gray-300 shadow-lg">
+            <div className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-gray-800 bg-black" />
+
             <div className="mb-2 flex items-center gap-2">
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full">
                 <Image
