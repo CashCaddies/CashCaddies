@@ -119,7 +119,7 @@ export function AuthForm({ mode }: Props) {
     } = await supabase.auth.getSession();
 
     if (session) {
-      window.location.href = "/dashboard";
+      window.location.href = "/";
     } else {
       setLoading(false);
     }
@@ -205,8 +205,8 @@ export function AuthForm({ mode }: Props) {
       }
     }
 
-    setStatus("Welcome! Redirecting to your dashboard…");
-    window.location.href = "/dashboard";
+    setStatus("Welcome! Redirecting…");
+    window.location.href = "/";
     setLoading(false);
   }
 

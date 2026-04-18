@@ -50,6 +50,8 @@ export function SiteHeader() {
 
       router.push("/portal");
     } catch {
+      // ignore
+    } finally {
       setLoadingPortal(false);
     }
   };
@@ -64,9 +66,12 @@ export function SiteHeader() {
                 <div className="flex w-full items-center">
                   {/* LEFT — brand */}
                   <div className="flex min-w-fit items-center gap-3">
-                    <h1 className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-2xl font-semibold tracking-tight text-transparent md:text-3xl">
+                    <Link
+                      href="/"
+                      className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-2xl font-semibold tracking-tight text-transparent md:text-3xl"
+                    >
                       CashCaddies
-                    </h1>
+                    </Link>
                   </div>
 
                   {/* CENTER — ball */}
@@ -111,13 +116,11 @@ export function SiteHeader() {
                       {navItems.map((item) => {
                         const isActive = item.isActive(pathname);
                         return (
-                          <button
+                          <Link
                             key={item.href}
-                            type="button"
+                            href={item.href}
+                            prefetch
                             aria-current={isActive ? "page" : undefined}
-                            onClick={() => {
-                              window.location.href = item.href;
-                            }}
                             className={`${navButtonBase} ${
                               isActive
                                 ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300 hover:bg-emerald-950/45"
@@ -125,7 +128,7 @@ export function SiteHeader() {
                             }`}
                           >
                             {item.label}
-                          </button>
+                          </Link>
                         );
                       })}
                     </div>
