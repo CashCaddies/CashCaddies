@@ -35,7 +35,7 @@ export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
   const { isReady } = useAuth();
-  const [loadingPortal, setLoadingPortal] = useState(false);
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -155,10 +155,11 @@ export function SiteHeader() {
   }, []);
 
   const handlePortalClick = async () => {
-    // play sound immediately
-    playCupSound();
+    if (isPortalLoading) return;
 
-    setLoadingPortal(true);
+    setIsPortalLoading(true);
+
+    playCupSound();
 
     const {
       data: { session },
@@ -170,6 +171,9 @@ export function SiteHeader() {
       } else {
         router.push("/portal");
       }
+
+      // reset after short delay (safety)
+      setTimeout(() => setIsPortalLoading(false), 500);
     }, 120);
   };
 
@@ -203,22 +207,22 @@ export function SiteHeader() {
                         <div
                           role="button"
                           tabIndex={0}
-                          aria-busy={loadingPortal}
+                          aria-busy={isPortalLoading}
                           aria-label="Portal"
                           onClick={handlePortalClick}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handlePortalClick();
                           }}
-                          className="group relative cursor-pointer transition-transform active:scale-95"
+                          className={`group relative transition-opacity transition-transform active:scale-95 ${isPortalLoading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
                         >
                           <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
                           <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
                           <img
                             src="/golf-ball.png"
                             alt="Portal"
-                            className={`relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20 ${loadingPortal ? "scale-95 opacity-70" : ""}`}
+                            className={`relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20 ${isPortalLoading ? "scale-95" : ""}`}
                           />
-                          {loadingPortal ? (
+                          {isPortalLoading ? (
                             <div
                               className="pointer-events-none absolute inset-0 z-[1] rounded-full border-2 border-green-400 animate-ping"
                               aria-hidden
