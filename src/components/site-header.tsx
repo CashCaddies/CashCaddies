@@ -34,6 +34,7 @@ export function SiteHeader() {
   const router = useRouter();
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     router.prefetch("/login");
@@ -72,12 +73,12 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="w-full">
+    <header className="relative w-full">
       <HeaderAuthSection
         render={(ctx) => (
           <>
             <div className="w-full border-b border-[#1f2937] bg-[#020617]">
-              <div className="mx-auto max-w-7xl px-4 py-3">
+              <div className="relative mx-auto max-w-7xl px-4 py-3">
                 <div className="flex w-full items-center">
                   {/* LEFT — brand */}
                   <div className="flex min-w-fit items-center gap-3">
@@ -127,16 +128,16 @@ export function SiteHeader() {
 
                   {/* RIGHT — create account + nav + wallet + auth */}
                   <div className="flex shrink-0 items-center gap-3">
+                    {!sessionUser ? (
+                      <button
+                        type="button"
+                        onClick={() => router.push("/signup")}
+                        className="rounded-md bg-green-500 px-3 py-1.5 text-xs font-semibold text-black hover:bg-green-600 md:px-4 md:py-2 md:text-sm"
+                      >
+                        Create Account
+                      </button>
+                    ) : null}
                     <div className="hidden items-center gap-3 md:flex" role="navigation" aria-label="Primary">
-                      {!sessionUser ? (
-                        <button
-                          type="button"
-                          onClick={() => router.push("/signup")}
-                          className="rounded-md bg-green-500 px-4 py-2 text-sm font-semibold text-black hover:bg-green-600"
-                        >
-                          Create Account
-                        </button>
-                      ) : null}
                       {navItems.map((item) => {
                         const isActive = item.isActive(pathname);
                         return (
@@ -159,8 +160,78 @@ export function SiteHeader() {
                     {ctx.premiumHeaderTag}
                     <HeaderStats />
                     {ctx.authControls}
+                    <button
+                      type="button"
+                      aria-expanded={menuOpen}
+                      aria-label={menuOpen ? "Close menu" : "Open menu"}
+                      onClick={() => setMenuOpen((o) => !o)}
+                      className="ml-2 text-2xl text-white md:hidden"
+                    >
+                      ☰
+                    </button>
                   </div>
                 </div>
+
+                {menuOpen ? (
+                  <div className="absolute left-0 top-full z-50 w-full border-t border-gray-800 bg-black md:hidden">
+                    <div className="flex flex-col gap-4 p-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          router.push("/signup");
+                          setMenuOpen(false);
+                        }}
+                        className="text-left text-green-400"
+                      >
+                        Create Account
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          router.push("/login");
+                          setMenuOpen(false);
+                        }}
+                        className="text-left text-white"
+                      >
+                        Login
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          router.push("/lobby");
+                          setMenuOpen(false);
+                        }}
+                        className="text-left text-white"
+                      >
+                        Lobby
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          router.push("/dashboard");
+                          setMenuOpen(false);
+                        }}
+                        className="text-left text-white"
+                      >
+                        Dashboard
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          router.push("/wallet");
+                          setMenuOpen(false);
+                        }}
+                        className="text-left text-white"
+                      >
+                        Wallet
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <div className="mx-auto max-w-7xl px-4 pb-3 pt-1">
