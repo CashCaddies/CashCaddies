@@ -1527,3 +1527,23 @@ header *::-webkit-scrollbar {
 header * {
   scrollbar-width: none;
 }
+
+@keyframes portalFloat {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.03);
+  }
+}
+
+@keyframes portalGlow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}

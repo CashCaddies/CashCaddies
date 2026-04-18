@@ -57,7 +57,9 @@ export function SiteHeader() {
                 <div className="flex w-full items-center">
                   {/* LEFT — brand */}
                   <div className="flex min-w-fit items-center gap-3">
-                    <h1 className="text-2xl font-semibold text-green-400 md:text-3xl">CashCaddies</h1>
+                    <h1 className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-2xl font-semibold tracking-tight text-transparent md:text-3xl">
+                      CashCaddies
+                    </h1>
                   </div>
 
                   {/* CENTER — ball */}
@@ -75,12 +77,12 @@ export function SiteHeader() {
                       }}
                       className="group relative cursor-pointer"
                     >
-                      <div className="absolute inset-0 rounded-full bg-green-500/20 opacity-70 blur-xl transition group-hover:opacity-100" />
+                      <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
                       <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
                       <img
                         src="/golf-ball.png"
                         alt="Portal"
-                        className="relative h-16 w-16 object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 md:h-20 md:w-20"
+                        className="relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 md:h-20 md:w-20"
                       />
                     </div>
                   </div>
