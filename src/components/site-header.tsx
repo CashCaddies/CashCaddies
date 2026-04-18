@@ -3,7 +3,7 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { playCupSound } from "@/lib/sound";
@@ -33,6 +33,7 @@ const navButtonBase =
  */
 export function SiteHeader() {
   const pathname = usePathname();
+  const prevPathRef = useRef(pathname);
   const router = useRouter();
   const { isReady } = useAuth();
   const [isPortalLoading, setIsPortalLoading] = useState(false);
@@ -73,7 +74,10 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
-    setIsPortalLoading(false);
+    if (prevPathRef.current !== pathname) {
+      setIsPortalLoading(false);
+      prevPathRef.current = pathname;
+    }
   }, [pathname]);
 
   useEffect(() => {
