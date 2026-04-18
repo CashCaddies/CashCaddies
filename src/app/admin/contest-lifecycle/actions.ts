@@ -8,7 +8,7 @@
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase/client";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 import { settleContestPrizes } from "@/lib/contest-payout-engine";
 
 export type ContestLifecycleActionResult = { ok: true } | { ok: false; error: string };
@@ -31,8 +31,7 @@ async function assertAdminAndServiceRole(): Promise<
   if (!user) {
     return { ok: false, error: "You must be logged in." };
   }
-  const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!isAdmin(prof?.role)) {
+  if (!isOwner(user.email)) {
     return { ok: false, error: "Admin access required." };
   }
   const admin = createServiceRoleClient();

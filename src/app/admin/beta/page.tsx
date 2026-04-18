@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
 import { supabase } from "@/lib/supabase/client";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 type BetaRow = {
   id: string;
@@ -31,14 +32,32 @@ function statusBadgeClass(status: string | null): string {
 }
 
 export default function AdminBetaApprovalPage() {
+  const router = useRouter();
   const { user, isReady } = useAuth();
-  const { fullUser, loading: walletLoading } = useWallet();
+  const { loading: walletLoading } = useWallet();
   const [rows, setRows] = useState<BetaRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const viewerIsAdmin = isAdmin(fullUser?.role);
+  const viewerIsAdmin = isOwner(user?.email);
+
+  useEffect(() => {
+    const check = async () => {
+      if (!supabase) return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const email = session?.user?.email;
+
+      if (!isOwner(email)) {
+        router.replace("/login");
+      }
+    };
+
+    void check();
+  }, [router]);
 
   const loadRows = useCallback(async () => {
     if (!supabase) {
@@ -70,12 +89,25 @@ export default function AdminBetaApprovalPage() {
 
   useEffect(() => {
     if (!isReady || walletLoading) return;
-    if (!user || !viewerIsAdmin) {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!isOwner(session?.user?.email)) {
+        router.replace("/login");
+        return;
+      }
+    })();
+    if (!viewerIsAdmin) {
       setLoading(false);
       return;
     }
     void loadRows();
-  }, [isReady, user, viewerIsAdmin, walletLoading, loadRows]);
+  }, [isReady, user, viewerIsAdmin, walletLoading, loadRows, router]);
 
   const approve = async (id: string) => {
     if (!supabase || !viewerIsAdmin) return;
@@ -123,7 +155,7 @@ export default function AdminBetaApprovalPage() {
   }
 
   if (!viewerIsAdmin) {
-    return <p className="p-6 text-amber-200">Access Denied</p>;
+    return null;
   }
 
   const pendingCount = rows.filter((r) => String(r.beta_status ?? "").toLowerCase() === "pending").length;

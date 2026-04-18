@@ -3,7 +3,7 @@
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { supabase } from "@/lib/supabase/client";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 export type AdminCommandCenterStatsResult =
   | {
@@ -33,8 +33,7 @@ export async function fetchAdminCommandCenterStats(): Promise<AdminCommandCenter
     return { ok: false, error: "Not signed in." };
   }
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!isAdmin(profile?.role)) {
+  if (!isOwner(user.email)) {
     return { ok: false, error: "Admin access required." };
   }
 

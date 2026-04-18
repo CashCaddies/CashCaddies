@@ -4,14 +4,18 @@ import { getAdminNewFeedbackCount } from "@/app/admin/feedback/actions";
 import { AdminHubNav } from "@/components/admin-hub-nav";
 import { AdminDashboardMetricsPanel } from "@/components/admin-dashboard-metrics-panel";
 import { supabase } from "@/lib/supabase/client";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 export default async function AdminStatsPage() {
     const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    redirect("/dashboard");
+    redirect("/login");
+  }
+
+  if (!isOwner(user.email)) {
+    redirect("/login");
   }
 
   const { data: profile } = await supabase
@@ -21,11 +25,7 @@ export default async function AdminStatsPage() {
     .maybeSingle();
 
   const foundingTester = profile?.founding_tester === true;
-  const adminUser = isAdmin(profile?.role);
-
-  if (!foundingTester && !adminUser) {
-    redirect("/dashboard");
-  }
+  const adminUser = true;
 
   let feedbackUnreadCount: number | undefined;
   if (adminUser) {

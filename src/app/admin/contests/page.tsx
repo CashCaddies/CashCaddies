@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { getUserRole } from "@/lib/getUserRole";
-import { isAdmin as isAdminRole } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 import { contestStatusBadgeClassName, contestStatusBadgeLabel } from "@/lib/contest-admin-state";
 import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { supabase } from "@/lib/supabase/client";
@@ -37,7 +36,6 @@ function formatMoney(n: number | string | null): string {
 export default function AdminContestsPage() {
   const router = useRouter();
   const { user, isReady } = useAuth();
-  const [profileAdmin, setProfileAdmin] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [rows, setRows] = useState<ContestRow[]>([]);
   const [message, setMessage] = useState("");
@@ -58,7 +56,22 @@ export default function AdminContestsPage() {
   const [spawnStartTime, setSpawnStartTime] = useState("");
   const [spawnCount, setSpawnCount] = useState("1");
 
-  const isAdmin = profileAdmin;
+  useEffect(() => {
+    const check = async () => {
+      if (!supabase) return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const email = session?.user?.email;
+
+      if (!isOwner(email)) {
+        router.replace("/login");
+      }
+    };
+
+    void check();
+  }, [router]);
 
   async function fetchContestsSafe(): Promise<ContestRow[]> {
     if (!supabase) return [];
@@ -91,13 +104,18 @@ export default function AdminContestsPage() {
 
     let cancelled = false;
     void (async () => {
-      const rolePromise = getUserRole(user.id);
-      const contestsPromise = fetchContestsSafe();
-      const [role, contests] = await Promise.all([rolePromise, contestsPromise]);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email;
+      if (!isOwner(userEmail)) {
+        router.replace("/login");
+        if (!cancelled) setLoadingPage(false);
+        return;
+      }
 
+      const contests = await fetchContestsSafe();
       if (cancelled) return;
-      console.log("User role:", role || null);
-      setProfileAdmin(isAdminRole(role));
       setRows(contests);
       setLoadingPage(false);
     })();
@@ -105,7 +123,7 @@ export default function AdminContestsPage() {
     return () => {
       cancelled = true;
     };
-  }, [isReady, user]);
+  }, [isReady, user, router]);
 
   useEffect(() => {
     if (!listNotice) return;
@@ -144,12 +162,8 @@ export default function AdminContestsPage() {
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <p className="rounded-lg border border-amber-700/50 bg-amber-950/40 px-4 py-3 text-amber-200">
-        Admin access required.
-      </p>
-    );
+  if (!isOwner(user?.email)) {
+    return null;
   }
 
   const handlePublish = async (row: ContestRow) => {
@@ -340,9 +354,7 @@ export default function AdminContestsPage() {
                   setMessage("You must be logged in.");
                   return;
                 }
-                const role = await getUserRole(authUser.id);
-                console.log("ROLE:", role);
-                if (!isAdminRole(role)) {
+                if (!isOwner(authUser.email)) {
                   setIsError(true);
                   setMessage("Admin access required.");
                   return;

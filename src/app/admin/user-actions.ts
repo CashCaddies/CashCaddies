@@ -9,7 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendBetaStatusEmail, type BetaStatusEmailKind } from "@/lib/email/betaStatusEmail";
 import { APP_CONFIG_KEY_MAX_BETA_USERS, getBetaCapacitySnapshot } from "@/lib/config";
 import { isInviteSource } from "@/lib/invite-source";
-import { hasPermission, isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 import { assertAccountBalanceCreditAllowed } from "@/lib/wallet-limit";
 
 type ActionResult = { ok: true; message: string } | { ok: false; error: string };
@@ -32,12 +32,7 @@ async function requireAdminActor() {
     return { ok: false as const, error: "Not signed in." };
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!isAdmin(profile?.role)) {
+  if (!isOwner(user.email)) {
     return { ok: false as const, error: "Admin access required." };
   }
 
@@ -52,12 +47,7 @@ async function requireSeniorAdminActor() {
     return { ok: false as const, error: "Not signed in." };
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!hasPermission(profile?.role, "manage_roles")) {
+  if (!isOwner(user.email)) {
     return { ok: false as const, error: "Senior admin access required." };
   }
 
@@ -351,8 +341,7 @@ async function requireSeniorAdminSessionForConfig(): Promise<
     return { ok: false, error: "Not signed in." };
   }
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!hasPermission(profile?.role, "manage_roles")) {
+  if (!isOwner(user.email)) {
     return { ok: false, error: "Senior admin access required." };
   }
 

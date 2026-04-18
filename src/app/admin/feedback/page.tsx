@@ -6,7 +6,7 @@ import { getAdminNewFeedbackCount, listBetaFeedbackAdmin } from "@/app/admin/fee
 import type { BetaFeedbackAdminRow } from "@/app/admin/feedback/feedback-admin-types";
 import { AdminHubNav } from "@/components/admin-hub-nav";
 import { supabase } from "@/lib/supabase/client";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 type PageProps = {
   searchParams?: Promise<{ filter?: string }>;
@@ -17,7 +17,11 @@ export default async function AdminFeedbackPage({ searchParams }: PageProps) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    redirect("/dashboard");
+    redirect("/login");
+  }
+
+  if (!isOwner(user.email)) {
+    redirect("/login");
   }
 
   const { data: profile } = await supabase
@@ -26,8 +30,8 @@ export default async function AdminFeedbackPage({ searchParams }: PageProps) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || !isAdmin(profile.role)) {
-    redirect("/dashboard");
+  if (!profile) {
+    redirect("/login");
   }
 
   const sp = searchParams ? await searchParams : {};
@@ -50,7 +54,7 @@ export default async function AdminFeedbackPage({ searchParams }: PageProps) {
   const feedbackUnreadCount = unreadResult.ok ? unreadResult.count : undefined;
 
   const foundingTester = profile?.founding_tester === true;
-  const adminUser = isAdmin(profile?.role);
+  const adminUser = true;
 
   return (
     <div className="space-y-0">

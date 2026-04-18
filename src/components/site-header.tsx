@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
+import { isFounder, isOwner } from "@/lib/userRoles";
 import { playCupSound } from "@/lib/sound";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -34,7 +35,7 @@ const navButtonBase =
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isReady } = useAuth();
+  const { isReady, session } = useAuth();
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -46,7 +47,10 @@ export function SiteHeader() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [prevTotal, setPrevTotal] = useState(0);
 
-  const isAdmin = sessionUser?.email === "cashcaddies@outlook.com";
+  const email = session?.user?.email;
+  const owner = isOwner(email);
+  const founder = isFounder(email);
+  const isAdmin = owner;
 
   useEffect(() => {
     router.prefetch("/login");
@@ -338,7 +342,7 @@ export function SiteHeader() {
                             ) : null}
                           </div>
                         ) : null}
-                        <div className="relative profile-dropdown">
+                        <div className="relative profile-dropdown flex items-center">
                         <button
                           type="button"
                           onClick={() => {
@@ -352,6 +356,14 @@ export function SiteHeader() {
                             {getInitials(sessionUser?.email)}
                           </div>
                         </button>
+                        {owner ? (
+                          <span className="ml-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded">Owner</span>
+                        ) : null}
+                        {!owner && founder ? (
+                          <span className="ml-2 text-xs bg-yellow-500 text-black px-2 py-0.5 rounded">
+                            Founding Member
+                          </span>
+                        ) : null}
 
                         {profileOpen ? (
                           <div className="absolute right-0 z-50 mt-2 w-48 rounded-md border border-gray-800 bg-black shadow-lg">

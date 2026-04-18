@@ -1,16 +1,25 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { AdminInsuranceForm } from "@/components/admin-insurance-form";
 import { AdminPayoutHistoryTable } from "@/components/admin-payout-history";
 import { AdminProtectionEngineForm } from "@/components/admin-protection-engine-form";
 import { AdminSettlementForm } from "@/components/admin-settlement-form";
 import { supabase } from "@/lib/supabase/client";
+import { isOwner } from "@/lib/userRoles";
 
 type PageProps = {
   searchParams: Promise<{ payout?: string }>;
 };
 
 export default async function AdminSettlementPage({ searchParams }: PageProps) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || !isOwner(user.email)) {
+    redirect("/login");
+  }
+
   let contests: { id: string; name: string }[] = [];
   let loadError: string | null = null;
 

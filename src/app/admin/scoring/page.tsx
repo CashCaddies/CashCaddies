@@ -1,8 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AdminScoringForm } from "@/components/admin-scoring-form";
 import { supabase } from "@/lib/supabase/client";
+import { isOwner } from "@/lib/userRoles";
 
 export default async function AdminScoringPage() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || !isOwner(user.email)) {
+    redirect("/login");
+  }
+
   let golfers: { id: string; name: string; fantasy_points: number }[] = [];
   let loadError: string | null = null;
 

@@ -2,7 +2,7 @@
 
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { supabase } from "@/lib/supabase/client";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 /** Shape of `public.admin_dashboard_metrics()` JSON (snake_case keys from Postgres). */
 export type AdminDashboardMetrics = {
@@ -41,8 +41,7 @@ export async function getAdminMetrics(): Promise<GetAdminMetricsResult> {
     return { ok: false, error: "Not signed in." };
   }
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!isAdmin(profile?.role)) {
+  if (!isOwner(user.email)) {
     return { ok: false, error: "Admin access required." };
   }
 

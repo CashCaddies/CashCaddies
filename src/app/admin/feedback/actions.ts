@@ -9,7 +9,7 @@ import {
   type BetaFeedbackAdminRow,
 } from "@/app/admin/feedback/feedback-admin-types";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 function isMissingFunctionError(err: { message?: string } | null | undefined): boolean {
   const m = (err?.message ?? "").toLowerCase();
@@ -26,8 +26,7 @@ async function assertAdminSession(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user?.id) return { ok: false };
-  const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!isAdmin(prof?.role)) return { ok: false };
+  if (!isOwner(user.email)) return { ok: false };
   return { ok: true, userId: user.id };
 }
 

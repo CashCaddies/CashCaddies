@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { fetchAdminCommandCenterStats } from "@/app/admin/command-center-stats";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
 import ResponsesTable from "@/components/admin/responses-table";
 import { AdminTriggerSettlement } from "@/components/admin-trigger-settlement";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
+import { supabase } from "@/lib/supabase/client";
 
 function formatMoney(n: number) {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -61,7 +62,24 @@ export default function AdminControlCenterPage() {
   const [loadingStats, setLoadingStats] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
 
-  const isAdminUser = isAdmin(fullUser?.role);
+  const isAdminUser = isOwner(user?.email);
+
+  useEffect(() => {
+    const check = async () => {
+      if (!supabase) return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const email = session?.user?.email;
+
+      if (!isOwner(email)) {
+        router.replace("/login");
+      }
+    };
+
+    void check();
+  }, [router]);
 
   const loadStats = useCallback(async () => {
     setStatsError(null);
@@ -86,12 +104,21 @@ export default function AdminControlCenterPage() {
 
   useEffect(() => {
     if (!isReady || walletLoading) return;
-    if (!user || !isAdminUser) {
-      router.replace("/dashboard");
-      return;
-    }
     let cancelled = false;
     void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email;
+      if (!session?.user) {
+        if (!cancelled) setLoadingStats(false);
+        return;
+      }
+      if (!isOwner(userEmail)) {
+        router.replace("/login");
+        if (!cancelled) setLoadingStats(false);
+        return;
+      }
       try {
         await loadStats();
       } finally {
@@ -101,7 +128,7 @@ export default function AdminControlCenterPage() {
     return () => {
       cancelled = true;
     };
-  }, [isAdminUser, isReady, loadStats, router, user, walletLoading]);
+  }, [isReady, loadStats, router, walletLoading]);
 
   if (!isReady || walletLoading || loadingStats) {
     return <p className="text-slate-400">Loading…</p>;

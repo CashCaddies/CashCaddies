@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase/client";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { isAdmin } from "@/lib/permissions";
+import { isOwner } from "@/lib/userRoles";
 
 export type ToggleEntryProtectionResult = { ok: true } | { ok: false; error: string };
 
@@ -25,8 +25,7 @@ export async function adminToggleEntryProtectionForced(
     return { ok: false, error: "You must be logged in." };
   }
 
-  const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (!isAdmin(prof?.role)) {
+  if (!isOwner(user.email)) {
     return { ok: false, error: "Admin access required." };
   }
 

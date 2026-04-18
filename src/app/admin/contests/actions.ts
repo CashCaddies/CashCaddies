@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { normalizeContestStateForInsert } from "@/lib/contest-admin-state";
+import { isOwner } from "@/lib/userRoles";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export type CreateContestInput = {
@@ -54,13 +55,13 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
 
   const { data: profile, error: profileError } = await admin
     .from("profiles")
-    .select("role")
+    .select("email")
     .eq("id", requesterUserId)
     .maybeSingle();
   if (profileError) {
     return { ok: false, error: profileError.message };
   }
-  if (String(profile?.role ?? "").trim().toLowerCase() !== "admin") {
+  if (!isOwner(profile?.email)) {
     return { ok: false, error: "Admin access required." };
   }
 
