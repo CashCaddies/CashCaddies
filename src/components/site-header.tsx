@@ -178,14 +178,6 @@ export function SiteHeader() {
     return email.split("@")[0].slice(0, 2).toUpperCase();
   };
 
-  const handlePortalNavigate = () => {
-    if (!sessionUser) {
-      router.push("/login");
-    } else {
-      router.push("/portal");
-    }
-  };
-
   return (
     <header className="relative w-full">
       <HeaderAuthSection
@@ -235,7 +227,7 @@ export function SiteHeader() {
                         </div>
                       </div>
                       <div
-                        onClick={handlePortalNavigate}
+                        onClick={handlePortalClick}
                         className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
                       >
                         Click to enter your qualified contests
