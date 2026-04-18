@@ -113,7 +113,7 @@ export default function PortalPage() {
 
   return (
     <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-      <div className="absolute top-4 right-4 z-50">
+      <div className="absolute top-3 right-3 z-50">
         <button
           type="button"
           title="Click here for portal breakdown/rules"
@@ -182,7 +182,7 @@ export default function PortalPage() {
             <div className="text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
           </div>
 
-          <div className="relative flex items-center gap-4">
+          <div className="relative flex items-center justify-center gap-4">
             {[1, 2, 3, 4, 5].map((tier) => (
               <div
                 key={tier}
@@ -202,8 +202,8 @@ export default function PortalPage() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute left-1/2 top-full z-40 mt-3 w-72 -translate-x-1/2 opacity-0 transition group-hover:opacity-100">
-          <div className="relative rounded border border-gray-800 bg-black p-3 text-xs text-gray-300 shadow-lg">
+        <div className="pointer-events-none absolute left-1/2 top-full z-40 mt-3 max-w-[90vw] w-72 whitespace-normal -translate-x-1/2 opacity-0 transition group-hover:opacity-100">
+          <div className="relative rounded border border-gray-800 bg-black p-3 text-xs leading-relaxed text-gray-300 shadow-lg">
             <div className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-gray-800 bg-black" />
 
             <div className="mb-2 flex items-center gap-2">
