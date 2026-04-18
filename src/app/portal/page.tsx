@@ -22,6 +22,8 @@ function portalFundTestMode(): 0 | 1 | 2 {
   return 2;
 }
 
+const TIER_THRESHOLDS = [0, 100, 500, 2000, 10000];
+
 export default function PortalPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -101,6 +103,20 @@ export default function PortalPage() {
   const userTier = getTierFromContribution(
     Number(profile?.season_contribution || 0),
   );
+
+  const contribution = Number(profile?.season_contribution || 0);
+
+  const currentThreshold = TIER_THRESHOLDS[userTier - 1];
+  const nextThreshold = TIER_THRESHOLDS[userTier] || null;
+
+  const progressPercent = nextThreshold
+    ? Math.min(
+        100,
+        ((contribution - currentThreshold) / (nextThreshold - currentThreshold)) * 100,
+      )
+    : 100;
+
+  const amountToNext = nextThreshold ? Math.max(0, nextThreshold - contribution) : 0;
 
   const unlockedContests = contests.filter((c) => userTier >= c.required_tier);
 
@@ -191,6 +207,25 @@ export default function PortalPage() {
               <li>Tier 5 — Full access</li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      <div className="mb-8 rounded-xl border border-gray-800 bg-black/60 p-4 backdrop-blur-sm">
+        <div className="mb-2 flex justify-between text-xs text-gray-400">
+          <span>
+            {nextThreshold
+              ? `$${amountToNext.toLocaleString()} to Tier ${userTier + 1}`
+              : "Max Tier Reached"}
+          </span>
+
+          <span>${contribution.toLocaleString()}</span>
+        </div>
+
+        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-900">
+          <div
+            className="h-full bg-green-500 transition-all"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
       </div>
 
