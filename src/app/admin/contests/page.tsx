@@ -223,7 +223,6 @@ export default function AdminContestsPage() {
                   created_by: authUser.id,
                   entry_fee: parsedEntryFee,
                   entry_fee_usd: parsedEntryFee,
-                  entry_fee_cents: Math.round(parsedEntryFee * 100),
                   prize_pool: parsedPrizePool,
                   max_entries: parsedMaxEntries,
                   starts_at: new Date(startDate).toISOString(),
