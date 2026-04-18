@@ -56,18 +56,28 @@ Your update here...`}
           <button
             type="button"
             onClick={async () => {
-              const parsed = parseUpdate(raw);
+              const formData = parseUpdate(raw);
 
-              await fetch("/api/updates", {
+              const res = await fetch("/api/updates", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(parsed),
+                body: JSON.stringify(formData),
               });
+
+              const json = await res.json();
+
+              if (!res.ok) {
+                console.error("Update failed:", json);
+                alert("ERROR: " + json.error);
+                return;
+              }
+
+              alert("Update posted successfully");
 
               setRaw("");
 
-              const res = await fetch("/api/updates");
-              const data = await res.json();
+              const res2 = await fetch("/api/updates");
+              const data = await res2.json();
               setUpdates(data.updates || []);
             }}
             className="mt-2 rounded bg-green-600 px-4 py-2"
