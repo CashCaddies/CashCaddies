@@ -35,6 +35,7 @@ export async function POST(req: Request) {
           title: body.title,
           content: body.content,
           tag: body.tag || "general",
+          time: body.time || "Now",
         },
       ])
       .select();
