@@ -1548,14 +1548,14 @@ header * {
   }
 }
 
-/* Portal page — center golf ball gentle float (margin avoids transform clash with hover:scale) */
+/* Portal page — center golf ball gentle float */
 @keyframes float {
   0%,
   100% {
-    margin-top: 0;
+    transform: translateY(0px) scale(1);
   }
   50% {
-    margin-top: -6px;
+    transform: translateY(-6px) scale(1);
   }
 }
 

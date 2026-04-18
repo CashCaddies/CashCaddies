@@ -255,7 +255,7 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="cursor-pointer transition-transform duration-200 ease-out hover:scale-110 active:scale-95 will-change-transform animate-pulse float"
+          className="cursor-pointer transition-transform duration-200 ease-out hover:scale-110 active:scale-95 will-change-transform float"
         >
           <Image
             src={golfBall}
