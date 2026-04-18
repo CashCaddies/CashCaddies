@@ -88,7 +88,9 @@ export default function PortalPage() {
   const surplus = calculateSurplus(totalFund, requiredBuffer);
   const unlocked = getUnlockedTiers(surplus);
 
-  const userTier = getTierFromContribution(Number(profile?.season_contribution || 0));
+  const userTier = getTierFromContribution(
+    Number(profile?.season_contribution || 0),
+  );
 
   const unlockedContests = contests.filter((c) => userTier >= c.required_tier);
 
