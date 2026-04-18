@@ -56,6 +56,7 @@ export default function AdminContestsPage() {
   const [templateMaxEntries, setTemplateMaxEntries] = useState("");
   const [templates, setTemplates] = useState<any[]>([]);
   const [spawnStartTime, setSpawnStartTime] = useState("");
+  const [spawnCount, setSpawnCount] = useState("1");
 
   const isAdmin = profileAdmin;
 
@@ -206,23 +207,28 @@ export default function AdminContestsPage() {
       ? new Date(spawnStartTime).toISOString()
       : new Date().toISOString();
 
-    const { data, error } = await supabase.rpc("spawn_contest_from_template", {
-      p_template_id: templateId,
-      p_slate_id: null,
-      p_start_time: startTime,
-    });
+    const count = Number(spawnCount) || 1;
 
-    if (error) {
-      alert(error.message);
-      return;
+    for (let i = 0; i < count; i++) {
+      const { error, data } = await supabase.rpc("spawn_contest_from_template", {
+        p_template_id: templateId,
+        p_slate_id: null,
+        p_start_time: startTime,
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      const payload = data as { ok?: boolean; error?: string } | null;
+      if (payload && payload.ok === false) {
+        alert(payload.error || "Spawn failed");
+        return;
+      }
     }
 
-    if (data && typeof data === "object" && "ok" in data && (data as { ok?: boolean }).ok === false) {
-      alert(String((data as { error?: string }).error ?? "Spawn failed"));
-      return;
-    }
-
-    alert("Contest created from template");
+    alert(`Created ${count} contests`);
     const contests = await fetchContestsSafe();
     setRows(contests);
   };
@@ -276,13 +282,21 @@ export default function AdminContestsPage() {
         >
           Create Template
         </button>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <input
             type="datetime-local"
             value={spawnStartTime}
             onChange={(e) => setSpawnStartTime(e.target.value)}
             className="p-2 bg-black border border-gray-800 rounded"
             placeholder="Start Time"
+          />
+          <input
+            type="number"
+            min={1}
+            value={spawnCount}
+            onChange={(e) => setSpawnCount(e.target.value)}
+            className="p-2 bg-black border border-gray-800 rounded"
+            placeholder="Number of Contests"
           />
         </div>
         <div className="mt-4 flex flex-col gap-2">
