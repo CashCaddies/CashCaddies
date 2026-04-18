@@ -32,7 +32,7 @@ const navButtonBase =
  * Minimal header (brand text → closed beta, badge, login/account) when logged out or not approved.
  */
 export function SiteHeader() {
-  const pathname = usePathname() ?? "";
+  const pathname = usePathname();
   const router = useRouter();
   const { isReady } = useAuth();
   const [isPortalLoading, setIsPortalLoading] = useState(false);
@@ -70,6 +70,10 @@ export function SiteHeader() {
   useEffect(() => {
     setMenuOpen(false);
     setProfileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    setIsPortalLoading(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -171,9 +175,6 @@ export function SiteHeader() {
       } else {
         router.push("/portal");
       }
-
-      // reset after short delay (safety)
-      setTimeout(() => setIsPortalLoading(false), 500);
     }, 120);
   };
 
@@ -252,7 +253,7 @@ export function SiteHeader() {
                     ) : null}
                     <div className="hidden items-center gap-3 md:flex" role="navigation" aria-label="Primary">
                       {navItems.map((item) => {
-                        const isActive = item.isActive(pathname);
+                        const isActive = item.isActive(pathname ?? "");
                         return (
                           <Link
                             key={item.href}
