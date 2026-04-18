@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { addUpdate, getUpdates } from "@/store/updatesStore";
 import { parseUpdate } from "@/utils/parseUpdate";
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [raw, setRaw] = useState("");
-  const [, bumpFeed] = useState(0);
+  const [updates, setUpdates] = useState<any[]>([]);
+  const [reply, setReply] = useState("");
+  const [activeUpdate, setActiveUpdate] = useState<string | null>(null);
 
   useEffect(() => {
     const check = async () => {
@@ -19,6 +20,16 @@ export default function HomePage() {
     };
 
     check();
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      const res = await fetch("/api/updates");
+      const data = await res.json();
+      setUpdates(data.updates || []);
+    };
+
+    load();
   }, []);
 
   if (loading) {
@@ -44,11 +55,20 @@ Your update here...`}
 
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               const parsed = parseUpdate(raw);
-              addUpdate(parsed);
+
+              await fetch("/api/updates", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(parsed),
+              });
+
               setRaw("");
-              bumpFeed((n) => n + 1);
+
+              const res = await fetch("/api/updates");
+              const data = await res.json();
+              setUpdates(data.updates || []);
             }}
             className="mt-2 rounded bg-green-600 px-4 py-2"
           >
@@ -56,16 +76,62 @@ Your update here...`}
           </button>
         </div>
 
-        {getUpdates().map((a) => (
-          <div key={a.id} className="rounded-lg border border-gray-800 bg-[#020617] p-4">
+        {updates.map((a) => (
+          <div
+            key={a.id}
+            className="rounded-xl border border-gray-700 bg-[#020617]/80 p-5 shadow-lg"
+          >
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs font-semibold text-green-400">{a.tag}</span>
-              <span className="text-xs text-gray-500">{a.time}</span>
+              <span className="text-xs font-semibold tracking-wide text-green-300 md:text-sm">{a.tag}</span>
+              <span className="text-xs text-gray-400 md:text-sm">{a.time}</span>
             </div>
 
-            <div className="mb-1 font-medium text-white">{a.title}</div>
+            <div className="mb-2 text-lg font-semibold text-white md:text-xl">{a.title}</div>
 
-            <div className="text-sm text-gray-400 whitespace-pre-line">{a.content}</div>
+            <div className="whitespace-pre-line text-base leading-relaxed text-gray-200 md:text-lg">{a.content}</div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveUpdate(a.id);
+                setReply("");
+              }}
+              className="mt-3 text-sm text-green-400 hover:underline"
+            >
+              Respond
+            </button>
+
+            {activeUpdate === a.id && (
+              <div className="mt-3">
+                <textarea
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  placeholder="Share feedback or suggestions..."
+                  className="w-full rounded border border-gray-700 bg-black p-2 text-sm"
+                />
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await fetch("/api/respond", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        update_id: a.id,
+                        user_id: user?.id,
+                        message: reply,
+                      }),
+                    });
+
+                    setReply("");
+                    setActiveUpdate(null);
+                  }}
+                  className="mt-2 rounded bg-green-600 px-3 py-1 text-sm"
+                >
+                  Send
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
