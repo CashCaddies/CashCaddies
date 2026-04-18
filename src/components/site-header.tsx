@@ -53,10 +53,10 @@ export function SiteHeader() {
         render={(ctx) => (
           <>
             <div className="w-full border-b border-[#1f2937] bg-[#020617]">
-              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+              <div className="mx-auto flex max-w-7xl items-center px-4 py-3">
                 {/* LEFT — brand + portal */}
-                <div className="flex min-w-0 items-center gap-3">
-                  <h1 className="text-lg font-semibold tracking-tight text-green-400 md:text-xl">CashCaddies</h1>
+                <div className="flex min-w-fit items-center gap-4">
+                  <h1 className="text-2xl font-semibold tracking-tight text-green-400 md:text-3xl">CashCaddies</h1>
                   <div
                     role="button"
                     tabIndex={0}
@@ -73,13 +73,13 @@ export function SiteHeader() {
                     <img
                       src="/golf-ball.png"
                       alt="Portal"
-                      className="h-9 w-9 object-contain transition hover:scale-105 md:h-11 md:w-11"
+                      className="h-16 w-16 object-contain transition hover:scale-105 md:h-20 md:w-20"
                     />
                   </div>
                 </div>
 
                 {/* CENTER — Lobby / Dashboard */}
-                <div className="hidden items-center gap-3 md:flex" role="navigation" aria-label="Primary">
+                <div className="ml-auto hidden items-center gap-4 md:flex" role="navigation" aria-label="Primary">
                   {navItems.map((item) => {
                     const isActive = item.isActive(pathname);
                     return (
@@ -111,11 +111,11 @@ export function SiteHeader() {
               </div>
 
               <div className="mx-auto max-w-7xl px-4 pb-3 pt-1">
-                <div className="flex max-w-fit items-center gap-2 whitespace-nowrap text-sm md:text-base">
-                  <Link href="/faq#safety-coverage" className="text-emerald-400/90 transition hover:text-emerald-300">
+                <div className="flex max-w-fit items-center gap-2 whitespace-nowrap">
+                  <Link href="/faq#safety-coverage" className="text-sm text-green-400 transition hover:text-green-300 md:text-base">
                     Safety Coverage Fund
                   </Link>
-                  <span className="ml-2 font-semibold text-yellow-400">PREMIUM GOLF DFS</span>
+                  <span className="text-sm text-yellow-400 md:text-base">PREMIUM GOLF DFS</span>
                 </div>
               </div>
             </div>
