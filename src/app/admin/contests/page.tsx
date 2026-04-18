@@ -232,7 +232,6 @@ export default function AdminContestsPage() {
                   is_portal: isPortal,
                   portal_frequency: isPortal ? portalFrequency : null,
                   overlay_amount: Math.round(parsedOverlayAmount * 100) / 100,
-                  is_featured: isPortal,
                 };
 
                 const firstInsert = await supabase.from("contests").insert(payload).select("id").single();
