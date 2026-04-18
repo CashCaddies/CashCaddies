@@ -79,8 +79,33 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => {
-    portalAudioRef.current = new Audio("/sounds/golf-cup.mp3");
-    portalAudioRef.current.volume = 0.6;
+    const a = new Audio("/sounds/golf-cup.mp3");
+    a.volume = 0.6;
+    a.preload = "auto";
+    portalAudioRef.current = a;
+  }, []);
+
+  useEffect(() => {
+    const unlock = () => {
+      if (!portalAudioRef.current) return;
+
+      // iOS/Safari unlock trick
+      const a = portalAudioRef.current;
+      const prevVol = a.volume;
+      a.volume = 0;
+      a.play()
+        .then(() => {
+          a.pause();
+          a.currentTime = 0;
+          a.volume = prevVol;
+        })
+        .catch(() => {});
+
+      window.removeEventListener("pointerdown", unlock);
+    };
+
+    window.addEventListener("pointerdown", unlock, { once: true });
+    return () => window.removeEventListener("pointerdown", unlock);
   }, []);
 
   const playSound = useCallback(() => {
