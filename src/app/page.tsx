@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { updates } from "@/data/updates";
+import { addUpdate, getUpdates } from "@/store/updatesStore";
+import { parseUpdate } from "@/utils/parseUpdate";
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [raw, setRaw] = useState("");
+  const [, bumpFeed] = useState(0);
 
   useEffect(() => {
     const check = async () => {
@@ -27,7 +30,33 @@ export default function HomePage() {
       <div className="mx-auto max-w-3xl space-y-4 p-4">
         <h2 className="text-xl font-semibold text-green-400">CashCaddies Updates</h2>
 
-        {updates.map((a) => (
+        <div className="mb-6">
+          <textarea
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            placeholder={`Title: ...
+Tag: ...
+Time: ...
+
+Your update here...`}
+            className="w-full rounded border border-gray-700 bg-black p-3 text-sm"
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              const parsed = parseUpdate(raw);
+              addUpdate(parsed);
+              setRaw("");
+              bumpFeed((n) => n + 1);
+            }}
+            className="mt-2 rounded bg-green-600 px-4 py-2"
+          >
+            Post Update
+          </button>
+        </div>
+
+        {getUpdates().map((a) => (
           <div key={a.id} className="rounded-lg border border-gray-800 bg-[#020617] p-4">
             <div className="mb-1 flex items-center justify-between">
               <span className="text-xs font-semibold text-green-400">{a.tag}</span>
