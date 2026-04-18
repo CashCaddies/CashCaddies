@@ -99,7 +99,7 @@ export default function PortalPage() {
 
   return (
     <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 z-50">
         <button
           type="button"
           title="Click here for portal breakdown/rules"
@@ -139,17 +139,24 @@ export default function PortalPage() {
         </div>
       )}
 
-      <header className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-[#140b2a] via-[#141a33] to-[#0d1524] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-200/90">Special Access</p>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Portal Contests</h1>
-        <p className="mt-2 text-sm text-violet-100/80">
-          Premium portal contest drops, organized by cadence.
-        </p>
-      </header>
+      <div className="mb-8 rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm">
+        <div className="mb-3 text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
 
-      <h2 className="text-lg font-semibold mb-4">
-        Your Tier: {userTier}
-      </h2>
+        <div className="flex items-center gap-3">
+          {[1, 2, 3, 4, 5].map((tier) => (
+            <div
+              key={tier}
+              className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition ${
+                userTier >= tier
+                  ? "bg-green-500/90 text-black shadow-sm shadow-green-500/20"
+                  : "border border-gray-800 bg-gray-900 text-gray-500"
+              }`}
+            >
+              {tier}
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="mb-6">
         <h3 className="text-md font-semibold mb-2">Available Contests</h3>
@@ -174,14 +181,14 @@ export default function PortalPage() {
       </div>
 
       <div className="mb-6 flex justify-center">
-        <div className="group relative cursor-pointer">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white">
-            ?
-          </div>
-          <div className="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded bg-black px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block">
-            Portal Access
-          </div>
-        </div>
+        <button
+          type="button"
+          title="Click here for portal contest rules"
+          onClick={() => setShowRules(true)}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
+        >
+          ⛳
+        </button>
       </div>
 
       <div className="space-y-6">
