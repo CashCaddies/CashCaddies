@@ -45,64 +45,66 @@ export default function HomePage() {
       <div className="mx-auto max-w-3xl space-y-4 p-4">
         <h2 className="text-xl font-semibold text-green-400">CashCaddies Updates</h2>
 
-        <div className="mb-6">
-          <textarea
-            value={raw}
-            onChange={(e) => setRaw(e.target.value)}
-            placeholder={`Title: ...
+        {user?.email === FOUNDER_UPDATES_EMAIL ? (
+          <div className="mb-6">
+            <textarea
+              value={raw}
+              onChange={(e) => setRaw(e.target.value)}
+              placeholder={`Title: ...
 Tag: ...
 Time: ...
 
 Your update here...`}
-            className="w-full rounded border border-gray-700 bg-black p-3 text-sm"
-          />
+              className="w-full rounded border border-gray-700 bg-black p-3 text-sm"
+            />
 
-          <button
-            type="button"
-            onClick={async () => {
-              const formData = parseUpdate(raw);
+            <button
+              type="button"
+              onClick={async () => {
+                const formData = parseUpdate(raw);
 
-              console.log("🚀 Sending update request", formData);
+                console.log("🚀 Sending update request", formData);
 
-              try {
-                const {
-                  data: { session },
-                } = await supabase.auth.getSession();
+                try {
+                  const {
+                    data: { session },
+                  } = await supabase.auth.getSession();
 
-                const res = await fetch("/api/updates", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${session?.access_token}`,
-                  },
-                  body: JSON.stringify(formData),
-                });
+                  const res = await fetch("/api/updates", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${session?.access_token}`,
+                    },
+                    body: JSON.stringify(formData),
+                  });
 
-                const json = await res.json();
+                  const json = await res.json();
 
-                if (!res.ok) {
-                  console.error("Update failed:", json);
-                  alert("ERROR: " + json.error);
-                  return;
+                  if (!res.ok) {
+                    console.error("Update failed:", json);
+                    alert("ERROR: " + json.error);
+                    return;
+                  }
+
+                  alert("Update posted successfully");
+
+                  setRaw("");
+
+                  const res2 = await fetch("/api/updates");
+                  const data = await res2.json();
+                  setUpdates(data.updates || []);
+                } catch (err) {
+                  console.error("FETCH CRASH:", err);
+                  alert("FETCH FAILED");
                 }
-
-                alert("Update posted successfully");
-
-                setRaw("");
-
-                const res2 = await fetch("/api/updates");
-                const data = await res2.json();
-                setUpdates(data.updates || []);
-              } catch (err) {
-                console.error("FETCH CRASH:", err);
-                alert("FETCH FAILED");
-              }
-            }}
-            className="mt-2 rounded bg-green-600 px-4 py-2"
-          >
-            Post Update
-          </button>
-        </div>
+              }}
+              className="mt-2 rounded bg-green-600 px-4 py-2"
+            >
+              Post Update
+            </button>
+          </div>
+        ) : null}
 
         {updates.map((a) => (
           <div
@@ -253,6 +255,10 @@ Your update here...`}
             )}
           </div>
         ))}
+
+        {user && user.email !== FOUNDER_UPDATES_EMAIL ? (
+          <p className="mt-4 text-sm text-gray-500">Updates are managed by the CashCaddies team.</p>
+        ) : null}
       </div>
     );
   }
