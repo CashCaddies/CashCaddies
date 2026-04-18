@@ -139,22 +139,40 @@ export default function PortalPage() {
         </div>
       )}
 
-      <div className="mb-8 rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm">
-        <div className="mb-3 text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
+      <div className="group relative mb-8">
+        <div className="rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm">
+          <div className="mb-3 text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
 
-        <div className="flex items-center gap-3">
-          {[1, 2, 3, 4, 5].map((tier) => (
-            <div
-              key={tier}
-              className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition ${
-                userTier >= tier
-                  ? "bg-green-500/90 text-black shadow-sm shadow-green-500/20"
-                  : "border border-gray-800 bg-gray-900 text-gray-500"
-              }`}
-            >
-              {tier}
-            </div>
-          ))}
+          <div className="flex items-center gap-3">
+            {[1, 2, 3, 4, 5].map((tier) => (
+              <div
+                key={tier}
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition ${
+                  userTier >= tier
+                    ? "bg-green-500/90 text-black shadow-sm shadow-green-500/20"
+                    : "border border-gray-800 bg-gray-900 text-gray-500"
+                }`}
+              >
+                {tier}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute left-0 top-full mt-2 w-72 opacity-0 transition group-hover:opacity-100">
+          <div className="rounded border border-gray-800 bg-black p-3 text-xs text-gray-300 shadow-lg">
+            <div className="mb-2 font-semibold text-white">Tier System</div>
+
+            <p className="mb-2">Your tier is based on total contribution to the protection fund.</p>
+
+            <ul className="space-y-1">
+              <li>Tier 1 — Entry level access</li>
+              <li>Tier 2 — Mid-tier contests unlocked</li>
+              <li>Tier 3 — Higher prize pools</li>
+              <li>Tier 4 — Premium contests</li>
+              <li>Tier 5 — Full access</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -255,21 +273,45 @@ export default function PortalPage() {
 
       {showRules && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="w-full max-w-md rounded border border-gray-800 bg-black p-6">
-            <h2 className="mb-3 text-lg font-semibold">Portal Rules</h2>
+          <div className="w-full max-w-lg rounded border border-gray-800 bg-black p-6">
+            <h2 className="mb-4 text-xl font-semibold">Portal Rules</h2>
 
-            <p className="mb-2 text-sm text-gray-300">
-              The portal gives access to exclusive contests based on your protection fund contribution.
-            </p>
+            <div className="space-y-4 text-sm text-gray-300">
+              <div>
+                <div className="mb-1 text-xs uppercase text-gray-400">Access</div>
+                <p>Portal contests are unlocked based on your total protection fund contribution.</p>
+              </div>
 
-            <p className="mb-2 text-sm text-gray-300">Higher tiers unlock higher prize contests.</p>
+              <div>
+                <div className="mb-1 text-xs uppercase text-gray-400">Tiers</div>
+                <p>Each tier grants access to higher prize contests. Higher tiers = higher upside.</p>
+              </div>
 
-            <p className="mb-4 text-sm text-gray-300">Maintain your tier to keep access.</p>
+              <div>
+                <div className="mb-1 text-xs uppercase text-gray-400">Contribution Impact</div>
+                <p>A portion of each entry contributes to the protection fund before contests begin.</p>
+              </div>
+
+              <div>
+                <div className="mb-1 text-xs uppercase text-gray-400">Fund Usage</div>
+                <p>
+                  The protection fund is used to cover withdrawals, disqualifications, and unexpected outcomes (WD, DQ,
+                  DNS).
+                </p>
+              </div>
+
+              <div>
+                <div className="mb-1 text-xs uppercase text-gray-400">Tier Maintenance</div>
+                <p>
+                  Your tier is based on total contribution. Maintain or increase contribution to retain access.
+                </p>
+              </div>
+            </div>
 
             <button
               type="button"
               onClick={() => setShowRules(false)}
-              className="rounded bg-green-500 px-4 py-1 text-black"
+              className="mt-6 rounded bg-green-500 px-4 py-2 text-black"
             >
               Close
             </button>
