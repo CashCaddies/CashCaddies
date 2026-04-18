@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { MouseEvent } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -32,20 +31,16 @@ export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
 
-  async function handlePortalClick(e: MouseEvent<HTMLDivElement>) {
-    e.preventDefault();
+  const handlePortalClick = async () => {
+    const { data } = await supabase.auth.getUser();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    if (!data?.user) {
       router.push("/login");
       return;
     }
 
     router.push("/portal");
-  }
+  };
 
   return (
     <header className="w-full">
@@ -68,21 +63,21 @@ export function SiteHeader() {
                       role="button"
                       tabIndex={0}
                       aria-label="Portal"
-                      onClick={handlePortalClick}
+                      onClick={() => void handlePortalClick()}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          e.currentTarget.click();
+                          void handlePortalClick();
                         }
                       }}
-                      className="group relative cursor-pointer"
+                      className="group relative cursor-pointer transition-transform active:scale-95"
                     >
                       <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
                       <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
                       <img
                         src="/golf-ball.png"
                         alt="Portal"
-                        className="relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 md:h-20 md:w-20"
+                        className="relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20"
                       />
                     </div>
                   </div>
