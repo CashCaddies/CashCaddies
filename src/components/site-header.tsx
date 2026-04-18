@@ -1,6 +1,7 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -11,6 +12,7 @@ import { playCupSound } from "@/lib/sounds";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
 import { HeaderStats } from "@/components/header-stats";
+import golfBall from "../../public/golf-ball.png";
 
 const navItems = [
   {
@@ -247,20 +249,31 @@ export function SiteHeader() {
                           }}
                           className="group relative cursor-pointer transition-opacity transition-transform active:scale-95"
                         >
-                          <div className="absolute inset-0 animate-[portalGlow_2.5s_ease-in-out_infinite] rounded-full bg-green-500/20 blur-xl" />
-                          <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
-                          <img
-                            src="/golf-ball.png"
-                            alt="Portal"
-                            className="relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20"
-                          />
+                          <div className="relative flex items-center justify-center">
+                            <div
+                              className="animate-glow pointer-events-none absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
+                              style={{
+                                background:
+                                  "radial-gradient(circle, rgba(250, 204, 21, 0.35) 0%, rgba(250, 204, 21, 0.15) 40%, transparent 70%)",
+                              }}
+                            />
+                            <div className="relative z-10">
+                              <Image
+                                src={golfBall}
+                                alt="portal"
+                                width={56}
+                                height={56}
+                                className="pointer-events-none h-14 w-14 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <div
                         onClick={handleGolfBallClick}
                         className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
                       >
-                        Click to enter your qualified contests
+                        Click to enter CC Portal
                       </div>
                     </div>
                   </div>
