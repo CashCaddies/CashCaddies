@@ -22,6 +22,7 @@ function portalFundTestMode(): 0 | 1 | 2 {
 
 export default function PortalPage() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [contests, setContests] = useState<any[]>([]);
 
@@ -97,7 +98,18 @@ export default function PortalPage() {
   const lockedContests = contests.filter((c) => userTier < c.required_tier);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
+    <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
+      <div className="absolute top-4 right-4">
+        <button
+          type="button"
+          title="Click here for portal breakdown/rules"
+          onClick={() => setShowRules(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition hover:scale-110"
+        >
+          ⛳
+        </button>
+      </div>
+
       {showWelcome && (
         <div className="mb-6 rounded border border-yellow-500/40 bg-yellow-500/10 p-4">
           <h2 className="mb-2 text-lg font-semibold">Welcome to the Coveted CashCaddies Contests</h2>
@@ -233,6 +245,30 @@ export default function PortalPage() {
           </div>
         </div>
       </div>
+
+      {showRules && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="w-full max-w-md rounded border border-gray-800 bg-black p-6">
+            <h2 className="mb-3 text-lg font-semibold">Portal Rules</h2>
+
+            <p className="mb-2 text-sm text-gray-300">
+              The portal gives access to exclusive contests based on your protection fund contribution.
+            </p>
+
+            <p className="mb-2 text-sm text-gray-300">Higher tiers unlock higher prize contests.</p>
+
+            <p className="mb-4 text-sm text-gray-300">Maintain your tier to keep access.</p>
+
+            <button
+              type="button"
+              onClick={() => setShowRules(false)}
+              className="rounded bg-green-500 px-4 py-1 text-black"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
