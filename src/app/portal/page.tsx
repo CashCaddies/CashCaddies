@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
+import { getTierFromContribution } from "@/lib/tiers";
 import { supabase } from "@/lib/supabase/client";
 
 function formatMoney(value: number | string | null | undefined): string {
@@ -22,6 +23,7 @@ function portalFundTestMode(): 0 | 1 | 2 {
 export default function PortalPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [contests, setContests] = useState<any[]>([]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -42,6 +44,16 @@ export default function PortalPage() {
     };
 
     void loadProfile();
+  }, []);
+
+  useEffect(() => {
+    const loadContests = async () => {
+      const { data } = await supabase.from("contests").select("*").order("created_at", { ascending: false });
+
+      if (data) setContests(data);
+    };
+
+    void loadContests();
   }, []);
 
   const handleCloseWelcome = async () => {
@@ -75,6 +87,12 @@ export default function PortalPage() {
 
   const surplus = calculateSurplus(totalFund, requiredBuffer);
   const unlocked = getUnlockedTiers(surplus);
+
+  const userTier = getTierFromContribution(Number(profile?.season_contribution || 0));
+
+  const unlockedContests = contests.filter((c) => userTier >= c.required_tier);
+
+  const lockedContests = contests.filter((c) => userTier < c.required_tier);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
