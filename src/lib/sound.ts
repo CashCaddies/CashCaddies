@@ -14,17 +14,24 @@ export function playCupSound() {
 
   const now = Date.now();
 
-  // prevent spam (min 800ms between sounds)
+  // block rapid spam
   if (now - lastPlayed < 800) return;
-
-  lastPlayed = now;
 
   try {
     audio.currentTime = 0;
 
-    // slight pitch variation (more realistic)
+    // slight variation
     audio.playbackRate = 0.95 + Math.random() * 0.1;
 
-    audio.play().catch(() => {});
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          // ONLY update after success
+          lastPlayed = Date.now();
+        })
+        .catch(() => {});
+    }
   } catch {}
 }
