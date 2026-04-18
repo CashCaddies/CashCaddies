@@ -46,6 +46,7 @@ export function SiteHeader() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [prevTotal, setPrevTotal] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const portalAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const isAdmin = sessionUser?.email === "cashcaddies@outlook.com";
 
@@ -75,6 +76,11 @@ export function SiteHeader() {
   useEffect(() => {
     audioRef.current = new Audio("/sounds/golf-cup.mp3");
     audioRef.current.volume = 0.5;
+  }, []);
+
+  useEffect(() => {
+    portalAudioRef.current = new Audio("/sounds/golf-cup.mp3");
+    portalAudioRef.current.volume = 0.6;
   }, []);
 
   const playSound = useCallback(() => {
@@ -166,6 +172,10 @@ export function SiteHeader() {
   }, []);
 
   const handlePortalClick = async () => {
+    if (portalAudioRef.current) {
+      portalAudioRef.current.currentTime = 0;
+      portalAudioRef.current.play().catch(() => {});
+    }
     setLoadingPortal(true);
     try {
       const { data } = await supabase.auth.getUser();
