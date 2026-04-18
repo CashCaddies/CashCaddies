@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -32,11 +33,25 @@ export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [sessionUser, setSessionUser] = useState<User | null>(null);
 
   useEffect(() => {
     router.prefetch("/login");
     router.prefetch("/portal");
+    router.prefetch("/signup");
   }, [router]);
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => {
+      setSessionUser(data.user ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSessionUser(session?.user ?? null);
+    });
+    return () => {
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   const handlePortalClick = async () => {
     setLoadingPortal(true);
@@ -110,9 +125,18 @@ export function SiteHeader() {
                     </div>
                   </div>
 
-                  {/* RIGHT — nav + wallet + auth */}
+                  {/* RIGHT — create account + nav + wallet + auth */}
                   <div className="flex shrink-0 items-center gap-3">
-                    <div className="hidden items-center gap-4 md:flex" role="navigation" aria-label="Primary">
+                    <div className="hidden items-center gap-3 md:flex" role="navigation" aria-label="Primary">
+                      {!sessionUser ? (
+                        <button
+                          type="button"
+                          onClick={() => router.push("/signup")}
+                          className="rounded-md bg-green-500 px-4 py-2 text-sm font-semibold text-black hover:bg-green-600"
+                        >
+                          Create Account
+                        </button>
+                      ) : null}
                       {navItems.map((item) => {
                         const isActive = item.isActive(pathname);
                         return (
