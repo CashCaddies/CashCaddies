@@ -479,9 +479,10 @@ body {
 }
 
 .statusBar {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  /* Horizontal margin from Tailwind (mx-4); avoid width:100% + margins causing overflow */
   background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), rgba(2, 6, 23, 0.9));
   border-top: 1px solid rgba(212, 175, 55, 0.25);
   border-bottom: 1px solid rgba(212, 175, 55, 0.25);

@@ -65,7 +65,7 @@ export default function RootLayout({
                   <SiteHeader />
                   <SoftLaunchCountdown />
                   <ConditionalBetaBanner />
-                  <main className="mx-auto w-full max-w-[1400px] flex-1 overflow-y-auto px-6 py-8">{children}</main>
+                  <main className="mx-auto w-full max-w-[1400px] flex-1 overflow-y-auto px-4 py-4 sm:px-6">{children}</main>
                   <SiteFooter />
                 </div>
               </AppProviders>

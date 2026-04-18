@@ -193,7 +193,7 @@ export function HeaderFundBar() {
 
   return (
     <div
-      className="statusBar"
+      className="statusBar mx-4 mt-4 rounded-xl p-4"
       title="Platform status and Safety Coverage Fund. Fund balance covers WD, DQ, DNS when applicable."
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -216,11 +216,11 @@ export function HeaderFundBar() {
               aria-hidden
             />
             <span className="min-w-0 text-center transition-all duration-500 ease-in-out">
-              <span className="text-yellow-400 font-semibold tracking-wide drop-shadow-[0_0_6px_rgba(250,204,21,0.25)] transition-colors duration-200 group-hover:text-yellow-300">
+              <span className="text-lg font-semibold tracking-wide text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.25)] transition-colors duration-200 group-hover:text-yellow-300">
                 {current.label}
               </span>
-              <span className="text-yellow-400/40 mx-2">•</span>
-              <a href={current.valueMailto} className={valueClassName}>
+              <span className="mx-2 text-yellow-400/40">•</span>
+              <a href={current.valueMailto} className={`${valueClassName} text-sm`}>
                 {current.value}
               </a>
             </span>
@@ -233,11 +233,11 @@ export function HeaderFundBar() {
               aria-hidden
             />
             <span className="min-w-0 text-center transition-all duration-500 ease-in-out">
-              <span className="text-yellow-400 font-semibold tracking-wide drop-shadow-[0_0_6px_rgba(250,204,21,0.25)] transition-colors duration-200 group-hover:text-yellow-300">
+              <span className="text-lg font-semibold tracking-wide text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.25)] transition-colors duration-200 group-hover:text-yellow-300">
                 {current?.label ?? ""}
               </span>
-              <span className="text-yellow-400/40 mx-2">•</span>
-              <span className={valueClassName}>{current?.value ?? ""}</span>
+              <span className="mx-2 text-yellow-400/40">•</span>
+              <span className={`${valueClassName} text-sm`}>{current?.value ?? ""}</span>
             </span>
           </Link>
         )}

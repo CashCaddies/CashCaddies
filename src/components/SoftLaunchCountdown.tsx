@@ -50,33 +50,40 @@ export default function SoftLaunchCountdown() {
   }
 
   return (
-    <div className="flex min-h-[110px] w-full flex-col items-center justify-center border-y border-amber-400/30 bg-slate-950 py-6">
-      <p className="mb-4 text-center font-semibold text-amber-400">Soft Launch Target – August 1</p>
+    <div className="flex w-full flex-col items-center justify-center border-y border-amber-400/30 bg-slate-950 py-4">
+      <p className="mb-2 px-4 text-center text-sm font-semibold text-amber-400 md:text-base">
+        Soft Launch Target – August 1
+      </p>
 
       {remaining === null ? (
         <p className="text-center text-2xl font-bold text-green-400">Soft Launch Live</p>
       ) : (
         <>
-          <div className="flex items-center justify-center gap-6 text-5xl font-bold text-green-400">
-            <span className="tabular-nums">{formatDays(remaining.days)}</span>
-            <span className="text-green-400/80" aria-hidden>
-              :
-            </span>
-            <span className="tabular-nums">{pad2(remaining.h)}</span>
-            <span className="text-green-400/80" aria-hidden>
-              :
-            </span>
-            <span className="tabular-nums">{pad2(remaining.m)}</span>
-            <span className="text-green-400/80" aria-hidden>
-              :
-            </span>
-            <span className="tabular-nums">{pad2(remaining.s)}</span>
-          </div>
-          <div className="mt-3 flex justify-center gap-16 text-xs tracking-widest text-amber-400">
-            <span>DAYS</span>
-            <span>HRS</span>
-            <span>MIN</span>
-            <span>SEC</span>
+          <div className="grid w-full max-w-md grid-cols-4 gap-2 px-4 text-center">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold tabular-nums text-green-400 md:text-5xl">
+                {formatDays(remaining.days)}
+              </span>
+              <span className="text-xs tracking-wide text-amber-400">DAYS</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold tabular-nums text-green-400 md:text-5xl">
+                {pad2(remaining.h)}
+              </span>
+              <span className="text-xs tracking-wide text-amber-400">HRS</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold tabular-nums text-green-400 md:text-5xl">
+                {pad2(remaining.m)}
+              </span>
+              <span className="text-xs tracking-wide text-amber-400">MIN</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl font-bold tabular-nums text-green-400 md:text-5xl">
+                {pad2(remaining.s)}
+              </span>
+              <span className="text-xs tracking-wide text-amber-400">SEC</span>
+            </div>
           </div>
         </>
       )}
