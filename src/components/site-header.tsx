@@ -158,7 +158,8 @@ export function SiteHeader() {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
-      window.location.href = "/login";
+      const next = encodeURIComponent(path);
+      window.location.href = `/login?next=${next}`;
       return false;
     }
     router.push(path);
