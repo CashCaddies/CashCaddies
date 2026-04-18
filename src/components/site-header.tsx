@@ -150,10 +150,10 @@ export function SiteHeader() {
               </div>
 
               {/* SECOND ROW — Safety + Premium (grouped under left) */}
-              <div className="mt-2 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm md:text-base">
+              <div className="mt-2 flex items-center">
+                <div className="flex items-center gap-2 whitespace-nowrap text-sm md:text-base">
                   <Tooltip content={<>Click here to access our FAQ</>}>
-                    <Link href="/faq#safety-coverage" className="text-emerald-400 transition hover:text-emerald-300">
+                    <Link href="/faq#safety-coverage" className="text-emerald-400/90 transition hover:text-emerald-300">
                       Safety Coverage Fund
                     </Link>
                   </Tooltip>
