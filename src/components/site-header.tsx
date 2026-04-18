@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { isFounder, isOwner } from "@/lib/userRoles";
-import { playCupSound } from "@/lib/sound";
+import { playCupSound } from "@/lib/sounds";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
 import { HeaderStats } from "@/components/header-stats";

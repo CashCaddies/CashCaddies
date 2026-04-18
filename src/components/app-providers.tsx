@@ -5,7 +5,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { WelcomeEmailSubscriber } from "@/components/welcome-email-subscriber";
 import { WinningsToast } from "@/components/winnings-toast";
 import { WalletProvider } from "@/hooks/use-wallet";
-import { initSound } from "@/lib/sound";
+import { initSound } from "@/lib/sounds";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   useEffect(() => {

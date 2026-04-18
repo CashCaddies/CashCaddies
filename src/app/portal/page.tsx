@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import golfBall from "../../../public/golf-ball.png";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
+import { playPortalSound } from "@/lib/sounds";
 import { getTierFromContribution } from "@/lib/tiers";
 import { supabase } from "@/lib/supabase/client";
 
@@ -25,18 +26,6 @@ function portalFundTestMode(): 0 | 1 | 2 {
 const TIER_THRESHOLDS = [0, 100, 500, 2000, 10000];
 
 export default function PortalPage() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const playPortalSound = () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio("/sounds/portal-click.mp3");
-      audioRef.current.volume = 0.4;
-    }
-
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {});
-  };
-
   const [showWelcome, setShowWelcome] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [profile, setProfile] = useState<any>(null);
@@ -134,7 +123,15 @@ export default function PortalPage() {
           }}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition hover:scale-110"
         >
-          <Image src={golfBall} alt="portal" width={28} height={28} className="rounded-full" />
+          <div className="h-10 w-10 overflow-hidden rounded-full">
+            <Image
+              src={golfBall}
+              alt="portal"
+              width={40}
+              height={40}
+              className="scale-110 object-cover mix-blend-lighten"
+            />
+          </div>
         </button>
       </div>
 
@@ -170,21 +167,32 @@ export default function PortalPage() {
         </div>
       )}
 
-      <div className="group relative mb-8">
-        <div className="rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm">
-          <div className="mb-3 text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
+      <div className="group relative">
+        <div className="relative mb-10 overflow-hidden rounded-xl border border-green-500/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg shadow-green-500/10">
+          {/* subtle glow */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-10 blur-xl" />
 
-          <div className="flex items-center gap-3">
+          <div className="relative mb-5 flex items-center justify-between">
+            <div className="text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
+
+            <div className="text-sm font-semibold text-green-400">Tier {userTier}</div>
+          </div>
+
+          <div className="relative flex items-center gap-4">
             {[1, 2, 3, 4, 5].map((tier) => (
               <div
                 key={tier}
-                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition ${
+                className={`relative flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 hover:scale-110 ${
                   userTier >= tier
-                    ? "bg-green-500/90 text-black shadow-sm shadow-green-500/20"
+                    ? "scale-105 bg-green-500 text-black shadow-lg shadow-green-500/30"
                     : "border border-gray-800 bg-gray-900 text-gray-500"
                 }`}
               >
                 {tier}
+
+                {userTier === tier && (
+                  <div className="absolute inset-0 animate-pulse rounded-full ring-2 ring-green-400" />
+                )}
               </div>
             ))}
           </div>
@@ -193,7 +201,15 @@ export default function PortalPage() {
         <div className="pointer-events-none absolute left-0 top-full mt-2 w-72 opacity-0 transition group-hover:opacity-100">
           <div className="rounded border border-gray-800 bg-black p-3 text-xs text-gray-300 shadow-lg">
             <div className="mb-2 flex items-center gap-2">
-              <Image src={golfBall} alt="portal" width={28} height={28} className="rounded-full shrink-0" />
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                <Image
+                  src={golfBall}
+                  alt="portal"
+                  width={40}
+                  height={40}
+                  className="scale-110 object-cover mix-blend-lighten"
+                />
+              </div>
               <div className="font-semibold text-white">Tier System</div>
             </div>
 
@@ -259,9 +275,17 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
         >
-          <Image src={golfBall} alt="portal rules" width={36} height={36} />
+          <div className="h-12 w-12 overflow-hidden rounded-full">
+            <Image
+              src={golfBall}
+              alt="portal rules"
+              width={48}
+              height={48}
+              className="scale-110 object-cover mix-blend-lighten"
+            />
+          </div>
         </button>
       </div>
 
