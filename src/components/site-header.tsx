@@ -99,6 +99,11 @@ export function SiteHeader() {
     }
   };
 
+  const getInitials = (email?: string) => {
+    if (!email) return "U";
+    return email.split("@")[0].slice(0, 2).toUpperCase();
+  };
+
   return (
     <header className="relative w-full">
       <HeaderAuthSection
@@ -196,9 +201,11 @@ export function SiteHeader() {
                             setMenuOpen(false);
                             setProfileOpen(!profileOpen);
                           }}
-                          className="rounded-md bg-gray-800 px-3 py-2 text-sm text-white"
+                          className="rounded-full focus:outline-none focus:ring-2 focus:ring-green-500/50"
                         >
-                          {sessionUser.email?.split("@")[0] ?? "Account"}
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-black">
+                            {getInitials(sessionUser?.email)}
+                          </div>
                         </button>
 
                         {profileOpen ? (
@@ -259,17 +266,6 @@ export function SiteHeader() {
                 {menuOpen ? (
                   <div className="absolute left-0 top-full z-50 w-full border-t border-gray-800 bg-black md:hidden">
                     <div className="flex flex-col gap-4 p-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          router.push("/signup");
-                          setMenuOpen(false);
-                        }}
-                        className="text-left text-green-400"
-                      >
-                        Create Account
-                      </button>
-
                       {sessionUser ? (
                         <>
                           <button
@@ -307,16 +303,29 @@ export function SiteHeader() {
                           </button>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            router.push("/login");
-                            setMenuOpen(false);
-                          }}
-                          className="text-left text-white"
-                        >
-                          Login
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              router.push("/login");
+                              setMenuOpen(false);
+                            }}
+                            className="text-left text-white"
+                          >
+                            Login
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              router.push("/signup");
+                              setMenuOpen(false);
+                            }}
+                            className="text-left text-green-400"
+                          >
+                            Create Account
+                          </button>
+                        </>
                       )}
 
                       <button
@@ -328,28 +337,6 @@ export function SiteHeader() {
                         className="text-left text-white"
                       >
                         Lobby
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          router.push("/dashboard");
-                          setMenuOpen(false);
-                        }}
-                        className="text-left text-white"
-                      >
-                        Dashboard
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          router.push("/wallet");
-                          setMenuOpen(false);
-                        }}
-                        className="text-left text-white"
-                      >
-                        Wallet
                       </button>
                     </div>
                   </div>
