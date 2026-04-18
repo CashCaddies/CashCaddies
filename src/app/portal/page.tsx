@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import golfBall from "../../../public/golf-ball.png";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
 import { playPortalSound } from "@/lib/sounds";
@@ -29,8 +29,11 @@ export default function PortalPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTierInfo, setShowTierInfo] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showTierUnlock, setShowTierUnlock] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [contests, setContests] = useState<any[]>([]);
+
+  const prevTierRef = useRef<number | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -111,6 +114,26 @@ export default function PortalPage() {
   const unlockedContests = contests.filter((c) => userTier >= c.required_tier);
 
   const lockedContests = contests.filter((c) => userTier < c.required_tier);
+
+  useEffect(() => {
+    // first load — just set baseline
+    if (prevTierRef.current === null) {
+      prevTierRef.current = userTier;
+      return;
+    }
+
+    // only trigger on actual increase
+    if (userTier > prevTierRef.current) {
+      playPortalSound();
+      setShowTierUnlock(true);
+
+      setTimeout(() => {
+        setShowTierUnlock(false);
+      }, 2500);
+    }
+
+    prevTierRef.current = userTier;
+  }, [userTier]);
 
   return (
     <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
@@ -247,7 +270,9 @@ export default function PortalPage() {
         ))}
       </div>
 
-      <div className="my-6 flex justify-center">
+      <div className="flex justify-center my-6 relative">
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-green-500/10 blur-xl" />
+
         <button
           type="button"
           title="Click here for portal rules"
@@ -255,7 +280,7 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="cursor-pointer transition-transform duration-200 ease-out hover:scale-110 active:scale-95 will-change-transform float"
+          className="relative z-10 cursor-pointer transition-transform duration-200 ease-out hover:scale-110 active:scale-95 will-change-transform float"
         >
           <Image
             src={golfBall}
@@ -401,6 +426,20 @@ export default function PortalPage() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {showTierUnlock && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="relative text-center">
+            <div className="mb-2 animate-pulse text-2xl font-semibold text-green-400">Tier Unlocked</div>
+
+            <div className="mb-4 text-4xl font-bold text-white">Tier {userTier}</div>
+
+            <div className="flex justify-center">
+              <Image src={golfBall} alt="unlock" width={80} height={80} className="animate-bounce" />
+            </div>
           </div>
         </div>
       )}
