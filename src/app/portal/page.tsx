@@ -135,6 +135,32 @@ export default function PortalPage() {
         </p>
       </header>
 
+      <h2 className="text-lg font-semibold mb-4">
+        Your Tier: {userTier}
+      </h2>
+
+      <div className="mb-6">
+        <h3 className="text-md font-semibold mb-2">Available Contests</h3>
+
+        {unlockedContests.map((c) => (
+          <div key={c.id} className="border border-green-500 p-3 rounded mb-2">
+            <div>{c.name}</div>
+            <div className="text-sm text-gray-400">Tier {c.required_tier}</div>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <h3 className="text-md font-semibold mb-2">Locked Contests</h3>
+
+        {lockedContests.map((c) => (
+          <div key={c.id} className="border border-gray-700 p-3 rounded mb-2 opacity-60">
+            <div>{c.name}</div>
+            <div className="text-sm text-gray-500">Requires Tier {c.required_tier}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="mb-6 flex justify-center">
         <div className="group relative cursor-pointer">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white">
