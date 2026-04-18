@@ -6,7 +6,15 @@ export async function GET() {
     const supabase = getServiceClient();
     const { data } = await supabase.from("founder_updates").select("*").order("created_at", { ascending: false });
 
-    return NextResponse.json({ updates: data || [] });
+    const formatted =
+      data?.map((u) => ({
+        id: u.id,
+        title: "Update",
+        content: u.message,
+        created_at: u.created_at,
+      })) ?? [];
+
+    return NextResponse.json({ updates: formatted });
   } catch (e) {
     console.error("updates GET:", e);
     return NextResponse.json({ updates: [], error: "Server configuration error" }, { status: 503 });
@@ -32,10 +40,7 @@ export async function POST(req: Request) {
       .from("founder_updates")
       .insert([
         {
-          title: body.title,
-          content: body.content,
-          tag: body.tag || "general",
-          time: body.time || "Now",
+          message: body.content || body.title,
         },
       ])
       .select();
