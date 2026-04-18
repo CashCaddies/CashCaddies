@@ -3,9 +3,10 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
+import { playCupSound } from "@/lib/sound";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
 import { HeaderStats } from "@/components/header-stats";
@@ -45,8 +46,6 @@ export function SiteHeader() {
   });
   const [notifOpen, setNotifOpen] = useState(false);
   const [prevTotal, setPrevTotal] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const portalAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const isAdmin = sessionUser?.email === "cashcaddies@outlook.com";
 
@@ -74,55 +73,14 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
-    audioRef.current = new Audio("/sounds/golf-cup.mp3");
-    audioRef.current.volume = 0.5;
-  }, []);
-
-  useEffect(() => {
-    const a = new Audio("/sounds/golf-cup.mp3");
-    a.volume = 0.6;
-    a.preload = "auto";
-    portalAudioRef.current = a;
-  }, []);
-
-  useEffect(() => {
-    const unlock = () => {
-      if (!portalAudioRef.current) return;
-
-      // iOS/Safari unlock trick
-      const a = portalAudioRef.current;
-      const prevVol = a.volume;
-      a.volume = 0;
-      a.play()
-        .then(() => {
-          a.pause();
-          a.currentTime = 0;
-          a.volume = prevVol;
-        })
-        .catch(() => {});
-
-      window.removeEventListener("pointerdown", unlock);
-    };
-
-    window.addEventListener("pointerdown", unlock, { once: true });
-    return () => window.removeEventListener("pointerdown", unlock);
-  }, []);
-
-  const playSound = useCallback(() => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {});
-  }, []);
-
-  useEffect(() => {
     const total = notifCounts.approvals + notifCounts.support + notifCounts.bugs;
 
     if (total > prevTotal && prevTotal !== 0) {
-      playSound();
+      void playCupSound();
     }
 
     setPrevTotal(total);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- [notifCounts] only; prevTotal/playSound per spec
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [notifCounts] only; prevTotal/playCupSound per spec
   }, [notifCounts]);
 
   const fetchNotifications = useCallback(async () => {
@@ -196,15 +154,8 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handlePortalClick = async () => {
-    if (portalAudioRef.current) {
-      try {
-        portalAudioRef.current.currentTime = 0;
-        await portalAudioRef.current.play();
-      } catch (e) {
-        // ignore autoplay errors
-      }
-    }
+  const handlePortalClick = () => {
+    playCupSound();
 
     setTimeout(() => {
       setLoadingPortal(true);
