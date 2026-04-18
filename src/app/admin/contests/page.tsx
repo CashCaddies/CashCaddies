@@ -51,6 +51,9 @@ export default function AdminContestsPage() {
   const [prizePool, setPrizePool] = useState("");
   const [maxEntries, setMaxEntries] = useState("100");
   const [startDate, setStartDate] = useState("");
+  const [templateName, setTemplateName] = useState("");
+  const [templateEntryFee, setTemplateEntryFee] = useState("");
+  const [templateMaxEntries, setTemplateMaxEntries] = useState("");
 
   const isAdmin = profileAdmin;
 
@@ -151,6 +154,27 @@ export default function AdminContestsPage() {
     }
   };
 
+  const handleCreateTemplate = async () => {
+    if (!supabase) {
+      alert("Supabase client is not available.");
+      return;
+    }
+    const { error } = await supabase.from("contest_templates").insert([
+      {
+        name: templateName,
+        entry_fee_cents: Math.round((Number(templateEntryFee) || 0) * 100),
+        max_entries: Number(templateMaxEntries),
+      },
+    ]);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("Template created");
+  };
+
   return (
     <div className="space-y-6">
       {listNotice ? (
@@ -165,6 +189,42 @@ export default function AdminContestsPage() {
           {listNotice.text}
         </div>
       ) : null}
+      <div className="goldCard p-6">
+        <h2 className="text-xl font-semibold mt-10 mb-4">Create Template</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <input
+            placeholder="Template Name"
+            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+          />
+          <input
+            placeholder="Entry Fee"
+            type="number"
+            min="0"
+            step="0.01"
+            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
+            value={templateEntryFee}
+            onChange={(e) => setTemplateEntryFee(e.target.value)}
+          />
+          <input
+            placeholder="Max Entries"
+            type="number"
+            min="1"
+            step="1"
+            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
+            value={templateMaxEntries}
+            onChange={(e) => setTemplateMaxEntries(e.target.value)}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleCreateTemplate}
+          className="mt-4 inline-flex rounded-md bg-emerald-500 px-4 py-2 font-semibold text-slate-950 hover:bg-emerald-400"
+        >
+          Create Template
+        </button>
+      </div>
       <div className="goldCard p-6">
         <h1 className="text-2xl font-bold text-white">Create Contest</h1>
         <p className="mt-1 text-sm text-slate-400">Simple admin tool for creating lobby contests.</p>
