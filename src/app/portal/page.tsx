@@ -121,14 +121,14 @@ export default function PortalPage() {
           playPortalSound();
           setShowTierInfo(true);
         }}
-        className="absolute top-3 right-3 z-50 cursor-pointer transition hover:scale-110"
+        className="absolute top-4 right-4 z-50 cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
       >
         <Image
           src={golfBall}
           alt="tier info"
           width={36}
           height={36}
-          className="pointer-events-none"
+          className="pointer-events-none drop-shadow-md"
         />
       </button>
 
@@ -200,13 +200,13 @@ export default function PortalPage() {
           <div className="relative rounded border border-gray-800 bg-black p-3 text-xs leading-relaxed text-gray-300 shadow-lg">
             <div className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-gray-800 bg-black" />
 
-            <div className="mb-2 flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               <Image
                 src={golfBall}
-                alt="portal"
-                width={36}
-                height={36}
-                className="pointer-events-none shrink-0"
+                alt="tier"
+                width={28}
+                height={28}
+                className="pointer-events-none translate-y-[1px]"
               />
               <div className="font-semibold text-white">Tier System</div>
             </div>
@@ -273,14 +273,14 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="cursor-pointer transition hover:scale-110"
+          className="cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
         >
           <Image
             src={golfBall}
             alt="portal rules"
             width={42}
             height={42}
-            className="pointer-events-none"
+            className="pointer-events-none drop-shadow-md"
           />
         </button>
       </div>
