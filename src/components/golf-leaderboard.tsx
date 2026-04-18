@@ -18,10 +18,11 @@ type Props = {
   hasPremiumToolsAccess: boolean;
   /** Optional crown / beta chips next to the section title (viewer only). */
   statusBadges?: ReactNode;
+  contest: { current_round: number };
 };
 
 /** Contest-scoped golfer fantasy scoring table with AM/PM wave filters and wave performance box. */
-export function GolfLeaderboard({ rows, hasPremiumToolsAccess, statusBadges }: Props) {
+export function GolfLeaderboard({ rows, hasPremiumToolsAccess, statusBadges, contest }: Props) {
   const [waveFilter, setWaveFilter] = useState<WaveFilter>("all");
 
   const effectiveWaveFilter: WaveFilter = hasPremiumToolsAccess ? waveFilter : "all";
@@ -116,6 +117,7 @@ export function GolfLeaderboard({ rows, hasPremiumToolsAccess, statusBadges }: P
                   rowIndex={i}
                   amWaveAdvantageStrokes={amWaveAdvantageStrokes}
                   revealTeeWaveTools={hasPremiumToolsAccess}
+                  contest={contest}
                 />
               ))
             )}

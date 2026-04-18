@@ -16,6 +16,8 @@ export type DashboardLineupContestMeta = {
   entry_fee_usd: number;
   starts_at: string;
   ends_at?: string | null;
+  /** From `tournaments.current_round` when `contests.tournament_id` is set; otherwise 0. */
+  current_round: number;
 };
 
 export function formatContestCatalogEntryFee(usd: number): string {
@@ -215,17 +217,46 @@ export async function fetchDashboardLineups(
   if (contestIds.length > 0) {
     const { data: contestRows, error: contestsErr } = await client
       .from("contests")
-      .select("id,name,entry_fee_usd,starts_at,ends_at")
+      .select("id,name,entry_fee_usd,starts_at,ends_at,tournament_id")
       .in("id", contestIds);
 
     if (!contestsErr) {
+      const tournamentIds = [
+        ...new Set(
+          (contestRows ?? [])
+            .map((c) => (c as { tournament_id?: string | null }).tournament_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ];
+      const roundByTournamentId = new Map<string, number>();
+      if (tournamentIds.length > 0) {
+        const { data: tRows } = await client.from("tournaments").select("id,current_round").in("id", tournamentIds);
+        for (const t of tRows ?? []) {
+          const tid = String((t as { id?: string }).id ?? "");
+          if (!tid) continue;
+          const cr = Number((t as { current_round?: unknown }).current_round);
+          roundByTournamentId.set(tid, Number.isFinite(cr) ? cr : 0);
+        }
+      }
       for (const c of contestRows ?? []) {
-        contestById.set(c.id, {
-          id: c.id,
-          name: c.name,
-          entry_fee_usd: Number(c.entry_fee_usd),
-          starts_at: c.starts_at,
-          ends_at: c.ends_at != null ? String(c.ends_at) : null,
+        const co = c as {
+          id: string;
+          name: string;
+          entry_fee_usd: unknown;
+          starts_at: string;
+          ends_at?: string | null;
+          tournament_id?: string | null;
+        };
+        const tid = co.tournament_id;
+        const current_round =
+          tid && roundByTournamentId.has(tid) ? (roundByTournamentId.get(tid) ?? 0) : 0;
+        contestById.set(co.id, {
+          id: co.id,
+          name: co.name,
+          entry_fee_usd: Number(co.entry_fee_usd),
+          starts_at: co.starts_at,
+          ends_at: co.ends_at != null ? String(co.ends_at) : null,
+          current_round,
         });
       }
     }

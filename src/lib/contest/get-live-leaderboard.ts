@@ -189,9 +189,6 @@ export async function getLiveLeaderboard(contestIdRaw: string): Promise<GetLiveL
     const currentRound = await tournamentCurrentRound(
       (contestMeta as { tournament_id?: string | null } | null)?.tournament_id,
     );
-    if (currentRound === 1) {
-      return { ok: true, rows: [], currentRound: 1 };
-    }
 
     const usesSimPool = await contestUsesSimPool(supabase, contestId);
     const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;

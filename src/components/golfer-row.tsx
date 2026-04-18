@@ -16,6 +16,7 @@ type Props = {
   amWaveAdvantageStrokes: number | null;
   /** Premium / DFS beta: show tee, wave, and weather hint; otherwise blur and lock. */
   revealTeeWaveTools: boolean;
+  contest: { current_round: number };
 };
 
 function WaveBadge({ wave }: { wave: TeeWave | null | undefined }) {
@@ -58,6 +59,7 @@ export function GolferLeaderboardTableRow({
   rowIndex,
   amWaveAdvantageStrokes,
   revealTeeWaveTools,
+  contest,
 }: Props) {
   const isMc = row.statusLabel === "MC";
   const baseRow = rowIndex % 2 === 0 ? "bg-[#0f1419]" : "bg-[#0c1015]";
@@ -125,7 +127,7 @@ export function GolferLeaderboardTableRow({
           isMc ? "text-[#7a8a7a]" : "text-[#53d769]"
         }`}
       >
-        {row.totalFantasyPoints.toFixed(1)}
+        {contest.current_round === 1 ? "--" : row.totalFantasyPoints.toFixed(1)}
       </td>
       <td className="px-3 py-3.5 text-center align-middle tabular-nums text-[#c5cdd5]">
         {row.cutPosition != null ? row.cutPosition : "—"}
@@ -134,7 +136,7 @@ export function GolferLeaderboardTableRow({
         {row.finishingPosition != null ? row.finishingPosition : "—"}
       </td>
       <td className="px-3 py-3.5 text-right align-middle tabular-nums text-[#c5cdd5]">
-        {row.roundFantasyPoints != null ? row.roundFantasyPoints.toFixed(1) : "—"}
+        {contest.current_round === 1 ? "--" : row.roundFantasyPoints != null ? row.roundFantasyPoints.toFixed(1) : "—"}
       </td>
       <td className="px-4 py-3.5 pr-5 text-center align-middle sm:px-5">
         <span

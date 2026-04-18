@@ -140,6 +140,7 @@ export default function DashboardOverviewPage() {
                 )}
                 {lineups.map((row) => {
                   const pres = dashboardLineupContestPresentation(row);
+                  const contest = row.contest ? { current_round: row.contest.current_round } : { current_round: 0 };
                   const hasContest = Boolean(row.contest_id);
                   return (
                     <tr key={row.id} className="hover:bg-slate-950/80">
@@ -161,7 +162,7 @@ export default function DashboardOverviewPage() {
                       </td>
                       <td className="px-4 py-3.5 text-slate-400">{formatSubmitted(row.created_at)}</td>
                       <td className="px-4 py-3.5 text-right tabular-nums font-semibold text-emerald-300">
-                        {row.total_score.toFixed(1)}
+                        {contest.current_round === 1 ? "--" : row.total_score.toFixed(1)}
                       </td>
                       <td className="px-4 py-3.5 text-right tabular-nums text-slate-200">
                         ${row.total_salary.toLocaleString()}

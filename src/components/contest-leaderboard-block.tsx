@@ -12,7 +12,7 @@ import type { GolferLeaderboardRow } from "@/lib/leaderboard";
 
 type Props = {
   /** `contests.id` (UUID) — must match DB primary key for RPCs */
-  contest: { id: string };
+  contest: { id: string; current_round?: number };
   initialRows: LeaderboardDisplayRow[];
   initialGolferRows: GolferLeaderboardRow[];
   showSimulate: boolean;
@@ -53,6 +53,7 @@ export function ContestLeaderboardBlock({
   }, [contest.id, initialRows, initialGolferRows, initialOwnershipRows]);
 
   const hasPremiumTools = dfsPremiumViewer.hasPremiumToolsAccess;
+  const contestRound = { current_round: contest.current_round ?? 0 };
 
   const statusBadges =
     hasPremiumTools && (dfsPremiumViewer.isPremiumSubscriber || dfsPremiumViewer.isDfsBetaTester) ? (
@@ -83,6 +84,7 @@ export function ContestLeaderboardBlock({
         rows={golferRows}
         hasPremiumToolsAccess={hasPremiumTools}
         statusBadges={statusBadges}
+        contest={contestRound}
       />
 
       <OwnershipTable rows={ownershipRows} hasPremiumAccess={hasPremiumTools} />
@@ -101,7 +103,7 @@ export function ContestLeaderboardBlock({
         </div>
       )}
 
-      <ContestLeaderboardTable rows={rows} />
+      <ContestLeaderboardTable rows={rows} contest={contestRound} />
     </>
   );
 }

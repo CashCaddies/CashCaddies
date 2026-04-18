@@ -74,6 +74,7 @@ export default function MyLineupsPage() {
           )}
           {lineups.map((row) => {
             const pres = dashboardLineupContestPresentation(row);
+            const contest = row.contest ? { current_round: row.contest.current_round } : { current_round: 0 };
             const entered = lineupHasContestEntry(row) && row.valid_contest_entry;
             const hasContest = Boolean(row.contest_id);
             const triggerGolfer = row.insured_golfer_id
@@ -145,7 +146,9 @@ export default function MyLineupsPage() {
                   <div className="text-right text-sm">
                     <p className="font-semibold tabular-nums text-emerald-300">
                       Score{" "}
-                      <span className="text-white">{row.total_score.toFixed(1)}</span>
+                      <span className="text-white">
+                        {contest.current_round === 1 ? "--" : row.total_score.toFixed(1)}
+                      </span>
                     </p>
                     <p className="mt-0.5 font-semibold tabular-nums text-slate-400">
                       Salary ${row.total_salary.toLocaleString()}

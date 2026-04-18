@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ContestLeaderboardRow } from "@/lib/supabase/queries/getContestLeaderboard";
+import { Round1LineupPerformance } from "@/app/contest/[contestId]/round1-lineup-performance";
 import { CONTEST_LEADERBOARD_POLL_MS, pollContestLeaderboard } from "./leaderboard-poll-action";
 
 type Props = {
@@ -55,9 +56,19 @@ export function ContestLeaderboardLive({
   const contest = { current_round: currentRound };
   const isRound1 = contest.current_round === 1;
 
+  const viewerBestScore = useMemo(() => {
+    if (currentUserId == null) return null;
+    const mine = rows.filter((r) => r.user_id === currentUserId);
+    if (mine.length === 0) return null;
+    return Math.max(...mine.map((r) => r.score));
+  }, [rows, currentUserId]);
+
   if (isRound1) {
     return (
-      <div className="text-center text-gray-400 py-10">Leaderboard unlocks after Round 1</div>
+      <div className="mt-2 space-y-3 py-6">
+        <Round1LineupPerformance currentScore={viewerBestScore} />
+        <p className="text-center text-xs text-slate-500">Rankings and scores unlock after Round 1</p>
+      </div>
     );
   }
 

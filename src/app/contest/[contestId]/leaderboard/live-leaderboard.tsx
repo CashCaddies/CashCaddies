@@ -1,14 +1,22 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { Round1LineupPerformance } from "@/app/contest/[contestId]/round1-lineup-performance";
 import type { GetLiveLeaderboardResult, LiveLeaderboardRow } from "@/lib/contest/get-live-leaderboard";
 import { supabase } from "@/lib/supabase/client";
 
 export default function LiveLeaderboard({ contestId }: { contestId: string }) {
   const [data, setData] = useState<LiveLeaderboardRow[]>([]);
   const [currentRound, setCurrentRound] = useState(0);
+  const [viewerUserId, setViewerUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [openEntryId, setOpenEntryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => {
+      setViewerUserId(data.user?.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,9 +130,19 @@ export default function LiveLeaderboard({ contestId }: { contestId: string }) {
   const contest = { current_round: currentRound };
   const isRound1 = contest.current_round === 1;
 
+  const viewerBestScore = useMemo(() => {
+    if (viewerUserId == null) return null;
+    const mine = data.filter((r) => r.userId === viewerUserId);
+    if (mine.length === 0) return null;
+    return Math.max(...mine.map((r) => r.totalScore));
+  }, [data, viewerUserId]);
+
   if (isRound1) {
     return (
-      <div className="text-center text-gray-400 py-10">Leaderboard unlocks after Round 1</div>
+      <div className="mt-2 space-y-3 py-6">
+        <Round1LineupPerformance currentScore={viewerBestScore} />
+        <p className="text-center text-xs text-slate-500">Rankings and scores unlock after Round 1</p>
+      </div>
     );
   }
 
@@ -149,7 +167,9 @@ export default function LiveLeaderboard({ contestId }: { contestId: string }) {
               >
                 <td className="py-2 tabular-nums text-slate-200">{row.rank}</td>
                 <td className="py-2 text-left text-slate-200">{row.username.trim() || "anon"}</td>
-                <td className="py-2 text-right tabular-nums text-slate-200">{Number(row.totalScore).toFixed(2)}</td>
+                <td className="py-2 text-right tabular-nums text-slate-200">
+                  {Number(row.totalScore).toFixed(2)}
+                </td>
               </tr>
               {expanded && (
                 <tr className="bg-slate-900/50">

@@ -80,10 +80,6 @@ export async function getContestLeaderboard(contestIdRaw: string): Promise<GetCo
       (contest as { tournament_id?: string | null }).tournament_id,
     );
 
-    if (currentRound === 1) {
-      return { rows: [], settled, contestExists: true, currentRound: 1 };
-    }
-
     const usesSimPool = await contestUsesSimPool(supabase, contestId);
     const simByPlayer = usesSimPool ? await sumSimFantasyPointsByPlayerId(supabase) : null;
 

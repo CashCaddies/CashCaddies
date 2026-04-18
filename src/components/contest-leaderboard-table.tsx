@@ -4,10 +4,11 @@ import Link from "next/link";
 
 type Props = {
   rows: LeaderboardDisplayRow[];
+  contest: { current_round: number };
 };
 
 /** Each row: `profiles.username` + `contest_entries.entry_number` as "username Entry #n". */
-export function ContestLeaderboardTable({ rows }: Props) {
+export function ContestLeaderboardTable({ rows, contest }: Props) {
   return (
     <section className="border-x border-b border-[#2a3039] bg-[#141920] px-4 py-4 sm:px-6">
       <h2 className="text-sm font-bold uppercase tracking-wide text-[#c5cdd5]">Leaderboard</h2>
@@ -106,7 +107,11 @@ export function ContestLeaderboardTable({ rows }: Props) {
                     ${row.totalSalary.toLocaleString()}
                   </td>
                   <td className="px-3 py-3.5 align-middle text-right tabular-nums font-bold text-[#53d769]">
-                    {Number.isFinite(row.totalScore) ? row.totalScore.toFixed(1) : "0.0"}
+                    {contest.current_round === 1
+                      ? "--"
+                      : Number.isFinite(row.totalScore)
+                        ? row.totalScore.toFixed(1)
+                        : "0.0"}
                   </td>
                   <td className="px-3 py-3.5 text-center align-middle">
                     {isProtectedRow || row.protectionStatusLabel !== "Standard" ? (
