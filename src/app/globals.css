@@ -1547,3 +1547,18 @@ header * {
     opacity: 1;
   }
 }
+
+/* Portal page — center golf ball gentle float (margin avoids transform clash with hover:scale) */
+@keyframes float {
+  0%,
+  100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: -6px;
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}

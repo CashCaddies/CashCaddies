@@ -114,24 +114,6 @@ export default function PortalPage() {
 
   return (
     <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-      <button
-        type="button"
-        title="Click here for tier information"
-        onClick={() => {
-          playPortalSound();
-          setShowTierInfo(true);
-        }}
-        className="absolute top-4 right-4 z-50 cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 will-change-transform hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
-      >
-        <Image
-          src={golfBall}
-          alt="tier info"
-          width={36}
-          height={36}
-          className="pointer-events-none drop-shadow-md"
-        />
-      </button>
-
       {showWelcome && (
         <div className="mb-6 rounded border border-yellow-500/40 bg-yellow-500/10 p-4">
           <h2 className="mb-2 text-lg font-semibold">Welcome to the Coveted CashCaddies Contests</h2>
@@ -273,7 +255,7 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="cursor-pointer transition-transform duration-150 ease-out hover:scale-110 active:scale-95 will-change-transform hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.4)]"
+          className="cursor-pointer transition-transform duration-200 ease-out hover:scale-110 active:scale-95 will-change-transform animate-pulse float"
         >
           <Image
             src={golfBall}
