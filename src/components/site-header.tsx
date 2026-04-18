@@ -154,13 +154,18 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handlePortalClick = () => {
+  const handlePortalClick = async () => {
+    // play sound immediately
     playCupSound();
 
-    setTimeout(() => {
-      setLoadingPortal(true);
+    setLoadingPortal(true);
 
-      if (!sessionUser) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    setTimeout(() => {
+      if (!session) {
         router.push("/login");
       } else {
         router.push("/portal");
@@ -208,16 +213,9 @@ export function SiteHeader() {
                           tabIndex={0}
                           aria-busy={loadingPortal}
                           aria-label="Portal"
-                          onClick={() => {
-                            if (loadingPortal) return;
-                            void handlePortalClick();
-                          }}
+                          onClick={handlePortalClick}
                           onKeyDown={(e) => {
-                            if (loadingPortal) return;
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              void handlePortalClick();
-                            }
+                            if (e.key === "Enter") handlePortalClick();
                           }}
                           className="group relative cursor-pointer transition-transform active:scale-95"
                         >
