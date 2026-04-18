@@ -14,6 +14,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  console.log("🔥 HIT /api/updates POST");
+
   try {
     console.log("=== /api/updates POST START ===");
 

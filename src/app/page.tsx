@@ -58,27 +58,34 @@ Your update here...`}
             onClick={async () => {
               const formData = parseUpdate(raw);
 
-              const res = await fetch("/api/updates", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-              });
+              console.log("🚀 Sending update request", formData);
 
-              const json = await res.json();
+              try {
+                const res = await fetch("/api/updates", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(formData),
+                });
 
-              if (!res.ok) {
-                console.error("Update failed:", json);
-                alert("ERROR: " + json.error);
-                return;
+                const json = await res.json();
+
+                if (!res.ok) {
+                  console.error("Update failed:", json);
+                  alert("ERROR: " + json.error);
+                  return;
+                }
+
+                alert("Update posted successfully");
+
+                setRaw("");
+
+                const res2 = await fetch("/api/updates");
+                const data = await res2.json();
+                setUpdates(data.updates || []);
+              } catch (err) {
+                console.error("FETCH CRASH:", err);
+                alert("FETCH FAILED");
               }
-
-              alert("Update posted successfully");
-
-              setRaw("");
-
-              const res2 = await fetch("/api/updates");
-              const data = await res2.json();
-              setUpdates(data.updates || []);
             }}
             className="mt-2 rounded bg-green-600 px-4 py-2"
           >
