@@ -59,6 +59,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -191,10 +192,13 @@ export function SiteHeader() {
                       <div className="relative profile-dropdown">
                         <button
                           type="button"
-                          onClick={() => setProfileOpen(!profileOpen)}
+                          onClick={() => {
+                            setMenuOpen(false);
+                            setProfileOpen(!profileOpen);
+                          }}
                           className="rounded-md bg-gray-800 px-3 py-2 text-sm text-white"
                         >
-                          {sessionUser.email ?? "Account"}
+                          {sessionUser.email?.split("@")[0] ?? "Account"}
                         </button>
 
                         {profileOpen ? (
@@ -266,16 +270,54 @@ export function SiteHeader() {
                         Create Account
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          router.push("/login");
-                          setMenuOpen(false);
-                        }}
-                        className="text-left text-white"
-                      >
-                        Login
-                      </button>
+                      {sessionUser ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              router.push("/dashboard");
+                              setMenuOpen(false);
+                            }}
+                            className="text-left text-white"
+                          >
+                            Dashboard
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              router.push("/wallet");
+                              setMenuOpen(false);
+                            }}
+                            className="text-left text-white"
+                          >
+                            Wallet
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await supabase.auth.signOut();
+                              setMenuOpen(false);
+                              router.push("/");
+                            }}
+                            className="text-left text-red-400"
+                          >
+                            Logout
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            router.push("/login");
+                            setMenuOpen(false);
+                          }}
+                          className="text-left text-white"
+                        >
+                          Login
+                        </button>
+                      )}
 
                       <button
                         type="button"
