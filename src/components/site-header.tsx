@@ -73,12 +73,14 @@ export function SiteHeader() {
                           e.currentTarget.click();
                         }
                       }}
-                      className="cursor-pointer"
+                      className="group relative cursor-pointer"
                     >
+                      <div className="absolute inset-0 rounded-full bg-green-500/20 opacity-70 blur-xl transition group-hover:opacity-100" />
+                      <div className="absolute inset-0 scale-110 rounded-full border border-green-400/40 transition duration-300 group-hover:scale-125" />
                       <img
                         src="/golf-ball.png"
                         alt="Portal"
-                        className="h-14 w-14 object-contain transition hover:scale-105 md:h-16 md:w-16"
+                        className="relative h-16 w-16 object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 md:h-20 md:w-20"
                       />
                     </div>
                   </div>
