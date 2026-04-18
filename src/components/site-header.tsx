@@ -94,39 +94,48 @@ export function SiteHeader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- [notifCounts] only; prevTotal/playSound per spec
   }, [notifCounts]);
 
+  const fetchNotifications = useCallback(async () => {
+    if (!isAdmin) return;
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const res = await fetch("/api/admin/notifications", {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (!res.ok) return;
+
+      const json = await res.json();
+      setNotifCounts(json);
+    } catch (e) {
+      console.error("notif fetch failed");
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    void fetchNotifications();
+  }, [isAdmin, fetchNotifications]);
+
   useEffect(() => {
     if (!isAdmin) return;
 
-    const fetchCounts = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const res = await fetch("/api/admin/notifications", {
-          headers: {
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-        });
-        if (!res.ok) return;
-        const json = (await res.json()) as { approvals?: number; support?: number; bugs?: number };
-        if (
-          typeof json.approvals === "number" &&
-          typeof json.support === "number" &&
-          typeof json.bugs === "number"
-        ) {
-          setNotifCounts({
-            approvals: json.approvals,
-            support: json.support,
-            bugs: json.bugs,
-          });
-        }
-      } catch (e) {
-        console.error("notif fetch failed");
-      }
-    };
+    const interval = setInterval(() => {
+      void fetchNotifications();
+    }, 10000);
 
-    void fetchCounts();
-  }, [isAdmin]);
+    return () => clearInterval(interval);
+  }, [isAdmin, fetchNotifications]);
+
+  useEffect(() => {
+    if (notifOpen) {
+      void fetchNotifications();
+    }
+  }, [notifOpen, fetchNotifications]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
