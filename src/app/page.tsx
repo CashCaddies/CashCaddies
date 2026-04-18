@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { parseUpdate } from "@/utils/parseUpdate";
 
+const FOUNDER_UPDATES_EMAIL = "cashcaddies@outlook.com";
+
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -113,50 +115,52 @@ Your update here...`}
 
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
-              <div className="flex shrink-0 items-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingId(a.id);
-                    setEditText(a.content);
-                  }}
-                  className="text-sm text-yellow-400"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const confirmDelete = confirm("Delete this update?");
-                    if (!confirmDelete) return;
+              {user?.email === FOUNDER_UPDATES_EMAIL ? (
+                <div className="flex shrink-0 items-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(a.id);
+                      setEditText(a.content);
+                    }}
+                    className="text-sm text-yellow-400"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const confirmDelete = confirm("Delete this update?");
+                      if (!confirmDelete) return;
 
-                    const {
-                      data: { session },
-                    } = await supabase.auth.getSession();
+                      const {
+                        data: { session },
+                      } = await supabase.auth.getSession();
 
-                    const res = await fetch("/api/updates", {
-                      method: "DELETE",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session?.access_token}`,
-                      },
-                      body: JSON.stringify({ id: a.id }),
-                    });
+                      const res = await fetch("/api/updates", {
+                        method: "DELETE",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${session?.access_token}`,
+                        },
+                        body: JSON.stringify({ id: a.id }),
+                      });
 
-                    const json = await res.json();
+                      const json = await res.json();
 
-                    if (!res.ok) {
-                      alert("ERROR: " + json.error);
-                      return;
-                    }
+                      if (!res.ok) {
+                        alert("ERROR: " + (json.error ?? "Request failed"));
+                        return;
+                      }
 
-                    setUpdates((prev) => prev.filter((u) => u.id !== a.id));
-                  }}
-                  className="ml-3 text-sm text-red-400"
-                >
-                  Delete
-                </button>
-              </div>
+                      setUpdates((prev) => prev.filter((u) => u.id !== a.id));
+                    }}
+                    className="ml-3 text-sm text-red-400"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             {editingId === a.id ? (
