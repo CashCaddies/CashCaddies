@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import golfBall from "../../../public/golf-ball.png";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
 import { getTierFromContribution } from "@/lib/tiers";
@@ -23,10 +23,16 @@ function portalFundTestMode(): 0 | 1 | 2 {
 }
 
 export default function PortalPage() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const playPortalSound = () => {
-    const audio = new Audio("/sounds/portal-click.mp3");
-    audio.volume = 0.4;
-    audio.play();
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/sounds/portal-click.mp3");
+      audioRef.current.volume = 0.4;
+    }
+
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
   };
 
   const [showWelcome, setShowWelcome] = useState(false);
