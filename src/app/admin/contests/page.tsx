@@ -51,9 +51,6 @@ export default function AdminContestsPage() {
   const [prizePool, setPrizePool] = useState("");
   const [maxEntries, setMaxEntries] = useState("100");
   const [startDate, setStartDate] = useState("");
-  const [isPortal, setIsPortal] = useState(false);
-  const [portalFrequency, setPortalFrequency] = useState<"weekly" | "biweekly" | "monthly">("weekly");
-  const [overlayAmount, setOverlayAmount] = useState("0");
 
   const isAdmin = profileAdmin;
 
@@ -201,12 +198,6 @@ export default function AdminContestsPage() {
                   setMessage("Admin access required.");
                   return;
                 }
-                const parsedOverlayAmount = Number(overlayAmount || 0);
-                if (!Number.isFinite(parsedOverlayAmount) || parsedOverlayAmount < 0) {
-                  setIsError(true);
-                  setMessage("Overlay amount must be 0 or greater.");
-                  return;
-                }
 
                 const parsedEntryFee = Number(entryFee) || 0;
                 const parsedPrizePool = Number(prizePool) || 0;
@@ -228,9 +219,6 @@ export default function AdminContestsPage() {
                   starts_at: new Date(startDate).toISOString(),
                   max_entries_per_user: 1,
                   created_at: createdAt,
-                  is_portal: isPortal,
-                  portal_frequency: isPortal ? portalFrequency : null,
-                  overlay_amount: Math.round(parsedOverlayAmount * 100) / 100,
                 };
 
                 const firstInsert = await supabase.from("contests").insert(payload).select("id").single();
@@ -329,42 +317,6 @@ export default function AdminContestsPage() {
               onChange={(e) => setStartDate(e.target.value)}
               required
             />
-          </label>
-
-          <label className="flex items-center gap-2 pt-6">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-emerald-500"
-              checked={isPortal}
-              onChange={(e) => setIsPortal(e.target.checked)}
-            />
-            <span className="text-sm text-slate-300">Portal-only contest</span>
-          </label>
-
-          <label className="space-y-1">
-            <span className="text-sm text-slate-300">Overlay amount</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
-              value={overlayAmount}
-              onChange={(e) => setOverlayAmount(e.target.value)}
-            />
-          </label>
-
-          <label className="space-y-1">
-            <span className="text-sm text-slate-300">Portal frequency</span>
-            <select
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 disabled:opacity-50"
-              value={portalFrequency}
-              onChange={(e) => setPortalFrequency(e.target.value as "weekly" | "biweekly" | "monthly")}
-              disabled={!isPortal}
-            >
-              <option value="weekly">Weekly</option>
-              <option value="biweekly">Biweekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
           </label>
 
           <div className="sm:col-span-2">
