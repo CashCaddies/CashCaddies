@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -32,9 +33,11 @@ const navButtonBase =
 export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
+  const { isReady } = useAuth();
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     router.prefetch("/login");
@@ -64,6 +67,17 @@ export function SiteHeader() {
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const t = e.target;
+      if (t instanceof Element && !t.closest(".profile-dropdown")) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   const handlePortalClick = async () => {
@@ -171,7 +185,61 @@ export function SiteHeader() {
                     </div>
                     {ctx.premiumHeaderTag}
                     <HeaderStats />
-                    {ctx.authControls}
+                    {!isReady ? (
+                      ctx.authControls
+                    ) : sessionUser ? (
+                      <div className="relative profile-dropdown">
+                        <button
+                          type="button"
+                          onClick={() => setProfileOpen(!profileOpen)}
+                          className="rounded-md bg-gray-800 px-3 py-2 text-sm text-white"
+                        >
+                          {sessionUser.email ?? "Account"}
+                        </button>
+
+                        {profileOpen ? (
+                          <div className="absolute right-0 z-50 mt-2 w-48 rounded-md border border-gray-800 bg-black shadow-lg">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                router.push("/dashboard");
+                                setProfileOpen(false);
+                              }}
+                              className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800"
+                            >
+                              Dashboard
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                router.push("/wallet");
+                                setProfileOpen(false);
+                              }}
+                              className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800"
+                            >
+                              Wallet
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await supabase.auth.signOut();
+                                setProfileOpen(false);
+                                router.push("/");
+                              }}
+                              className="block w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-800"
+                            >
+                              Logout
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => router.push("/login")} className="text-sm text-white">
+                        Login
+                      </button>
+                    )}
                     <button
                       type="button"
                       aria-expanded={menuOpen}
