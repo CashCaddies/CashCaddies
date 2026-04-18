@@ -1,5 +1,34 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { getServiceClient } from "@/lib/supabase/service";
+
+const FOUNDER_EMAIL = "cashcaddies@outlook.com";
+
+function getSupabaseAuth() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+}
+
+async function requireFounderUpdatesAccess(req: Request): Promise<Response | null> {
+  const supabaseAuth = getSupabaseAuth();
+  const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() ?? "";
+  if (!token) {
+    return new Response(JSON.stringify({ success: false, error: "No auth" }), { status: 401 });
+  }
+
+  const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+
+  if (userError || !userData?.user) {
+    return new Response(JSON.stringify({ success: false, error: "Invalid user" }), { status: 401 });
+  }
+
+  const email = userData.user.email;
+
+  if (email !== FOUNDER_EMAIL) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 403 });
+  }
+
+  return null;
+}
 
 export async function GET() {
   try {
@@ -25,6 +54,9 @@ export async function POST(req: Request) {
   console.log("🔥 HIT /api/updates POST");
 
   try {
+    const denied = await requireFounderUpdatesAccess(req);
+    if (denied) return denied;
+
     console.log("=== /api/updates POST START ===");
 
     const body = await req.json();
@@ -63,6 +95,9 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    const denied = await requireFounderUpdatesAccess(req);
+    if (denied) return denied;
+
     const body = await req.json();
     const supabase = getServiceClient();
 
@@ -86,6 +121,9 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const denied = await requireFounderUpdatesAccess(req);
+    if (denied) return denied;
+
     const { id } = await req.json();
     const supabase = getServiceClient();
 

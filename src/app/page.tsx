@@ -63,9 +63,16 @@ Your update here...`}
               console.log("🚀 Sending update request", formData);
 
               try {
+                const {
+                  data: { session },
+                } = await supabase.auth.getSession();
+
                 const res = await fetch("/api/updates", {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.access_token}`,
+                  },
                   body: JSON.stringify(formData),
                 });
 
@@ -123,9 +130,16 @@ Your update here...`}
                     const confirmDelete = confirm("Delete this update?");
                     if (!confirmDelete) return;
 
+                    const {
+                      data: { session },
+                    } = await supabase.auth.getSession();
+
                     const res = await fetch("/api/updates", {
                       method: "DELETE",
-                      headers: { "Content-Type": "application/json" },
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session?.access_token}`,
+                      },
                       body: JSON.stringify({ id: a.id }),
                     });
 
@@ -156,9 +170,16 @@ Your update here...`}
                 <button
                   type="button"
                   onClick={async () => {
+                    const {
+                      data: { session },
+                    } = await supabase.auth.getSession();
+
                     const res = await fetch("/api/updates", {
                       method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session?.access_token}`,
+                      },
                       body: JSON.stringify({
                         id: a.id,
                         message: editText,
