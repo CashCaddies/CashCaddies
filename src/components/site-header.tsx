@@ -301,6 +301,31 @@ export function SiteHeader() {
                               <div className="notif-panel absolute right-0 top-full z-50 mt-2 w-72 rounded-md border border-gray-800 bg-black shadow-lg">
                                 <div className="p-3 text-sm text-white">
                                   <div className="mb-2 font-semibold">Notifications</div>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const {
+                                        data: { session },
+                                      } = await supabase.auth.getSession();
+
+                                      await fetch("/api/admin/notifications/read-all", {
+                                        method: "PATCH",
+                                        headers: {
+                                          Authorization: `Bearer ${session?.access_token}`,
+                                        },
+                                      });
+
+                                      setNotifCounts({
+                                        approvals: 0,
+                                        support: 0,
+                                        bugs: 0,
+                                      });
+                                      setNotifOpen(false);
+                                    }}
+                                    className="mb-2 text-xs text-green-400"
+                                  >
+                                    Mark all as read
+                                  </button>
                                   <div>Approvals: {notifCounts.approvals}</div>
                                   <div>Support: {notifCounts.support}</div>
                                   <div>Bugs: {notifCounts.bugs}</div>
