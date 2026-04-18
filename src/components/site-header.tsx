@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -30,16 +31,27 @@ const navButtonBase =
 export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
+  const [loadingPortal, setLoadingPortal] = useState(false);
+
+  useEffect(() => {
+    router.prefetch("/login");
+    router.prefetch("/portal");
+  }, [router]);
 
   const handlePortalClick = async () => {
-    const { data } = await supabase.auth.getUser();
+    setLoadingPortal(true);
+    try {
+      const { data } = await supabase.auth.getUser();
 
-    if (!data?.user) {
-      router.push("/login");
-      return;
+      if (!data?.user) {
+        router.push("/login");
+        return;
+      }
+
+      router.push("/portal");
+    } catch {
+      setLoadingPortal(false);
     }
-
-    router.push("/portal");
   };
 
   return (
@@ -62,9 +74,14 @@ export function SiteHeader() {
                     <div
                       role="button"
                       tabIndex={0}
+                      aria-busy={loadingPortal}
                       aria-label="Portal"
-                      onClick={() => void handlePortalClick()}
+                      onClick={() => {
+                        if (loadingPortal) return;
+                        void handlePortalClick();
+                      }}
                       onKeyDown={(e) => {
+                        if (loadingPortal) return;
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           void handlePortalClick();
@@ -77,8 +94,14 @@ export function SiteHeader() {
                       <img
                         src="/golf-ball.png"
                         alt="Portal"
-                        className="relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20"
+                        className={`relative h-16 w-16 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20 ${loadingPortal ? "scale-95 opacity-70" : ""}`}
                       />
+                      {loadingPortal ? (
+                        <div
+                          className="pointer-events-none absolute inset-0 z-[1] rounded-full border-2 border-green-400 animate-ping"
+                          aria-hidden
+                        />
+                      ) : null}
                     </div>
                   </div>
 
