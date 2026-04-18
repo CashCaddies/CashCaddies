@@ -105,54 +105,59 @@ export function SiteHeader() {
                   <span className="text-sm text-gray-400 md:text-base">Daily Fantasy Golf Platform</span>
                 </div>
 
-                {/* CENTER — square + tee (md+) */}
-                <div className="hidden min-w-0 shrink-0 md:flex md:flex-col md:items-center md:justify-center">
-                  <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      aria-label="Click here to access the CashCaddies Coveted Contest Portal"
-                      onClick={handlePortalClick}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.currentTarget.click();
-                        }
-                      }}
-                      className="portal-golf-trigger relative flex cursor-pointer flex-col items-center"
-                    >
-                      <div className="relative z-10 h-14 w-14 md:h-16 md:w-16">
-                        <Image
-                          src="/cashcaddies-square.png"
-                          alt="CashCaddies portal"
-                          fill
-                          className="object-contain transition duration-200 hover:scale-105"
-                          sizes="(max-width: 768px) 56px, 64px"
-                          priority
+                <div className="flex items-center gap-4 md:gap-6">
+                  {/* CENTER — square + tee (md+) */}
+                  <div className="hidden min-w-0 shrink-0 md:flex md:flex-col md:items-center md:justify-center">
+                    <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Click here to access the CashCaddies Coveted Contest Portal"
+                        onClick={handlePortalClick}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.currentTarget.click();
+                          }
+                        }}
+                        className="portal-golf-trigger relative flex cursor-pointer flex-col items-center"
+                      >
+                        <div className="relative z-10 h-16 w-16 md:h-20 md:w-20">
+                          <Image
+                            src="/cashcaddies-square.png"
+                            alt="CashCaddies portal"
+                            fill
+                            className="z-10 object-contain transition duration-200 hover:scale-105"
+                            sizes="(max-width: 768px) 64px, 80px"
+                            priority
+                          />
+                        </div>
+                        <div
+                          className="mt-[-8px] h-8 w-[4px] rounded-full bg-gradient-to-b from-yellow-300 to-yellow-600 shadow-md"
+                          aria-hidden
                         />
                       </div>
-                      <div className="mt-[-6px] h-6 w-[3px] rounded-full bg-yellow-500" aria-hidden />
-                    </div>
-                  </Tooltip>
-                </div>
+                    </Tooltip>
+                  </div>
 
-                {/* RIGHT — Lobby / Dashboard + wallet + profile */}
-                <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-3">
-                  {ccMainNav}
-                  <div className="hidden h-8 w-px shrink-0 bg-white/10 sm:block" aria-hidden />
-                  {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
+                  {/* RIGHT — Lobby / Dashboard + wallet + profile */}
+                  <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-4">
+                    {ccMainNav}
+                    <div className="hidden h-8 w-px shrink-0 bg-white/10 sm:block" aria-hidden />
+                    {headerRight(ctx.authControls, ctx.premiumHeaderTag)}
+                  </div>
                 </div>
               </div>
 
-              {/* SECOND ROW — Safety + Premium (grouped) */}
+              {/* SECOND ROW — Safety + Premium (grouped under left) */}
               <div className="mt-2 flex items-center justify-between">
-                <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm md:text-base">
+                <div className="flex items-center gap-2 text-sm md:text-base">
                   <Tooltip content={<>Click here to access our FAQ</>}>
-                    <Link href="/faq#safety-coverage" className="shrink-0 text-emerald-400 transition hover:text-emerald-300">
+                    <Link href="/faq#safety-coverage" className="text-emerald-400 transition hover:text-emerald-300">
                       Safety Coverage Fund
                     </Link>
                   </Tooltip>
-                  <span className="shrink-0 font-semibold text-yellow-400">• PREMIUM GOLF DFS</span>
+                  <span className="ml-2 font-semibold text-yellow-400">PREMIUM GOLF DFS</span>
                 </div>
               </div>
             </div>
