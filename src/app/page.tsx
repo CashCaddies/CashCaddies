@@ -1,66 +1,35 @@
-import Link from "next/link";
-import { ClosedBetaClient } from "@/app/closed-beta/closed-beta-client";
+"use client";
 
-export default function Page() {
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import HomeLoggedIn from "@/components/home-logged-in";
+
+export default function HomePage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const check = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user ?? null);
+      setLoading(false);
+    };
+
+    check();
+  }, []);
+
+  if (loading) {
+    return <div className="p-4">Loading...</div>;
+  }
+
+  if (user) {
+    return <HomeLoggedIn />;
+  }
+
   return (
-    <main className="mx-auto w-full max-w-6xl overflow-visible px-4 py-6 sm:px-6">
-      <ClosedBetaClient />
-
-      <div className="mx-auto mt-20 w-full max-w-4xl px-6">
-        <div className="rounded-xl border border-emerald-500/10 bg-[#0b1220] p-8">
-          <h2 className="mb-6 text-center text-2xl font-bold text-white">
-            How to Get Started
-          </h2>
-
-          <div className="space-y-4 text-gray-300">
-            <div>
-              <span className="font-semibold text-emerald-400">1.</span> Create your account
-            </div>
-
-            <div>
-              <span className="font-semibold text-emerald-400">2.</span> Get approved for beta access
-            </div>
-
-            <div>
-              <span className="font-semibold text-emerald-400">3.</span> Enter contests in the Lobby
-            </div>
-
-            <div>
-              <span className="font-semibold text-emerald-400">4.</span> Gain access to higher tiers through participation
-            </div>
-
-            <div>
-              <span className="font-semibold text-emerald-400">5.</span> Unlock Portal contests as the fund grows
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
-            <Link
-              href="/login"
-              className="inline-block rounded-lg border border-emerald-500/30 px-6 py-3 text-emerald-400 transition hover:bg-emerald-500/10"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto mb-24 mt-20 w-full max-w-4xl px-6">
-        <div className="rounded-xl border border-white/10 bg-[#0b1220] p-8 text-center">
-          <h2 className="mb-2 text-2xl font-bold text-white">Frequently Asked Questions</h2>
-
-          <p className="mb-6 text-gray-400">
-            Learn how the Portal, contests, and protection system work.
-          </p>
-
-          <Link
-            href="/faq"
-            className="inline-block rounded-lg border border-emerald-500/30 px-6 py-3 font-medium text-emerald-400 transition hover:bg-emerald-500/10"
-          >
-            View FAQs
-          </Link>
-        </div>
-      </div>
-    </main>
+    <div className="p-4 text-center">
+      <h1 className="text-2xl text-green-400">CashCaddies</h1>
+      <p className="mt-2 text-gray-400">Daily Fantasy Golf. Smarter.</p>
+    </div>
   );
 }
