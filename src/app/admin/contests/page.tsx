@@ -54,6 +54,7 @@ export default function AdminContestsPage() {
   const [templateName, setTemplateName] = useState("");
   const [templateEntryFee, setTemplateEntryFee] = useState("");
   const [templateMaxEntries, setTemplateMaxEntries] = useState("");
+  const [templates, setTemplates] = useState<any[]>([]);
 
   const isAdmin = profileAdmin;
 
@@ -109,6 +110,22 @@ export default function AdminContestsPage() {
     const t = window.setTimeout(() => setListNotice(null), 4000);
     return () => window.clearTimeout(t);
   }, [listNotice]);
+
+  useEffect(() => {
+    const loadTemplates = async () => {
+      if (!supabase) return;
+      const { data, error } = await supabase
+        .from("contest_templates")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setTemplates(data);
+      }
+    };
+
+    void loadTemplates();
+  }, []);
 
   if (!isReady || loadingPage) {
     return <p className="text-slate-400">Loadingâ€¦</p>;
@@ -175,6 +192,34 @@ export default function AdminContestsPage() {
     alert("Template created");
   };
 
+  const handleSpawnFromTemplate = async (templateId: string) => {
+    if (!supabase) {
+      alert("Supabase client is not available.");
+      return;
+    }
+    const startTime = new Date().toISOString();
+
+    const { data, error } = await supabase.rpc("spawn_contest_from_template", {
+      p_template_id: templateId,
+      p_slate_id: null,
+      p_start_time: startTime,
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    if (data && typeof data === "object" && "ok" in data && (data as { ok?: boolean }).ok === false) {
+      alert(String((data as { error?: string }).error ?? "Spawn failed"));
+      return;
+    }
+
+    alert("Contest created from template");
+    const contests = await fetchContestsSafe();
+    setRows(contests);
+  };
+
   return (
     <div className="space-y-6">
       {listNotice ? (
@@ -224,6 +269,20 @@ export default function AdminContestsPage() {
         >
           Create Template
         </button>
+        <div className="mt-4 flex flex-col gap-2">
+          {templates.map((t) => (
+            <div key={t.id} className="flex items-center justify-between rounded border border-gray-800 p-2">
+              <span className="text-slate-200">{t.name}</span>
+              <button
+                type="button"
+                onClick={() => void handleSpawnFromTemplate(String(t.id))}
+                className="rounded bg-green-500 px-3 py-1 text-black"
+              >
+                Spawn
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="goldCard p-6">
         <h1 className="text-2xl font-bold text-white">Create Contest</h1>
