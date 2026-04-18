@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
+import { supabase } from "@/lib/supabase/client";
 
 function formatMoney(value: number | string | null | undefined): string {
   const n = Number(value ?? 0);
@@ -20,17 +21,38 @@ function portalFundTestMode(): 0 | 1 | 2 {
 
 export default function PortalPage() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    const seen = localStorage.getItem("portal_welcome_seen");
+    const loadProfile = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!seen) {
-      setShowWelcome(true);
-    }
+      if (!session?.user?.id) return;
+
+      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+
+      if (data) {
+        setProfile(data);
+        if (!data.has_seen_portal_welcome) {
+          setShowWelcome(true);
+        }
+      }
+    };
+
+    void loadProfile();
   }, []);
 
-  const handleCloseWelcome = () => {
-    localStorage.setItem("portal_welcome_seen", "true");
+  const handleCloseWelcome = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.id) return;
+
+    await supabase.from("profiles").update({ has_seen_portal_welcome: true }).eq("id", session.user.id);
+
     setShowWelcome(false);
   };
 
