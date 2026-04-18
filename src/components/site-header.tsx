@@ -103,25 +103,26 @@ export function SiteHeader() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 md:gap-6">
-                  {/* Portal — tooltip control (replaces logo / golf image) */}
-                  <Tooltip content={<>Click here to access the CashCaddies Coveted Contest Portal</>}>
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      aria-label="Portal Access"
-                      onClick={handlePortalClick}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.currentTarget.click();
-                        }
-                      }}
-                      className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white transition hover:bg-green-500 md:h-12 md:w-12"
-                    >
-                      ?
-                    </div>
-                  </Tooltip>
+                <div className="flex items-center gap-3">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Portal"
+                    onClick={handlePortalClick}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.currentTarget.click();
+                      }
+                    }}
+                    className="flex cursor-pointer items-center justify-center"
+                  >
+                    <img
+                      src="/golf-ball.png"
+                      alt="Portal"
+                      className="h-10 w-10 object-contain transition hover:scale-105 md:h-12 md:w-12"
+                    />
+                  </div>
 
                   {/* RIGHT — Lobby / Dashboard + wallet + profile */}
                   <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-4">
