@@ -98,9 +98,8 @@ Your update here...`}
             key={a.id}
             className="rounded-xl border border-gray-700 bg-[#020617]/80 p-5 shadow-lg"
           >
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs font-semibold tracking-wide text-green-300 md:text-sm">{a.tag}</span>
-              <span className="text-xs text-gray-400 md:text-sm">{a.time}</span>
+            <div className="mb-1 flex items-center justify-end text-xs text-gray-400 md:text-sm">
+              {new Date(a.created_at).toLocaleString()}
             </div>
 
             <div className="mb-2 text-lg font-semibold text-white md:text-xl">{a.title}</div>
