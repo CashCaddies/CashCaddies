@@ -55,6 +55,7 @@ export default function AdminContestsPage() {
   const [templateEntryFee, setTemplateEntryFee] = useState("");
   const [templateMaxEntries, setTemplateMaxEntries] = useState("");
   const [templates, setTemplates] = useState<any[]>([]);
+  const [spawnStartTime, setSpawnStartTime] = useState("");
 
   const isAdmin = profileAdmin;
 
@@ -197,7 +198,13 @@ export default function AdminContestsPage() {
       alert("Supabase client is not available.");
       return;
     }
-    const startTime = new Date().toISOString();
+    if (!spawnStartTime) {
+      alert("Please select a start time");
+      return;
+    }
+    const startTime = spawnStartTime
+      ? new Date(spawnStartTime).toISOString()
+      : new Date().toISOString();
 
     const { data, error } = await supabase.rpc("spawn_contest_from_template", {
       p_template_id: templateId,
@@ -269,6 +276,15 @@ export default function AdminContestsPage() {
         >
           Create Template
         </button>
+        <div className="mt-4">
+          <input
+            type="datetime-local"
+            value={spawnStartTime}
+            onChange={(e) => setSpawnStartTime(e.target.value)}
+            className="p-2 bg-black border border-gray-800 rounded"
+            placeholder="Start Time"
+          />
+        </div>
         <div className="mt-4 flex flex-col gap-2">
           {templates.map((t) => (
             <div key={t.id} className="flex items-center justify-between rounded border border-gray-800 p-2">
