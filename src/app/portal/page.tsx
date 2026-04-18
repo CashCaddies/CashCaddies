@@ -27,6 +27,7 @@ const TIER_THRESHOLDS = [0, 100, 500, 2000, 10000];
 
 export default function PortalPage() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showTierInfo, setShowTierInfo] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [contests, setContests] = useState<any[]>([]);
@@ -113,30 +114,23 @@ export default function PortalPage() {
 
   return (
     <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-      <div className="absolute top-3 right-3 z-50">
-        <button
-          type="button"
-          title="Click here for portal breakdown/rules"
-          onClick={() => {
-            playPortalSound();
-            setShowRules(true);
-          }}
-          className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white transition hover:scale-110"
-        >
-          <div
-            className="h-10 w-10 overflow-hidden rounded-full border border-gray-800 bg-transparent"
-            style={{ backgroundColor: "transparent" }}
-          >
-            <Image
-              src={golfBall}
-              alt="portal"
-              width={40}
-              height={40}
-              className="pointer-events-none object-cover scale-110"
-            />
-          </div>
-        </button>
-      </div>
+      <button
+        type="button"
+        title="Click here for tier information"
+        onClick={() => {
+          playPortalSound();
+          setShowTierInfo(true);
+        }}
+        className="absolute top-3 right-3 z-50 cursor-pointer transition hover:scale-110"
+      >
+        <Image
+          src={golfBall}
+          alt="tier info"
+          width={36}
+          height={36}
+          className="pointer-events-none"
+        />
+      </button>
 
       {showWelcome && (
         <div className="mb-6 rounded border border-yellow-500/40 bg-yellow-500/10 p-4">
@@ -207,15 +201,13 @@ export default function PortalPage() {
             <div className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-gray-800 bg-black" />
 
             <div className="mb-2 flex items-center gap-2">
-              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full">
-                <Image
-                  src={golfBall}
-                  alt="portal"
-                  width={40}
-                  height={40}
-                  className="pointer-events-none object-cover scale-110 mix-blend-lighten"
-                />
-              </div>
+              <Image
+                src={golfBall}
+                alt="portal"
+                width={36}
+                height={36}
+                className="pointer-events-none shrink-0"
+              />
               <div className="font-semibold text-white">Tier System</div>
             </div>
 
@@ -273,25 +265,23 @@ export default function PortalPage() {
         ))}
       </div>
 
-      <div className="mb-6 flex justify-center">
+      <div className="my-6 flex justify-center">
         <button
           type="button"
-          title="Click here for portal contest rules"
+          title="Click here for portal rules"
           onClick={() => {
             playPortalSound();
             setShowRules(true);
           }}
-          className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-white/90 text-black transition hover:scale-110 hover:bg-white"
+          className="cursor-pointer transition hover:scale-110"
         >
-          <div className="h-12 w-12 overflow-hidden rounded-full">
-            <Image
-              src={golfBall}
-              alt="portal rules"
-              width={48}
-              height={48}
-              className="pointer-events-none object-cover scale-110 mix-blend-lighten"
-            />
-          </div>
+          <Image
+            src={golfBall}
+            alt="portal rules"
+            width={42}
+            height={42}
+            className="pointer-events-none"
+          />
         </button>
       </div>
 
@@ -356,6 +346,34 @@ export default function PortalPage() {
           </div>
         </div>
       </div>
+
+      {showTierInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="w-full max-w-lg rounded border border-gray-800 bg-black p-6">
+            <h2 className="mb-4 text-xl font-semibold">Tier System</h2>
+
+            <p className="mb-4 text-sm text-gray-300">
+              Your tier is based on total contribution to the protection fund.
+            </p>
+
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li>Tier 1 — Entry level access</li>
+              <li>Tier 2 — Mid-tier contests unlocked</li>
+              <li>Tier 3 — Higher prize pools</li>
+              <li>Tier 4 — Premium contests</li>
+              <li>Tier 5 — Full access</li>
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => setShowTierInfo(false)}
+              className="mt-6 rounded bg-green-500 px-4 py-2 text-black"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {showRules && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
