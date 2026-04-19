@@ -63,23 +63,30 @@ export default function HomePage() {
   const [editText, setEditText] = useState("");
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (!loading) {
+      const fetchUpdates = async () => {
+        const res = await fetch("/api/updates");
+        const data = await res.json();
+        setUpdates(data.updates || []);
+      };
 
-    const load = async () => {
-      const res = await fetch("/api/updates");
-      const data = await res.json();
-      setUpdates(data.updates || []);
-    };
-
-    void load();
-  }, [loading, user]);
+      void fetchUpdates();
+    }
+  }, [loading]);
 
   if (loading) {
     return null;
   }
 
-  if (user) {
-    return (
+  return (
+    <>
+      {!user ? (
+        <div className="p-6 text-center">
+          <h1 className="text-3xl font-semibold text-green-400">CashCaddies</h1>
+          <p className="mt-2 text-gray-400">Premium Daily Fantasy Golf</p>
+        </div>
+      ) : null}
+
       <div className="mx-auto max-w-3xl px-4">
         <h1 className="mb-4 text-xl font-semibold text-white md:text-2xl">CashCaddies Updates</h1>
         <div className="mb-4 h-px bg-gray-800" />
@@ -314,13 +321,6 @@ Your update here...`}
           <p className="mt-4 text-sm text-gray-500">Updates are managed by the CashCaddies team.</p>
         ) : null}
       </div>
-    );
-  }
-
-  return (
-    <div className="p-6 text-center">
-      <h1 className="text-3xl font-semibold text-green-400">CashCaddies</h1>
-      <p className="mt-2 text-gray-400">Premium Daily Fantasy Golf</p>
-    </div>
+    </>
   );
 }
