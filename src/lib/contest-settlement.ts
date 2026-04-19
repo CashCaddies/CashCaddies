@@ -71,6 +71,7 @@ export function mergeWalletTransactionsWithContestPrizes(
   return [...byId.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export function sessionStoragePrizeAnnounceKey(userId: string): string {
+/** Key string for deduping prize-announce UI (if persisted client-side). */
+export function prizeAnnouncementDedupeKey(userId: string): string {
   return `cashcaddies_prize_announced:${userId}`;
 }
