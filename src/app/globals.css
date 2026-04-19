@@ -1615,15 +1615,15 @@ header * {
 @keyframes burstFloat {
   0% {
     opacity: 0;
-    transform: translate(-50%, 10px) scale(0.9);
+    transform: translate(-50%, 12px) scale(0.85);
   }
-  30% {
+  25% {
     opacity: 1;
-    transform: translate(-50%, -6px) scale(1.05);
+    transform: translate(-50%, -10px) scale(1.15);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -20px) scale(1);
+    transform: translate(-50%, -40px) scale(1);
   }
 }
 

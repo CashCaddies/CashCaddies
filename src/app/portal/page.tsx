@@ -294,7 +294,11 @@ export default function PortalPage() {
             </div>
           )}
 
-          <div className="relative overflow-hidden rounded-full">
+          <div
+            className={`relative overflow-hidden rounded-full transition-transform duration-300 ${
+              burstAmount ? "scale-[1.03]" : "scale-100"
+            }`}
+          >
             {burstAmount && (
               <div
                 key={`${burstKey}-glow`}
@@ -303,7 +307,7 @@ export default function PortalPage() {
             )}
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-900">
               <div
-                className="h-full bg-green-500 transition-all duration-700 ease-out"
+                className="h-full bg-green-500 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
