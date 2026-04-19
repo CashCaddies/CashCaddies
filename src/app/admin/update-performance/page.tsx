@@ -102,6 +102,7 @@ export default async function UpdatePerformancePage() {
     clicks7d: number;
     signups7d: number;
     score7d: number;
+    trend: number;
   };
 
   const rows: Row[] = (updates ?? []).map((u) => {
@@ -118,6 +119,8 @@ export default async function UpdatePerformancePage() {
     const signups7d = conversions7dMap.get(id) ?? 0;
     const score7d = impressions7d > 0 ? (signups7d / impressions7d) * 1000 : 0;
 
+    const trend = score > 0 ? (score7d - score) / score : 0;
+
     return {
       id,
       title: titleFromMessage(row.message),
@@ -131,6 +134,7 @@ export default async function UpdatePerformancePage() {
       clicks7d,
       signups7d,
       score7d,
+      trend,
     };
   });
 
@@ -171,7 +175,7 @@ export default async function UpdatePerformancePage() {
           <p className="text-sm text-[#8b98a5]">No founder updates yet.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1280px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1380px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-[#2a3039] text-xs font-semibold uppercase tracking-wide text-[#8b98a5]">
                   <th className="pb-3 pr-4">Title</th>
@@ -185,7 +189,8 @@ export default async function UpdatePerformancePage() {
                   <th className="pb-3 pr-4 text-right tabular-nums">7D Impressions</th>
                   <th className="pb-3 pr-4 text-right tabular-nums">7D Clicks</th>
                   <th className="pb-3 pr-4 text-right tabular-nums">7D Signups</th>
-                  <th className="pb-3 text-right tabular-nums">7D Score</th>
+                  <th className="pb-3 pr-4 text-right tabular-nums">7D Score</th>
+                  <th className="pb-3 text-right tabular-nums">Trend</th>
                 </tr>
               </thead>
               <tbody className="text-slate-200">
@@ -225,7 +230,15 @@ export default async function UpdatePerformancePage() {
                       <td className="py-3 pr-4 text-right tabular-nums">{r.impressions7d}</td>
                       <td className="py-3 pr-4 text-right tabular-nums">{r.clicks7d}</td>
                       <td className="py-3 pr-4 text-right tabular-nums">{r.signups7d}</td>
-                      <td className="py-3 text-right tabular-nums text-slate-300">{r.score7d.toFixed(2)}</td>
+                      <td className="py-3 pr-4 text-right tabular-nums text-slate-300">{r.score7d.toFixed(2)}</td>
+                      <td
+                        className={`py-3 text-right tabular-nums ${
+                          r.trend > 0 ? "text-green-400" : r.trend < 0 ? "text-red-400" : "text-gray-400"
+                        }`}
+                      >
+                        {r.trend > 0 ? "+" : ""}
+                        {(r.trend * 100).toFixed(1)}%
+                      </td>
                     </tr>
                   );
                 })}
