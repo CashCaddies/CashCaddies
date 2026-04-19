@@ -55,7 +55,10 @@ export function AuthForm({ mode }: Props) {
       ? nextParam
       : "/";
 
-  async function persistLastSourceUpdate(userId: string) {
+  async function persistLastSourceUpdate(
+    userId: string,
+    options?: { recordSignupConversion?: boolean },
+  ) {
     if (typeof window === "undefined" || !supabase) return;
     try {
       const params = new URLSearchParams(window.location.search);
@@ -67,6 +70,19 @@ export function AuthForm({ mode }: Props) {
         .update({ last_source_update: sourceUpdate })
         .eq("id", userId);
       if (error) return;
+
+      if (options?.recordSignupConversion) {
+        try {
+          const { error: convError } = await supabase.from("update_conversions").insert({
+            update_id: sourceUpdate,
+            user_id: userId,
+            type: "signup",
+          });
+          if (convError) return;
+        } catch {
+          /* non-blocking attribution */
+        }
+      }
     } catch {
       /* non-blocking attribution */
     }
@@ -237,7 +253,7 @@ export function AuthForm({ mode }: Props) {
 
     setStatus("Welcome! Redirecting…");
     if (authData.user) {
-      await persistLastSourceUpdate(authData.user.id);
+      await persistLastSourceUpdate(authData.user.id, { recordSignupConversion: true });
     }
     router.push(next);
     setLoading(false);
