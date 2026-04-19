@@ -47,7 +47,13 @@ export function AuthForm({ mode }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
-  const next = nextParam?.startsWith("/") ? nextParam : "/";
+
+  const next =
+    nextParam &&
+    nextParam.startsWith("/") &&
+    !nextParam.startsWith("//")
+      ? nextParam
+      : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
