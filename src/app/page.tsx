@@ -21,6 +21,8 @@ function renderUpdateBodyWithSignupLink(content: string): ReactNode {
           {i < parts.length - 1 ? (
             <a
               href="/signup"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-green-400 underline hover:text-green-300 font-medium"
             >
               {SIGNUP_CTA_SENTENCE}
