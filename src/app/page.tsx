@@ -84,36 +84,57 @@ export default function HomePage() {
   }, [loading]);
 
   useEffect(() => {
-    if (!loading && updates.length > 0 && typeof navigator !== "undefined" && navigator.sendBeacon) {
-      const sessionId = getSessionId();
+    if (!loading && updates.length > 0 && typeof navigator !== "undefined") {
+      void (async () => {
+        const sessionId = getSessionId();
 
-      updates.forEach((update) => {
-        const id = update?.id;
-        if (!id) return;
+        for (const update of updates) {
+          const id = update?.id;
+          if (!id) continue;
 
-        const key = `cc_seen_update_${id}`;
-        const stored = localStorage.getItem(key);
+          const key = `cc_seen_update_${id}`;
+          const stored = localStorage.getItem(key);
 
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            const seenAt = parsed?.seenAt;
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              const seenAt = parsed?.seenAt;
 
-            const ONE_DAY = 24 * 60 * 60 * 1000;
+              const ONE_DAY = 24 * 60 * 60 * 1000;
 
-            if (seenAt && Date.now() - seenAt < ONE_DAY) {
-              return;
-            }
-          } catch (e) {}
+              if (seenAt && Date.now() - seenAt < ONE_DAY) {
+                continue;
+              }
+            } catch (e) {}
+          }
+
+          const payload = JSON.stringify({ updateId: id, sessionId });
+
+          let sent = false;
+
+          if (navigator.sendBeacon) {
+            const blob = new Blob([payload], { type: "application/json" });
+            sent = navigator.sendBeacon("/api/track-update-impression", blob);
+          }
+
+          if (!sent) {
+            try {
+              const res = await fetch("/api/track-update-impression", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: payload,
+              });
+              sent = res.ok;
+            } catch (e) {}
+          }
+
+          if (sent) {
+            localStorage.setItem(key, JSON.stringify({ seenAt: Date.now() }));
+          }
         }
-
-        localStorage.setItem(key, JSON.stringify({ seenAt: Date.now() }));
-
-        navigator.sendBeacon(
-          "/api/track-update-impression",
-          new Blob([JSON.stringify({ updateId: id, sessionId })], { type: "application/json" }),
-        );
-      });
+      })();
     }
   }, [loading, updates]);
 
