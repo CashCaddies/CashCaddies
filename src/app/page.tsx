@@ -1,10 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { parseUpdate } from "@/utils/parseUpdate";
 
 const FOUNDER_UPDATES_EMAIL = "cashcaddies@outlook.com";
+
+const SIGNUP_CTA_SENTENCE = "Click here to create your account and request beta access.";
+
+function renderUpdateBodyWithSignupLink(content: string): ReactNode {
+  if (!content.includes(SIGNUP_CTA_SENTENCE)) {
+    return content;
+  }
+  const parts = content.split(SIGNUP_CTA_SENTENCE);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <span key={i}>
+          {part}
+          {i < parts.length - 1 ? (
+            <a
+              href="/signup"
+              className="text-green-400 underline hover:text-green-300 font-medium"
+            >
+              {SIGNUP_CTA_SENTENCE}
+            </a>
+          ) : null}
+        </span>
+      ))}
+    </>
+  );
+}
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
@@ -220,7 +246,9 @@ Your update here...`}
                     </button>
                   </>
                 ) : (
-                  <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200 md:text-base">{a.content}</p>
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200 md:text-base">
+                    {renderUpdateBodyWithSignupLink(a.content)}
+                  </p>
                 )}
 
                 <button
