@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { BETA_ACCESS_DENIED_QUERY, CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
 
@@ -26,7 +27,15 @@ export default async function LoginPage(props: Props) {
             {CLOSED_BETA_ACCESS_MESSAGE} You have been signed out because this account is not on the beta allowlist.
           </p>
         )}
-        <AuthForm mode="login" />
+        <Suspense
+          fallback={
+            <div className="mx-auto w-full max-w-md rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-lg">
+              <p className="text-sm text-slate-400">Loading…</p>
+            </div>
+          }
+        >
+          <AuthForm mode="login" />
+        </Suspense>
         <p className="text-center text-sm text-slate-300">
           Need an account?{" "}
           <Link href="/signup" className="text-emerald-300 underline hover:text-emerald-200">

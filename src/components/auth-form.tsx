@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
 
@@ -43,6 +44,11 @@ function formatAuthErrorMessage(
 }
 
 export function AuthForm({ mode }: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const next = nextParam?.startsWith("/") ? nextParam : "/";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -119,10 +125,7 @@ export function AuthForm({ mode }: Props) {
     } = await supabase.auth.getSession();
 
     if (session) {
-      const params = new URLSearchParams(window.location.search);
-      const next = params.get("next") || "/dashboard";
-
-      window.location.href = next;
+      router.push(next);
     } else {
       setLoading(false);
     }
