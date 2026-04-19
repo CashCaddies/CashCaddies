@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-/** Server-only: bypasses RLS for admin scoring updates. */
+/** Server-only (uses `SUPABASE_SERVICE_ROLE_KEY`). Do not import from client components or shared modules used by the browser bundle. */
 export function createServiceRoleClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();

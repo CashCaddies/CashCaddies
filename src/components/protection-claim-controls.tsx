@@ -147,7 +147,7 @@ export function ProtectionClaimControls({
                   <p className="font-semibold text-white">Site credits (entry fee)</p>
                   <p className="text-xs text-slate-500">
                     Adds the contest entry fee to <span className="font-medium text-slate-400">site credits</span>{" "}
-                    when the server is configured (SUPABASE_SERVICE_ROLE_KEY). Otherwise the claim stays pending.
+                    when server-side billing is configured. Otherwise the claim stays pending.
                   </p>
                 </div>
               </label>
@@ -163,7 +163,7 @@ export function ProtectionClaimControls({
                   <p className="font-semibold text-white">Refund entry fee to account balance</p>
                   <p className="text-xs text-slate-500">
                     Returns the contest entry fee to your <span className="font-medium text-slate-400">cash</span>{" "}
-                    account balance (same service-role requirement as site credits).
+                    account balance (same server billing requirement as site credits).
                   </p>
                 </div>
               </label>

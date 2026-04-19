@@ -51,20 +51,11 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  console.log("🔥 HIT /api/updates POST");
-
   try {
     const denied = await requireFounderUpdatesAccess(req);
     if (denied) return denied;
 
-    console.log("=== /api/updates POST START ===");
-
     const body = await req.json();
-    console.log("Incoming body:", body);
-
-    console.log("ENV CHECK:");
-    console.log("SUPABASE_URL:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log("SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
     const supabase = getServiceClient();
 
@@ -76,8 +67,6 @@ export async function POST(req: Request) {
         },
       ])
       .select();
-
-    console.log("Supabase response:", { data, error });
 
     if (error) {
       console.error("INSERT ERROR:", error);
