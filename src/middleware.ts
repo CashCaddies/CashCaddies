@@ -52,7 +52,13 @@ export async function middleware(req: NextRequest) {
   if (!isPublicRoute && !user) {
     const redirectUrl = new URL("/login", req.url);
     redirectUrl.searchParams.set("next", pathname + req.nextUrl.search);
-    return NextResponse.redirect(redirectUrl);
+    const redirect = NextResponse.redirect(redirectUrl);
+    // Keep any Set-Cookie headers from Supabase (e.g. token refresh) on the redirect response
+    const setCookieHeaders = res.headers.getSetCookie();
+    for (const c of setCookieHeaders) {
+      redirect.headers.append("Set-Cookie", c);
+    }
+    return redirect;
   }
 
   return res;
