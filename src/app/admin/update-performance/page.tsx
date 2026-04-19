@@ -33,22 +33,23 @@ export default async function UpdatePerformancePage() {
     .select("id, message, created_at")
     .order("created_at", { ascending: false });
 
-  const { data: clicksRows } = await admin.from("update_cta_clicks").select("update_id");
-  const { data: convRows } = await admin.from("update_conversions").select("update_id");
+  // Aggregates run in Postgres (views); supabase-js has no .group() on .from().select().
+  const { data: clickCounts } = await admin.from("update_cta_click_counts").select("update_id, click_count");
+  const { data: conversionCounts } = await admin.from("update_conversion_counts").select("update_id, conversion_count");
 
-  const clickCounts = new Map<string, number>();
-  for (const r of clicksRows ?? []) {
-    const id = r.update_id as string | null | undefined;
-    if (!id) continue;
-    clickCounts.set(id, (clickCounts.get(id) ?? 0) + 1);
-  }
+  const clicksMap = new Map<string, number>();
+  clickCounts?.forEach((row) => {
+    const id = row.update_id as string | null | undefined;
+    if (!id) return;
+    clicksMap.set(id, Number(row.click_count ?? 0));
+  });
 
-  const convCounts = new Map<string, number>();
-  for (const r of convRows ?? []) {
-    const id = r.update_id as string | null | undefined;
-    if (!id) continue;
-    convCounts.set(id, (convCounts.get(id) ?? 0) + 1);
-  }
+  const conversionsMap = new Map<string, number>();
+  conversionCounts?.forEach((row) => {
+    const id = row.update_id as string | null | undefined;
+    if (!id) return;
+    conversionsMap.set(id, Number(row.conversion_count ?? 0));
+  });
 
   type Row = {
     id: string;
@@ -62,8 +63,8 @@ export default async function UpdatePerformancePage() {
   const rows: Row[] = (updates ?? []).map((u) => {
     const row = u as { id: string; message?: string | null; created_at?: string | null };
     const id = String(row.id);
-    const clicks = clickCounts.get(id) ?? 0;
-    const signups = convCounts.get(id) ?? 0;
+    const clicks = clicksMap.get(id) ?? 0;
+    const signups = conversionsMap.get(id) ?? 0;
     const rate = clicks > 0 ? signups / clicks : 0;
     return {
       id,
