@@ -40,7 +40,7 @@ export async function middleware(req: NextRequest) {
 
   if (!isPublicRoute && !session) {
     const redirectUrl = new URL("/login", req.url);
-    redirectUrl.searchParams.set("next", pathname);
+    redirectUrl.searchParams.set("next", pathname + req.nextUrl.search);
     return NextResponse.redirect(redirectUrl);
   }
 
