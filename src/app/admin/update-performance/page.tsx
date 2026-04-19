@@ -72,6 +72,7 @@ export default async function UpdatePerformancePage() {
     clicks: number;
     signups: number;
     rate: number;
+    score: number;
   };
 
   const rows: Row[] = (updates ?? []).map((u) => {
@@ -81,6 +82,7 @@ export default async function UpdatePerformancePage() {
     const clicks = clicksMap.get(id) ?? 0;
     const signups = conversionsMap.get(id) ?? 0;
     const rate = clicks > 0 ? signups / clicks : 0;
+    const score = impressions > 0 ? (signups / impressions) * 1000 : 0;
     return {
       id,
       title: titleFromMessage(row.message),
@@ -89,16 +91,21 @@ export default async function UpdatePerformancePage() {
       clicks,
       signups,
       rate,
+      score,
     };
   });
 
   let bestId: string | null = null;
-  let bestRate = -1;
+  let bestScore = -1;
   for (const r of rows) {
-    if (r.clicks > 0 && r.rate > bestRate) {
-      bestRate = r.rate;
+    if (r.impressions <= 0) continue;
+    if (r.score > bestScore) {
+      bestScore = r.score;
       bestId = r.id;
     }
+  }
+  if (bestScore <= 0) {
+    bestId = null;
   }
 
   return (
@@ -125,7 +132,7 @@ export default async function UpdatePerformancePage() {
           <p className="text-sm text-[#8b98a5]">No founder updates yet.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[980px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-[#2a3039] text-xs font-semibold uppercase tracking-wide text-[#8b98a5]">
                   <th className="pb-3 pr-4">Title</th>
@@ -134,12 +141,13 @@ export default async function UpdatePerformancePage() {
                   <th className="pb-3 pr-4 text-right tabular-nums">Clicks</th>
                   <th className="pb-3 pr-4 text-right tabular-nums">CTR</th>
                   <th className="pb-3 pr-4 text-right tabular-nums">Signups</th>
-                  <th className="pb-3 text-right tabular-nums">Conversion</th>
+                  <th className="pb-3 pr-4 text-right tabular-nums">Conversion</th>
+                  <th className="pb-3 text-right tabular-nums">Score</th>
                 </tr>
               </thead>
               <tbody className="text-slate-200">
                 {rows.map((r) => {
-                  const isBest = bestId != null && r.id === bestId && r.clicks > 0;
+                  const isBest = bestId != null && r.id === bestId;
                   return (
                     <tr
                       key={r.id}
@@ -151,7 +159,7 @@ export default async function UpdatePerformancePage() {
                         {r.title}
                         {isBest ? (
                           <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
-                            Best
+                            Top Performing
                           </span>
                         ) : null}
                       </td>
@@ -169,7 +177,8 @@ export default async function UpdatePerformancePage() {
                         {formatCtr(r.impressions, r.clicks)}
                       </td>
                       <td className="py-3 pr-4 text-right tabular-nums">{r.signups}</td>
-                      <td className="py-3 text-right tabular-nums text-slate-300">{formatPct(r.clicks, r.rate)}</td>
+                      <td className="py-3 pr-4 text-right tabular-nums text-slate-300">{formatPct(r.clicks, r.rate)}</td>
+                      <td className="py-3 text-right tabular-nums text-slate-300">{r.score.toFixed(2)}</td>
                     </tr>
                   );
                 })}
