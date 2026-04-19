@@ -218,7 +218,7 @@ export function AuthForm({ mode }: Props) {
     }
 
     setStatus("Welcome! Redirecting…");
-    window.location.href = "/";
+    router.push(next);
     setLoading(false);
   }
 

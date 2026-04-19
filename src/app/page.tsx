@@ -22,19 +22,24 @@ function renderUpdateBodyWithSignupLink(content: string, updateId: string): Reac
             <button
               type="button"
               onClick={async () => {
-                try {
-                  await fetch("/api/track-update-click", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ updateId }),
-                  });
-                } catch {
-                  /* ignore */
-                }
+                const payload = JSON.stringify({ updateId });
 
-                window.location.href = "/signup";
+                try {
+                  if (navigator.sendBeacon) {
+                    const blob = new Blob([payload], { type: "application/json" });
+                    navigator.sendBeacon("/api/track-update-click", blob);
+                  } else {
+                    await fetch("/api/track-update-click", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: payload,
+                    });
+                  }
+                } catch (e) {}
+
+                window.location.href = "/signup?next=/";
               }}
               className="mt-3 inline-block px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/40 text-green-300 hover:bg-green-500/20 transition font-medium"
             >
