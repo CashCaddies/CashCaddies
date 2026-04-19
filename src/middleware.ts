@@ -32,6 +32,12 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log("MIDDLEWARE USER:", user?.id || "NO USER");
+  console.log(
+    "COOKIES:",
+    req.cookies.getAll().map((c) => c.name),
+  );
+
   const isPublicRoute =
     pathname === "/" ||
     pathname.startsWith("/login") ||
