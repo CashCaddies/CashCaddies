@@ -92,11 +92,22 @@ export default function HomePage() {
         if (!id) return;
 
         const key = `cc_seen_update_${id}`;
-        const alreadySeen = localStorage.getItem(key);
+        const stored = localStorage.getItem(key);
 
-        if (alreadySeen) return;
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            const seenAt = parsed?.seenAt;
 
-        localStorage.setItem(key, "1");
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+
+            if (seenAt && Date.now() - seenAt < ONE_DAY) {
+              return;
+            }
+          } catch (e) {}
+        }
+
+        localStorage.setItem(key, JSON.stringify({ seenAt: Date.now() }));
 
         navigator.sendBeacon(
           "/api/track-update-impression",
