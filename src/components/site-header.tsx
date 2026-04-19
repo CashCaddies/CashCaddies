@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { isFounder, isOwner } from "@/lib/userRoles";
-import { playCupSound } from "@/lib/sounds";
+import { playCupSound, playPortalSound } from "@/lib/sounds";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
 import { HeaderStats } from "@/components/header-stats";
@@ -197,19 +197,9 @@ export function SiteHeader() {
     return true;
   };
 
-  const handleGolfBallClick = () => {
-    playCupSound();
-    void (async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        const next = encodeURIComponent("/portal");
-        window.location.href = `/login?next=${next}`;
-      } else {
-        router.push("/portal");
-      }
-    })();
+  const handlePortalEntry = () => {
+    playPortalSound();
+    router.push("/portal");
   };
 
   const getInitials = (email?: string) => {
@@ -239,15 +229,11 @@ export function SiteHeader() {
                   <div className="flex flex-1 justify-center">
                     <div className="flex min-w-[140px] flex-shrink-0 flex-col items-center justify-center">
                       <div>
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          aria-label="Portal"
-                          onClick={handleGolfBallClick}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleGolfBallClick();
-                          }}
-                          className="group relative cursor-pointer transition-opacity transition-transform active:scale-95"
+                        <button
+                          type="button"
+                          aria-label="Enter CC Portal"
+                          onClick={handlePortalEntry}
+                          className="group relative cursor-pointer transition-transform duration-150 ease-out will-change-transform hover:scale-110 hover:rotate-3 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400/40"
                         >
                           <div className="relative flex items-center justify-center">
                             <div
@@ -267,10 +253,10 @@ export function SiteHeader() {
                               />
                             </div>
                           </div>
-                        </div>
+                        </button>
                       </div>
                       <div
-                        onClick={handleGolfBallClick}
+                        onClick={handlePortalEntry}
                         className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
                       >
                         Click to enter CC Portal
