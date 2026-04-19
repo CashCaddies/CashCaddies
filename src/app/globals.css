@@ -1643,3 +1643,22 @@ header * {
 .animate-burst-glow {
   animation: burstGlow 0.7s ease-out forwards;
 }
+
+/* Remove ugly default focus outline */
+*:focus {
+  outline: none;
+}
+
+/* Add clean custom focus style (only for keyboard users) */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4); /* soft gold */
+  border-radius: 6px;
+}
+
+/* Prevent image/button ghost outlines (mouse click — keep :focus-visible gold ring for Tab) */
+button:focus:not(:focus-visible),
+button:active {
+  outline: none;
+  box-shadow: none;
+}
