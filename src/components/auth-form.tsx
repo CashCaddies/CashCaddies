@@ -159,16 +159,15 @@ export function AuthForm({ mode }: Props) {
       return;
     }
 
+    await new Promise((r) => setTimeout(r, 300));
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
-
-    if (session) {
+    if (session?.user?.id) {
       await persistLastSourceUpdate(session.user.id);
-      router.push(next);
-    } else {
-      setLoading(false);
     }
+    router.push("/");
   };
 
   async function resendConfirmation() {
