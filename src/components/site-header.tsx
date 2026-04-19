@@ -49,6 +49,7 @@ export function SiteHeader() {
   });
   const [notifOpen, setNotifOpen] = useState(false);
   const [prevTotal, setPrevTotal] = useState(0);
+  const [isEntering, setIsEntering] = useState(false);
 
   const email = session?.user?.email;
   const owner = isOwner(email);
@@ -197,9 +198,24 @@ export function SiteHeader() {
     return true;
   };
 
-  const handlePortalEntry = () => {
+  const handlePortalEntry = async () => {
     playPortalSound();
-    router.push("/portal");
+    setIsEntering(true);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    setTimeout(() => {
+      if (!session?.user) {
+        router.push("/login?next=/portal");
+        setIsEntering(false);
+        return;
+      }
+
+      router.push("/portal");
+      setIsEntering(false);
+    }, 180);
   };
 
   const getInitials = (email?: string) => {
@@ -209,6 +225,11 @@ export function SiteHeader() {
 
   return (
     <header className="relative w-full">
+      {isEntering && (
+        <div className="pointer-events-none fixed inset-0 z-[999]">
+          <div className="animate-flash absolute inset-0 bg-yellow-400/10" />
+        </div>
+      )}
       <HeaderAuthSection
         render={(ctx) => (
           <>

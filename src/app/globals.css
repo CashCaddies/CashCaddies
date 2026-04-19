@@ -1578,3 +1578,19 @@ header * {
 .animate-glow {
   animation: glowPulse 2.5s ease-in-out infinite;
 }
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-flash {
+  animation: flash 0.35s ease-out forwards;
+}
