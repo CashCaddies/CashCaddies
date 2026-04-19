@@ -256,7 +256,7 @@ export function SiteHeader() {
                           type="button"
                           aria-label="Enter CC Portal"
                           onClick={handlePortalEntry}
-                          className="group relative cursor-pointer transition-transform duration-150 ease-out will-change-transform hover:scale-110 hover:rotate-3 active:scale-95 focus:outline-none focus:ring-0"
+                          className="group relative cursor-pointer transition-transform duration-150 ease-out will-change-transform hover:scale-110 hover:rotate-3 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400/30"
                         >
                           <div className="relative flex items-center justify-center">
                             <div
