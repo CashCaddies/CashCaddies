@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
 import { parseUpdate } from "@/utils/parseUpdate";
 
@@ -53,8 +54,7 @@ function renderUpdateBodyWithSignupLink(content: string, updateId: string): Reac
 }
 
 export default function HomePage() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const [raw, setRaw] = useState("");
   const [updates, setUpdates] = useState<any[]>([]);
   const [reply, setReply] = useState("");
@@ -63,27 +63,19 @@ export default function HomePage() {
   const [editText, setEditText] = useState("");
 
   useEffect(() => {
-    const check = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user ?? null);
-      setLoading(false);
-    };
+    if (loading || !user) return;
 
-    check();
-  }, []);
-
-  useEffect(() => {
     const load = async () => {
       const res = await fetch("/api/updates");
       const data = await res.json();
       setUpdates(data.updates || []);
     };
 
-    load();
-  }, []);
+    void load();
+  }, [loading, user]);
 
   if (loading) {
-    return <div className="p-4">Loading...</div>;
+    return null;
   }
 
   if (user) {

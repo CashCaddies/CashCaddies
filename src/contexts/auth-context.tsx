@@ -9,6 +9,8 @@ export type AuthContextValue = {
   user: User | null;
   /** True after the initial session has been read from Supabase (client is usable for gated UI). */
   isReady: boolean;
+  /** True while the initial session is being resolved (same as `!isReady`). */
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -59,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       user: session?.user ?? null,
       isReady,
+      loading: !isReady,
     }),
     [session, isReady],
   );
