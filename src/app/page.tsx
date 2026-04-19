@@ -8,7 +8,7 @@ const FOUNDER_UPDATES_EMAIL = "cashcaddies@outlook.com";
 
 const SIGNUP_CTA_SENTENCE = "Click here to create your account and request beta access.";
 
-function renderUpdateBodyWithSignupLink(content: string): ReactNode {
+function renderUpdateBodyWithSignupLink(content: string, updateId: string): ReactNode {
   if (!content.includes(SIGNUP_CTA_SENTENCE)) {
     return content;
   }
@@ -19,14 +19,27 @@ function renderUpdateBodyWithSignupLink(content: string): ReactNode {
         <span key={i}>
           {part}
           {i < parts.length - 1 ? (
-            <a
-              href="/signup"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-green-400 underline hover:text-green-300 font-medium"
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await fetch("/api/track-update-click", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ updateId }),
+                  });
+                } catch {
+                  /* ignore */
+                }
+
+                window.location.href = "/signup";
+              }}
+              className="mt-3 inline-block px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/40 text-green-300 hover:bg-green-500/20 transition font-medium"
             >
-              {SIGNUP_CTA_SENTENCE}
-            </a>
+              Create Account / Request Beta Access
+            </button>
           ) : null}
         </span>
       ))}
@@ -249,7 +262,7 @@ Your update here...`}
                   </>
                 ) : (
                   <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200 md:text-base">
-                    {renderUpdateBodyWithSignupLink(a.content)}
+                    {renderUpdateBodyWithSignupLink(a.content, a.id)}
                   </p>
                 )}
 
