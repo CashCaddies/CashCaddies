@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { ensureProfileRowForUser } from "@/lib/auth/ensure-profile";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -32,11 +33,9 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log("MIDDLEWARE USER:", user?.id || "NO USER");
-  console.log(
-    "COOKIES:",
-    req.cookies.getAll().map((c) => c.name),
-  );
+  if (user) {
+    await ensureProfileRowForUser(user.id, user.email ?? undefined);
+  }
 
   const isPublicRoute =
     pathname === "/" ||
