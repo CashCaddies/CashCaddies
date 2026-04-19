@@ -14,7 +14,7 @@ export async function recordPortalSeasonContributionFromEntryFee(
   const fee = Math.max(0, Number(entryFeeUsd));
   if (!Number.isFinite(fee) || fee <= 0) return;
 
-  const contributionAmount = fee * CONTRIBUTION_RATE;
+  const contributionAmount = Math.round(fee * CONTRIBUTION_RATE * 100) / 100;
   if (contributionAmount <= 0) return;
 
   try {
