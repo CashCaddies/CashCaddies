@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase/client";
-import { refundContestEntryCharge } from "@/lib/contest-entry-payment";
+import { chargeContestEntry, refundContestEntryCharge } from "@/lib/contest-entry-payment";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { resolveContestEntryForSubmit } from "@/lib/contest-resolve";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
@@ -13,7 +13,6 @@ import {
   assertContestEntryCapacityOk,
   assertContestEntryEligible,
 } from "@/lib/contest-entry-eligibility";
-import { recordPortalSeasonContributionFromEntryFee } from "@/lib/portal-season-contribution";
 import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 
 function round2(n: number): number {
@@ -116,47 +115,32 @@ export async function confirmLobbyContestEntry(payload: {
     return { ok: false, error: eligLobby.error };
   }
 
-  const { data: atomicData, error: atomicErr } = await supabase.rpc("create_contest_entry_atomic", {
-    p_user_id: user.id,
-    p_contest_id: contestId,
-    p_entry_fee: fee,
-    p_protection_fee: 0,
-    p_total_paid: totalPaid,
-    p_protection_enabled: protectionEnabled,
-    p_lineup_id: lineupId,
-    p_contest_name: contestName,
-  });
-
-  if (atomicErr) {
-    return { ok: false, error: mapContestEntryFailure(atomicErr.message) };
-  }
-
-  const atomicRow = atomicData as {
-    ok?: boolean;
-    error?: string;
-    contest_entry_id?: string;
-    balance_restored?: number;
-    protection_credit_restored?: number;
-    loyalty_points_earned?: number;
-  } | null;
-
-  if (!atomicRow || atomicRow.ok === false) {
-    const raw =
-      typeof atomicRow?.error === "string" && atomicRow.error.trim() !== ""
-        ? atomicRow.error
-        : "Could not create contest entry.";
+  const admin = createServiceRoleClient();
+  if (!admin) {
     return {
       ok: false,
-      error: mapContestEntryFailure(raw),
+      error:
+        "Server billing is not configured. Set SUPABASE_SERVICE_ROLE_KEY for contest entry creation.",
     };
   }
 
-  const entryId = String(atomicRow.contest_entry_id ?? "");
+  const charged = await chargeContestEntry(admin, {
+    userId: user.id,
+    contestId,
+    contestName,
+    entryFeeUsd: fee,
+    protectionEnabled,
+    lineupId,
+  });
+
+  if (!charged.ok) {
+    return { ok: false, error: charged.error };
+  }
+
+  const entryId = charged.snapshot.contestEntryId;
   if (!entryId) {
     return { ok: false, error: "Could not create contest entry." };
   }
-
-  const admin = createServiceRoleClient();
 
   const { error: luErr } = await supabase
     .from("lineups")
@@ -176,10 +160,8 @@ export async function confirmLobbyContestEntry(payload: {
       const refund = await refundContestEntryCharge(admin, {
         userId: user.id,
         snapshot: {
-          creditsRestored: 0,
-          balanceRestored: Number(atomicRow.balance_restored ?? totalPaid),
-          protectionCreditRestored: Number(atomicRow.protection_credit_restored ?? 0),
-          loyaltyPointsEarned: Number(atomicRow.loyalty_points_earned ?? 0),
+          ...charged.snapshot,
+          balanceRestored: Number(charged.snapshot.balanceRestored ?? totalPaid),
           contestEntryId: entryId,
         },
         reason: `Refund — could not link lineup to contest entry (${contestId})`,
@@ -192,8 +174,6 @@ export async function confirmLobbyContestEntry(payload: {
     }
     return { ok: false, error: luErr.message };
   }
-
-  await recordPortalSeasonContributionFromEntryFee(supabase, user.id, fee);
 
   revalidatePath("/lobby");
   revalidatePath("/dashboard");

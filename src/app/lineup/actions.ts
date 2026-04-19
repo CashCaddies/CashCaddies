@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase/client";
-import { refundContestEntryCharge, type DebitSnapshot } from "@/lib/contest-entry-payment";
+import { chargeContestEntry, refundContestEntryCharge, type DebitSnapshot } from "@/lib/contest-entry-payment";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";
 import { resolveContestEntryForSubmit } from "@/lib/contest-resolve";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
@@ -20,8 +20,6 @@ import {
   assertContestEntryCapacityOk,
   assertContestEntryEligible,
 } from "@/lib/contest-entry-eligibility";
-import { recordPortalSeasonContributionFromEntryFee } from "@/lib/portal-season-contribution";
-import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
 import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
@@ -188,51 +186,32 @@ export async function submitLineup(payload: {
   }
 
   const admin = createServiceRoleClient();
+  if (!admin) {
+    return {
+      ok: false,
+      error:
+        "Server billing is not configured. Set SUPABASE_SERVICE_ROLE_KEY for contest entry creation.",
+    };
+  }
 
-  const { data: atomicData, error: atomicErr } = await supabase.rpc("create_contest_entry_atomic", {
-    p_user_id: user.id,
-    p_contest_id: contestId,
-    p_entry_fee: entryFeeUsd,
-    p_protection_fee: 0,
-    p_total_paid: totalPaidUsd,
-    p_protection_enabled: protectionEnabled,
-    p_lineup_id: null,
-    p_contest_name: contestName,
+  const charged = await chargeContestEntry(admin, {
+    userId: user.id,
+    contestId,
+    contestName,
+    entryFeeUsd,
+    protectionEnabled,
+    lineupId: null,
   });
 
-  if (atomicErr) {
-    return { ok: false, error: mapContestEntryFailure(atomicErr.message) };
+  if (!charged.ok) {
+    return { ok: false, error: charged.error };
   }
 
-  const atomicRow = atomicData as {
-    ok?: boolean;
-    error?: string;
-    contest_entry_id?: string;
-    balance_restored?: number;
-    protection_credit_restored?: number;
-    loyalty_points_earned?: number;
-  } | null;
-
-  if (!atomicRow || atomicRow.ok === false) {
-    const msg =
-      typeof atomicRow?.error === "string" && atomicRow.error.trim() !== ""
-        ? atomicRow.error
-        : "Could not create contest entry.";
-    return { ok: false, error: mapContestEntryFailure(msg) };
-  }
-
-  const ceId = atomicRow.contest_entry_id != null ? String(atomicRow.contest_entry_id) : "";
+  const paymentSnapshot = charged.snapshot;
+  const ceId = paymentSnapshot.contestEntryId;
   if (!ceId) {
     return { ok: false, error: "Could not create contest entry." };
   }
-
-  const paymentSnapshot: DebitSnapshot = {
-    creditsRestored: 0,
-    balanceRestored: Number(atomicRow.balance_restored ?? 0),
-    protectionCreditRestored: Number(atomicRow.protection_credit_restored ?? 0),
-    loyaltyPointsEarned: Number(atomicRow.loyalty_points_earned ?? 0),
-    contestEntryId: ceId,
-  };
 
   const totalSalaryInt = Math.round(totalSalary);
   const recordedTotalPaid = totalPaidUsd;
@@ -295,8 +274,6 @@ export async function submitLineup(payload: {
     });
     return { ok: false, error: "Could not link contest entry to lineup. You were not charged." };
   }
-
-  await recordPortalSeasonContributionFromEntryFee(supabase, user.id, entryFeeUsd);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
@@ -830,40 +807,28 @@ export async function enterContestWithSavedLineup(payload: {
   }
 
   const admin = createServiceRoleClient();
+  if (!admin) {
+    return {
+      ok: false,
+      error:
+        "Server billing is not configured. Set SUPABASE_SERVICE_ROLE_KEY for contest entry creation.",
+    };
+  }
 
-  const { data: atomicData, error: atomicErr } = await supabase.rpc("create_contest_entry_atomic", {
-    p_user_id: user.id,
-    p_contest_id: contestId,
-    p_entry_fee: entryFeeUsd,
-    p_protection_fee: 0,
-    p_total_paid: totalPaidUsd,
-    p_protection_enabled: protectionEnabled,
-    p_lineup_id: lineupId,
-    p_contest_name: contestName,
+  const charged = await chargeContestEntry(admin, {
+    userId: user.id,
+    contestId,
+    contestName,
+    entryFeeUsd,
+    protectionEnabled,
+    lineupId,
   });
 
-  if (atomicErr) {
-    return { ok: false, error: mapContestEntryFailure(atomicErr.message) };
+  if (!charged.ok) {
+    return { ok: false, error: charged.error };
   }
 
-  const atomicRow = atomicData as {
-    ok?: boolean;
-    error?: string;
-    contest_entry_id?: string;
-    balance_restored?: number;
-    protection_credit_restored?: number;
-    loyalty_points_earned?: number;
-  } | null;
-
-  if (!atomicRow || atomicRow.ok === false) {
-    const msg =
-      typeof atomicRow?.error === "string" && atomicRow.error.trim() !== ""
-        ? atomicRow.error
-        : "Could not create contest entry.";
-    return { ok: false, error: mapContestEntryFailure(msg) };
-  }
-
-  const entryIdRaw = atomicRow.contest_entry_id != null ? String(atomicRow.contest_entry_id) : "";
+  const entryIdRaw = charged.snapshot.contestEntryId;
   if (!entryIdRaw) {
     return { ok: false, error: "Could not create contest entry." };
   }
@@ -882,25 +847,17 @@ export async function enterContestWithSavedLineup(payload: {
     .eq("user_id", user.id);
 
   if (upErr) {
-    if (admin) {
-      await refundContestEntryCharge(admin, {
-        userId: user.id,
-        snapshot: {
-          creditsRestored: 0,
-          balanceRestored: Number(atomicRow.balance_restored ?? totalPaidUsd),
-          protectionCreditRestored: Number(atomicRow.protection_credit_restored ?? 0),
-          loyaltyPointsEarned: Number(atomicRow.loyalty_points_earned ?? 0),
-          contestEntryId: entryIdRaw,
-        },
-        reason: `Refund — could not finalize lineup entry (${contestId})`,
-      });
-    } else {
-      await supabase.from("contest_entries").delete().eq("id", entryIdRaw);
-    }
+    await refundContestEntryCharge(admin, {
+      userId: user.id,
+      snapshot: {
+        ...charged.snapshot,
+        balanceRestored: Number(charged.snapshot.balanceRestored ?? totalPaidUsd),
+        contestEntryId: entryIdRaw,
+      },
+      reason: `Refund — could not finalize lineup entry (${contestId})`,
+    });
     return { ok: false, error: upErr.message };
   }
-
-  await recordPortalSeasonContributionFromEntryFee(supabase, user.id, entryFeeUsd);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/lineups");
