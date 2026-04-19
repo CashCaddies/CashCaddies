@@ -2,14 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase/client";
 import {
   ADMIN_FEEDBACK_STATUSES,
   type AdminFeedbackStatus,
   type BetaFeedbackAdminRow,
 } from "@/app/admin/feedback/feedback-admin-types";
+import { getAdminClientContext } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { isOwner } from "@/lib/userRoles";
 
 function isMissingFunctionError(err: { message?: string } | null | undefined): boolean {
   const m = (err?.message ?? "").toLowerCase();
@@ -17,17 +16,6 @@ function isMissingFunctionError(err: { message?: string } | null | undefined): b
   if (m.includes("could not find function")) return true;
   if (m.includes("function") && (m.includes("does not exist") || m.includes("not found"))) return true;
   return false;
-}
-
-async function assertAdminSession(
-  supabase: SupabaseClient,
-): Promise<{ ok: true; userId: string } | { ok: false }> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user?.id) return { ok: false };
-  if (!isOwner(user.email)) return { ok: false };
-  return { ok: true, userId: user.id };
 }
 
 /** Coerce RPC rows from older overloads (e.g. admin_status + legacy text columns) into the inbox row shape. */
@@ -110,16 +98,11 @@ function mapJoinRowToAdmin(row: BetaFeedbackJoinRow): BetaFeedbackAdminRow {
 }
 
 async function listBetaFeedbackAdminFromTables(
-  supabase: SupabaseClient,
+  serverSupabase: SupabaseClient,
   filter: "all" | "new",
 ): Promise<{ rows: BetaFeedbackAdminRow[]; error: string | null }> {
-  const admin = await assertAdminSession(supabase);
-  if (!admin.ok) {
-    return { rows: [], error: "Admin access required." };
-  }
-
   const service = createServiceRoleClient();
-  const client: SupabaseClient = service ?? supabase;
+  const client: SupabaseClient = service ?? serverSupabase;
 
   let q = client
     .from("beta_feedback")
@@ -155,9 +138,14 @@ async function listBetaFeedbackAdminFromTables(
 export async function listBetaFeedbackAdmin(
   filter: "all" | "new" = "all",
 ): Promise<{ ok: true; rows: BetaFeedbackAdminRow[] } | { ok: false; error: string }> {
+  const auth = await getAdminClientContext();
+  if (!auth.ok) {
+    return { ok: false, error: auth.error };
+  }
+
   const p_filter = filter === "new" ? "new" : "all";
 
-  const primary = await supabase.rpc("admin_user_list_beta_feedback", {
+  const primary = await auth.supabase.rpc("admin_user_list_beta_feedback", {
     p_filter,
   });
 
@@ -170,7 +158,7 @@ export async function listBetaFeedbackAdmin(
   }
 
   if (isMissingFunctionError(primary.error)) {
-    const legacy = await supabase.rpc("admin_user_list_beta_feedback");
+    const legacy = await auth.supabase.rpc("admin_user_list_beta_feedback");
     if (!legacy.error && legacy.data != null) {
       let rows = coerceRpcRowsToAdminRows(legacy.data);
       if (filter === "new") {
@@ -179,7 +167,7 @@ export async function listBetaFeedbackAdmin(
       return { ok: true, rows };
     }
 
-    const fb = await listBetaFeedbackAdminFromTables(supabase, filter);
+    const fb = await listBetaFeedbackAdminFromTables(auth.supabase, filter);
     if (!fb.error) {
       return { ok: true, rows: fb.rows };
     }
@@ -193,7 +181,12 @@ export async function listBetaFeedbackAdmin(
 export async function getAdminNewFeedbackCount(): Promise<
   { ok: true; count: number } | { ok: false; error: string }
 > {
-  const { data, error } = await supabase.rpc("admin_user_new_feedback_count");
+  const auth = await getAdminClientContext();
+  if (!auth.ok) {
+    return { ok: false, error: auth.error };
+  }
+
+  const { data, error } = await auth.supabase.rpc("admin_user_new_feedback_count");
   if (!error) {
     const n = typeof data === "number" ? data : Number(data ?? 0);
     return { ok: true, count: Number.isFinite(n) ? n : 0 };
@@ -203,13 +196,8 @@ export async function getAdminNewFeedbackCount(): Promise<
     return { ok: false, error: error.message };
   }
 
-  const admin = await assertAdminSession(supabase);
-  if (!admin.ok) {
-    return { ok: false, error: "Admin access required." };
-  }
-
   const service = createServiceRoleClient();
-  const client: SupabaseClient = service ?? supabase;
+  const client: SupabaseClient = service ?? auth.supabase;
 
   const { count, error: cErr } = await client
     .from("beta_feedback")
@@ -227,11 +215,16 @@ export async function updateBetaFeedbackAdminStatus(
   feedbackId: string,
   status: AdminFeedbackStatus,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const auth = await getAdminClientContext();
+  if (!auth.ok) {
+    return { ok: false, error: auth.error };
+  }
+
   if (!ADMIN_FEEDBACK_STATUSES.includes(status)) {
     return { ok: false, error: "Invalid status." };
   }
 
-  const { error } = await supabase.rpc("admin_user_update_beta_feedback_status", {
+  const { error } = await auth.supabase.rpc("admin_user_update_beta_feedback_status", {
     p_feedback_id: feedbackId,
     p_status: status,
   });
@@ -250,6 +243,11 @@ export async function bulkUpdateFeedbackAdminStatus(
   feedbackIds: string[],
   status: AdminFeedbackStatus,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const auth = await getAdminClientContext();
+  if (!auth.ok) {
+    return { ok: false, error: auth.error };
+  }
+
   if (feedbackIds.length === 0) {
     return { ok: false, error: "No feedback selected." };
   }
@@ -258,7 +256,7 @@ export async function bulkUpdateFeedbackAdminStatus(
   }
 
   for (const feedbackId of feedbackIds) {
-    const { error } = await supabase.rpc("admin_user_update_beta_feedback_status", {
+    const { error } = await auth.supabase.rpc("admin_user_update_beta_feedback_status", {
       p_feedback_id: feedbackId,
       p_status: status,
     });

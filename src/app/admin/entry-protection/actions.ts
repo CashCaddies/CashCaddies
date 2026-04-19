@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "@/lib/supabase/client";
+import { getAdminClientContext } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { isOwner } from "@/lib/userRoles";
 
 export type ToggleEntryProtectionResult = { ok: true } | { ok: false; error: string };
 
@@ -18,15 +17,9 @@ export async function adminToggleEntryProtectionForced(
     return { ok: false, error: "Missing contest or entry id." };
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return { ok: false, error: "You must be logged in." };
-  }
-
-  if (!isOwner(user.email)) {
-    return { ok: false, error: "Admin access required." };
+  const auth = await getAdminClientContext();
+  if (!auth.ok) {
+    return { ok: false, error: auth.error };
   }
 
   const admin = createServiceRoleClient();

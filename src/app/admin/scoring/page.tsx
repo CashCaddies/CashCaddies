@@ -1,22 +1,20 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AdminScoringForm } from "@/components/admin-scoring-form";
-import { supabase } from "@/lib/supabase/client";
-import { isOwner } from "@/lib/userRoles";
+import { requireAdmin } from "@/lib/auth/requireAdmin";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export default async function AdminScoringPage() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || !isOwner(user.email)) {
-    redirect("/login");
-  }
+  await requireAdmin();
 
   let golfers: { id: string; name: string; fantasy_points: number }[] = [];
   let loadError: string | null = null;
 
+  const admin = createServiceRoleClient();
+
   try {
-        const { data, error } = await supabase.from("golfers").select("id,name,fantasy_points").order("name");
+    const { data, error } = admin
+      ? await admin.from("golfers").select("id,name,fantasy_points").order("name")
+      : { data: null, error: { message: "Server role is not configured." } as { message: string } };
     if (error) {
       loadError = error.message;
     } else {

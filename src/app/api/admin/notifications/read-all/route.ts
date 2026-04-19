@@ -1,23 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
 import { getServiceClient } from "@/lib/supabase/service";
-
-async function requireAdmin(req: Request): Promise<boolean> {
-  const supabaseAuth = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-
-  const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
-  if (!token) return false;
-
-  const { data } = await supabaseAuth.auth.getUser(token);
-  return data?.user?.email === "cashcaddies@outlook.com";
-}
+import { verifyBearerAdmin } from "@/lib/auth/verifyBearerAdmin";
 
 export async function PATCH(req: Request) {
-  const isAdmin = await requireAdmin(req);
-  if (!isAdmin) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403 });
+  const auth = await verifyBearerAdmin(req);
+  if ("error" in auth) {
+    return new Response(JSON.stringify({ error: auth.error }), { status: auth.status });
   }
 
   const supabase = getServiceClient();

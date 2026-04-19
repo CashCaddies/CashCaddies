@@ -1,15 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getAdminClientContext, getSeniorAdminClientContext } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { supabase } from "@/lib/supabase/client";
 import type { BetaPriority } from "@/lib/beta-priority";
 import { isBetaPriority } from "@/lib/beta-priority";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendBetaStatusEmail, type BetaStatusEmailKind } from "@/lib/email/betaStatusEmail";
 import { APP_CONFIG_KEY_MAX_BETA_USERS, getBetaCapacitySnapshot } from "@/lib/config";
 import { isInviteSource } from "@/lib/invite-source";
-import { isOwner } from "@/lib/userRoles";
 import { assertAccountBalanceCreditAllowed } from "@/lib/wallet-limit";
 
 type ActionResult = { ok: true; message: string } | { ok: false; error: string };
@@ -24,38 +23,8 @@ export type GrantBetaFundsResult =
 
 const ALLOWED_AMOUNTS = [10, 50, 100] as const;
 
-async function requireAdminActor() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return { ok: false as const, error: "Not signed in." };
-  }
-
-  if (!isOwner(user.email)) {
-    return { ok: false as const, error: "Admin access required." };
-  }
-
-  return { ok: true as const, userId: user.id, supabase };
-}
-
-async function requireSeniorAdminActor() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return { ok: false as const, error: "Not signed in." };
-  }
-
-  if (!isOwner(user.email)) {
-    return { ok: false as const, error: "Senior admin access required." };
-  }
-
-  return { ok: true as const, userId: user.id, supabase };
-}
-
 export async function grantBetaFunds(user_id: string, amount: number): Promise<GrantBetaFundsResult> {
-  const auth = await requireAdminActor();
+  const auth = await getAdminClientContext();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
   }
@@ -149,7 +118,7 @@ async function toggleFlag(
   user_id: string,
   field: "beta_user" | "founding_tester" | "is_beta_tester",
 ): Promise<ActionResult> {
-  const auth = await requireAdminActor();
+  const auth = await getAdminClientContext();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
   }
@@ -181,7 +150,7 @@ async function toggleFlag(
 }
 
 export async function setProfileBetaPriority(user_id: string, priority: BetaPriority): Promise<ActionResult> {
-  const auth = await requireSeniorAdminActor();
+  const auth = await getSeniorAdminClientContext();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
   }
@@ -219,7 +188,7 @@ export async function setProfileBetaPriority(user_id: string, priority: BetaPrio
 }
 
 export async function toggleAdmin(user_id: string): Promise<ActionResult> {
-  const auth = await requireSeniorAdminActor();
+  const auth = await getSeniorAdminClientContext();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
   }
@@ -285,68 +254,6 @@ export type ApproveBetaUserResult =
 export type BetaApprovalActionResult =
   | ({ ok: true; success: true } & BetaQueueUpdate)
   | { ok: false; error: string };
-
-// DEBUG: beta approval role gate disabled — restore before production.
-// const BETA_APPROVE_ALLOWED_PROFILE_ROLES = new Set([
-//   "admin",
-//   "founder",
-//   "super_admin",
-//   "senior_admin",
-// ]);
-
-async function requireApproveBetaActorFromSession(): Promise<
-  { ok: true; actorId: string } | { ok: false; error: string }
-> {
-  const { data: userData, error: userErr } = await supabase.auth.getUser();
-  if (userErr || !userData?.user) {
-    return { ok: false, error: "Not signed in." };
-  }
-
-  console.log("AUTH BYPASSED FOR DEBUG");
-
-  // const { data: profile, error: profileErr } = await supabase
-  //   .from("profiles")
-  //   .select("role")
-  //   .eq("id", userData.user.id)
-  //   .single();
-  // console.log("ADMIN ROLE:", profile?.role);
-  // const normalizedRole = String(profile?.role ?? "")
-  //   .trim()
-  //   .toLowerCase()
-  //   .replace(/\s+/g, "_");
-  // if (
-  //   profileErr ||
-  //   !profile ||
-  //   !BETA_APPROVE_ALLOWED_PROFILE_ROLES.has(normalizedRole)
-  // ) {
-  //   return { ok: false, error: "Unauthorized beta approval update" };
-  // }
-
-  return { ok: true, actorId: userData.user.id };
-}
-
-async function requireSeniorAdminSessionForConfig(): Promise<
-  | {
-      ok: true;
-      supabase: SupabaseClient;
-      actorId: string;
-    }
-  | { ok: false; error: string }
-> {
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-  if (userErr || !user) {
-    return { ok: false, error: "Not signed in." };
-  }
-
-  if (!isOwner(user.email)) {
-    return { ok: false, error: "Senior admin access required." };
-  }
-
-  return { ok: true, supabase, actorId: user.id };
-}
 
 type UpdateUserBetaStatusMode =
   | { kind: "approve" }
@@ -487,7 +394,7 @@ async function sendBetaStatusEmailSafe(
 export async function updateMaxBetaUsersCap(
   valueRaw: string,
 ): Promise<{ ok: true; maxBetaUsers: number } | { ok: false; error: string }> {
-  const auth = await requireSeniorAdminSessionForConfig();
+  const auth = await getSeniorAdminClientContext();
   if (!auth.ok) return auth;
 
   const trimmed = String(valueRaw ?? "").trim();
@@ -515,7 +422,7 @@ export async function updateMaxBetaUsersCap(
  * Senior admin only: approve beta access and mark profile as founding tester with founder priority.
  */
 export async function approveBetaUserAsFounder(userId: string): Promise<BetaApprovalActionResult> {
-  const senior = await requireSeniorAdminSessionForConfig();
+  const senior = await getSeniorAdminClientContext();
   if (!senior.ok) return senior;
 
   const targetId = String(userId ?? "").trim();
@@ -546,7 +453,7 @@ export async function approveBetaUserAsFounder(userId: string): Promise<BetaAppr
     return { ok: false, error: "Beta program is at capacity." };
   }
 
-  const db = await updateUserBetaStatus(admin, targetId, senior.actorId, { kind: "approve_founder" });
+  const db = await updateUserBetaStatus(admin, targetId, senior.userId, { kind: "approve_founder" });
   if (!db.ok) {
     return db;
   }
@@ -564,7 +471,7 @@ export async function approveBetaUserAsFounder(userId: string): Promise<BetaAppr
 export async function approveBetaUser(userId: string): Promise<ApproveBetaUserResult> {
   console.log("APPROVE START", userId);
   try {
-    const auth = await requireApproveBetaActorFromSession();
+    const auth = await getAdminClientContext();
     if (!auth.ok) {
       return { success: false, error: String(auth.error) };
     }
@@ -617,7 +524,7 @@ export async function approveBetaUser(userId: string): Promise<ApproveBetaUserRe
       const { error: auditErr } = await admin.from("beta_approvals").insert({
         user_id: targetId,
         action: "approved",
-        changed_by: auth.actorId,
+        changed_by: auth.userId,
       });
       if (auditErr) {
         throw auditErr;
@@ -659,7 +566,7 @@ export async function approveBetaUser(userId: string): Promise<ApproveBetaUserRe
 }
 
 export async function rejectBetaUser(userId: string): Promise<BetaApprovalActionResult> {
-  const auth = await requireApproveBetaActorFromSession();
+  const auth = await getAdminClientContext();
   if (!auth.ok) return auth;
 
   const targetId = String(userId ?? "").trim();
@@ -685,7 +592,7 @@ export async function rejectBetaUser(userId: string): Promise<BetaApprovalAction
     return { ok: false, error: "User cannot be rejected from their current beta status." };
   }
 
-  const db = await updateUserBetaStatus(admin, targetId, auth.actorId, { kind: "reject" });
+  const db = await updateUserBetaStatus(admin, targetId, auth.userId, { kind: "reject" });
   if (!db.ok) {
     return db;
   }
@@ -705,7 +612,7 @@ export async function rejectBetaUser(userId: string): Promise<BetaApprovalAction
  * Returns the same capacity snapshot shape as approve/reject for queue UI updates.
  */
 export async function setBetaWaitlist(userId: string, enabled: boolean): Promise<BetaApprovalActionResult> {
-  const auth = await requireApproveBetaActorFromSession();
+  const auth = await getAdminClientContext();
   if (!auth.ok) return auth;
 
   const targetId = String(userId ?? "").trim();
@@ -741,7 +648,7 @@ export async function setBetaWaitlist(userId: string, enabled: boolean): Promise
     return { ok: true, success: true, approvedCount: after.approvedCount, maxBetaUsers: after.maxBetaUsers };
   }
 
-  const db = await updateUserBetaStatus(admin, targetId, auth.actorId, {
+  const db = await updateUserBetaStatus(admin, targetId, auth.userId, {
     kind: "waitlist",
     enabled: Boolean(enabled),
   });
@@ -772,7 +679,7 @@ export async function bulkUpdateBetaStatus(
   userIds: string[],
   action: "approved" | "rejected",
 ): Promise<BulkBetaStatusResult> {
-  const auth = await requireApproveBetaActorFromSession();
+  const auth = await getAdminClientContext();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
   }
@@ -838,7 +745,7 @@ export async function bulkUpdateBetaStatus(
     const auditRows = eligibleIds.map((user_id) => ({
       user_id,
       action: "approved" as const,
-      changed_by: auth.actorId,
+      changed_by: auth.userId,
     }));
     const { error: logErr } = await admin.from("beta_approvals").insert(auditRows);
     if (logErr) {
@@ -881,7 +788,7 @@ export async function bulkUpdateBetaStatus(
   const auditReject = rejectIds.map((user_id) => ({
     user_id,
     action: "rejected" as const,
-    changed_by: auth.actorId,
+    changed_by: auth.userId,
   }));
   const { error: logErr } = await admin.from("beta_approvals").insert(auditReject);
   if (logErr) {
@@ -905,7 +812,7 @@ export type UpdateBetaNotesResult = { ok: true } | { ok: false; error: string };
 
 /** Admin or senior_admin (same gate as beta queue). */
 export async function updateProfileBetaNotes(userId: string, betaNotes: string): Promise<UpdateBetaNotesResult> {
-  const auth = await requireApproveBetaActorFromSession();
+  const auth = await getAdminClientContext();
   if (!auth.ok) return auth;
 
   const targetId = String(userId ?? "").trim();
@@ -945,7 +852,7 @@ export async function updateProfileInviteSource(
   userId: string,
   inviteSource: string,
 ): Promise<UpdateBetaNotesResult> {
-  const auth = await requireApproveBetaActorFromSession();
+  const auth = await getAdminClientContext();
   if (!auth.ok) return auth;
 
   const targetId = String(userId ?? "").trim();
@@ -994,7 +901,7 @@ export async function processWaitlistSignup(
   signupId: string,
   kind: "approve" | "keep_waiting" | "remove",
 ): Promise<WaitlistProcessResult> {
-  const auth = await requireApproveBetaActorFromSession();
+  const auth = await getAdminClientContext();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
   }

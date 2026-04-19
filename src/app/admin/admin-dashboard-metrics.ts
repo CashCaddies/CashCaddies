@@ -1,8 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { supabase } from "@/lib/supabase/client";
-import { isOwner } from "@/lib/userRoles";
 
 /** Shape of `public.admin_dashboard_metrics()` JSON (snake_case keys from Postgres). */
 export type AdminDashboardMetrics = {
@@ -33,17 +32,7 @@ export async function getAdminMetrics(): Promise<GetAdminMetricsResult> {
     return { ok: false, error: "Missing Supabase configuration." };
   }
 
-  const {
-    data: { user },
-    error: authErr,
-  } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return { ok: false, error: "Not signed in." };
-  }
-
-  if (!isOwner(user.email)) {
-    return { ok: false, error: "Admin access required." };
-  }
+  await requireAdmin();
 
   const svc = createServiceRoleClient();
   if (!svc) {

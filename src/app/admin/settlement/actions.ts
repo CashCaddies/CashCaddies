@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { settleContestPrizes } from "@/lib/contest-payout-engine";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
@@ -14,6 +15,7 @@ export type RunContestSettlementResult =
   | { ok: false; error: string };
 
 export async function runContestSettlement(formData: FormData): Promise<RunContestSettlementResult> {
+  await requireAdmin();
   const secret = process.env.ADMIN_SCORING_SECRET;
   if (!secret || formData.get("adminSecret") !== secret) {
     return { ok: false, error: "Invalid or missing admin secret." };

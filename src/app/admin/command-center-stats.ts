@@ -1,9 +1,8 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { supabase } from "@/lib/supabase/client";
 import { fetchInsurancePoolBalanceUsd } from "@/lib/insurance-pool-balance";
-import { isOwner } from "@/lib/userRoles";
 
 export type AdminCommandCenterStatsResult =
   | {
@@ -25,17 +24,7 @@ export async function fetchAdminCommandCenterStats(): Promise<AdminCommandCenter
     return { ok: false, error: "Missing Supabase configuration." };
   }
 
-  const {
-    data: { user },
-    error: authErr,
-  } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return { ok: false, error: "Not signed in." };
-  }
-
-  if (!isOwner(user.email)) {
-    return { ok: false, error: "Admin access required." };
-  }
+  await requireAdmin();
 
   const svc = createServiceRoleClient();
   if (!svc) {

@@ -7,7 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase/client";
-import { isFounder, isOwner } from "@/lib/userRoles";
+import { isAdminRole, isSeniorAdminRole } from "@/lib/auth/roles";
+import { isFounder } from "@/lib/userRoles";
 import { playCupSound, playPortalSound } from "@/lib/sounds";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderFundBar } from "@/components/header-fund-bar";
@@ -52,9 +53,9 @@ export function SiteHeader() {
   const [isEntering, setIsEntering] = useState(false);
 
   const email = session?.user?.email;
-  const owner = isOwner(email);
   const founder = isFounder(profile);
-  const isAdmin = owner;
+  const isAdmin = isAdminRole(profile?.role);
+  const privilegedAdmin = isSeniorAdminRole(profile?.role);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -413,10 +414,10 @@ export function SiteHeader() {
                             {getInitials(sessionUser?.email)}
                           </div>
                         </button>
-                        {owner ? (
+                        {privilegedAdmin ? (
                           <span className="ml-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded">Owner</span>
                         ) : null}
-                        {!owner && founder ? (
+                        {!privilegedAdmin && founder ? (
                           <span className="ml-2 text-xs bg-yellow-500 text-black px-2 py-0.5 rounded">
                             Founding Member
                           </span>

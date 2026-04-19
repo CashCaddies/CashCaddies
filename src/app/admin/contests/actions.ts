@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { normalizeContestStateForInsert } from "@/lib/contest-admin-state";
-import { isOwner } from "@/lib/userRoles";
+import { getAdminClientContext } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export type CreateContestInput = {
@@ -55,21 +55,17 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
   if (!startsAt) return { ok: false, error: "Start date is required." };
   if (!requesterUserId) return { ok: false, error: "Missing requester user id." };
 
+  const gate = await getAdminClientContext();
+  if (!gate.ok) {
+    return { ok: false, error: gate.error };
+  }
+  if (requesterUserId !== gate.userId) {
+    return { ok: false, error: "Admin access required." };
+  }
+
   const admin = createServiceRoleClient();
   if (!admin) {
     return { ok: false, error: "Server role is not configured." };
-  }
-
-  const { data: profile, error: profileError } = await admin
-    .from("profiles")
-    .select("email")
-    .eq("id", requesterUserId)
-    .maybeSingle();
-  if (profileError) {
-    return { ok: false, error: profileError.message };
-  }
-  if (!isOwner(profile?.email)) {
-    return { ok: false, error: "Admin access required." };
   }
 
   // Keep simple: insert only columns that exist across current schema.
@@ -117,17 +113,17 @@ async function getServiceClientForOwnerRequester(
   const uid = String(requesterUserId ?? "").trim();
   if (!uid) return { ok: false, error: "Missing requester user id." };
 
+  const gate = await getAdminClientContext();
+  if (!gate.ok) {
+    return { ok: false, error: gate.error };
+  }
+  if (uid !== gate.userId) {
+    return { ok: false, error: "Admin access required." };
+  }
+
   const admin = createServiceRoleClient();
   if (!admin) {
     return { ok: false, error: "Server role is not configured." };
-  }
-
-  const { data: profile, error: profileError } = await admin.from("profiles").select("email").eq("id", uid).maybeSingle();
-  if (profileError) {
-    return { ok: false, error: profileError.message };
-  }
-  if (!isOwner(profile?.email)) {
-    return { ok: false, error: "Admin access required." };
   }
   return { ok: true, admin };
 }

@@ -1,5 +1,1 @@
-export const isOwner = (email?: string | null) =>
-  email === "cashcaddies@outlook.com";
-
-export const isFounder = (profile?: any) =>
-  !!profile?.is_founder;
+export const isFounder = (profile?: { is_founder?: boolean | null }) => !!profile?.is_founder;

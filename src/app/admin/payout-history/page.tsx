@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getPayoutHistory, type PayoutHistoryRow } from "@/lib/admin/get-payout-history";
-import { supabase } from "@/lib/supabase/client";
-import { isOwner } from "@/lib/userRoles";
+import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { formatPayoutUserDisplay } from "@/lib/admin/payout-profile-display";
 
 type PageProps = {
@@ -17,12 +15,7 @@ function filterHref(contestId: string, paid?: "true" | "false") {
 }
 
 export default async function PayoutHistoryPage({ searchParams }: PageProps) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || !isOwner(user.email)) {
-    redirect("/login");
-  }
+  await requireAdmin();
 
   const sp = await searchParams;
   const contestId = typeof sp.contestId === "string" ? sp.contestId.trim() : "";

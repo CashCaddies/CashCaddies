@@ -5,30 +5,20 @@ import { FeedbackAdminTable } from "@/app/admin/feedback/feedback-admin-table";
 import { getAdminNewFeedbackCount, listBetaFeedbackAdmin } from "@/app/admin/feedback/actions";
 import type { BetaFeedbackAdminRow } from "@/app/admin/feedback/feedback-admin-types";
 import { AdminHubNav } from "@/components/admin-hub-nav";
-import { supabase } from "@/lib/supabase/client";
-import { isOwner } from "@/lib/userRoles";
+import { requireAdmin } from "@/lib/auth/requireAdmin";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 type PageProps = {
   searchParams?: Promise<{ filter?: string }>;
 };
 
 export default async function AdminFeedbackPage({ searchParams }: PageProps) {
-    const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/login");
-  }
+  const { userId } = await requireAdmin();
 
-  if (!isOwner(user.email)) {
-    redirect("/login");
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("founding_tester, role")
-    .eq("id", user.id)
-    .maybeSingle();
+  const admin = createServiceRoleClient();
+  const { data: profile } = admin
+    ? await admin.from("profiles").select("founding_tester, role").eq("id", userId).maybeSingle()
+    : { data: null };
 
   if (!profile) {
     redirect("/login");
