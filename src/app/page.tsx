@@ -62,6 +62,15 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
+  const getSessionId = () => {
+    let sessionId = localStorage.getItem("cc_session_id");
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem("cc_session_id", sessionId);
+    }
+    return sessionId;
+  };
+
   useEffect(() => {
     if (!loading) {
       const fetchUpdates = async () => {
@@ -76,12 +85,22 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading && updates.length > 0 && typeof navigator !== "undefined" && navigator.sendBeacon) {
+      const sessionId = getSessionId();
+
       updates.forEach((update) => {
         const id = update?.id;
         if (!id) return;
+
+        const key = `cc_seen_update_${id}`;
+        const alreadySeen = localStorage.getItem(key);
+
+        if (alreadySeen) return;
+
+        localStorage.setItem(key, "1");
+
         navigator.sendBeacon(
           "/api/track-update-impression",
-          new Blob([JSON.stringify({ updateId: id })], { type: "application/json" }),
+          new Blob([JSON.stringify({ updateId: id, sessionId })], { type: "application/json" }),
         );
       });
     }
