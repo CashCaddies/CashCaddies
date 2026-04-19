@@ -260,11 +260,20 @@ export function SiteHeader() {
                         >
                           <div className="relative flex items-center justify-center">
                             <div
-                              className="animate-glow pointer-events-none absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
-                              style={{
-                                background:
-                                  "radial-gradient(circle, rgba(250, 204, 21, 0.35) 0%, rgba(250, 204, 21, 0.15) 40%, transparent 70%)",
-                              }}
+                              className="
+    pointer-events-none absolute inset-0
+    scale-125 rounded-full
+    bg-yellow-400/40 blur-2xl
+    animate-portal-glow
+  "
+                            />
+                            <div
+                              className="
+    pointer-events-none absolute inset-0
+    scale-110 rounded-full
+    bg-yellow-300/30 blur-xl
+    animate-portal-glow-inner
+  "
                             />
                             <div className="relative z-10">
                               <Image

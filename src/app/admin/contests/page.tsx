@@ -8,7 +8,7 @@ import { isOwner } from "@/lib/userRoles";
 import { contestStatusBadgeClassName, contestStatusBadgeLabel } from "@/lib/contest-admin-state";
 import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { supabase } from "@/lib/supabase/client";
-import { isMissingColumnOrSchemaError } from "@/lib/supabase-missing-column";
+import { createContestAdmin, updateContestAdmin } from "./actions";
 
 type ContestRow = {
   id: string;
@@ -168,15 +168,15 @@ export default function AdminContestsPage() {
   }
 
   const handlePublish = async (row: ContestRow) => {
-    if (!supabase || !canShowPublishForRow(row)) return;
+    if (!user?.id || !canShowPublishForRow(row)) return;
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("contests").update({ status: "filling" }).eq("id", row.id);
+      const result = await updateContestAdmin(user.id, row.id, { status: "filling" });
 
-      if (error) {
-        console.error(error);
-        alert("Publish failed");
+      if (!result.ok) {
+        console.error(result.error);
+        alert(result.error || "Publish failed");
         return;
       }
 
@@ -414,54 +414,27 @@ export default function AdminContestsPage() {
                 const parsedPrizePool = Number(prizePool) || 0;
                 const parsedMaxEntries = Number(maxEntries) || 0;
 
-                const createdAt = new Date().toISOString();
-                const payload = {
-                  id: crypto.randomUUID(),
+                const created = await createContestAdmin({
+                  requesterUserId: authUser.id,
                   name,
-                  start_time: new Date(startDate).toISOString(),
+                  entryFee: parsedEntryFee,
+                  maxEntries: parsedMaxEntries,
+                  startDate: new Date(startDate).toISOString(),
                   status: "locked",
-                  entries_open_at: createdAt,
-                  entry_count: 0,
-                  created_by: authUser.id,
-                  entry_fee: parsedEntryFee,
-                  entry_fee_usd: parsedEntryFee,
-                  prize_pool: parsedPrizePool,
-                  max_entries: parsedMaxEntries,
-                  starts_at: new Date(startDate).toISOString(),
-                  max_entries_per_user: 1,
-                  created_at: createdAt,
-                };
+                  prizePool: parsedPrizePool,
+                });
 
-                const firstInsert = await supabase.from("contests").insert(payload).select("id").single();
-                let createdContestId: string | null = null;
-                if (firstInsert.error && isMissingColumnOrSchemaError(firstInsert.error)) {
-                  const { created_by: _createdBy, ...fallbackPayload } = payload;
-                  const fallbackInsert = await supabase
-                    .from("contests")
-                    .insert(fallbackPayload)
-                    .select("id")
-                    .single();
-                  if (fallbackInsert.error) {
-                    setIsError(true);
-                    setMessage(fallbackInsert.error.message);
-                    return;
-                  }
-                  createdContestId = String(fallbackInsert.data?.id ?? "");
-                } else if (firstInsert.error) {
+                if (!created.ok) {
                   setIsError(true);
-                  setMessage(firstInsert.error.message);
+                  setMessage(created.error);
                   return;
-                } else {
-                  createdContestId = String(firstInsert.data?.id ?? "");
                 }
 
                 const contests = await fetchContestsSafe();
                 setRows(contests);
                 setIsError(false);
                 setMessage("Contest created successfully.");
-                if (createdContestId) {
-                  router.push(`/lobby?created=${encodeURIComponent(createdContestId)}`);
-                }
+                router.push(`/lobby?created=${encodeURIComponent(created.contestId)}`);
               } catch (e) {
                 console.error(e);
                 setIsError(true);

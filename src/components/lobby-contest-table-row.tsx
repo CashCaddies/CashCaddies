@@ -13,6 +13,7 @@ import {
   formatProtectedEntriesPercent,
 } from "@/lib/contest-lobby-shared";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
+import { deleteContestAdmin } from "@/app/admin/contests/actions";
 import { supabase } from "@/lib/supabase/client";
 import { AdminContestControls } from "@/components/admin-contest-controls";
 import { ContestFullBadge, ContestLifecycleStatusBadge, ContestLockCountdown } from "@/components/contest-card";
@@ -272,26 +273,24 @@ export function LobbyContestTableRow({
 
   const handleDelete = async () => {
     if (loading) return;
-    setLoading(true);
-
-    try {
-      if (!supabase) {
-        console.error(new Error("Supabase client is not available."));
-      } else {
-        const { error } = await supabase.from("contests").delete().eq("id", contest.id);
-
-        if (error) {
-          console.error(error);
-        } else {
-          onContestRemoved?.(contest.id);
-          return;
-        }
-      }
-    } catch (err) {
-      console.error(err);
+    if (!user?.id) {
+      console.error(new Error("You must be signed in to delete a contest."));
+      return;
     }
 
-    setLoading(false);
+    setLoading(true);
+    try {
+      const result = await deleteContestAdmin(user.id, contest.id);
+      if (!result.ok) {
+        console.error(result.error);
+        return;
+      }
+      onContestRemoved?.(contest.id);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSettle = async () => {
