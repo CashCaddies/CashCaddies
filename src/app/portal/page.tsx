@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import golfBall from "../../../public/golf-ball.png";
 import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
@@ -26,6 +27,7 @@ function portalFundTestMode(): 0 | 1 | 2 {
 const TIER_THRESHOLDS = [0, 100, 500, 2000, 10000];
 
 export default function PortalPage() {
+  const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTierInfo, setShowTierInfo] = useState(false);
   const [showRules, setShowRules] = useState(false);
@@ -169,6 +171,26 @@ export default function PortalPage() {
         </div>
       )}
 
+      <div className="mb-8 rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm">
+        <div className="mb-3 text-xs uppercase tracking-widest text-gray-400">How Portal Access Works</div>
+
+        <div className="space-y-2 text-sm text-gray-300">
+          <p>Enter contests in the Lobby to contribute to the Protection Fund.</p>
+
+          <p>Your total contribution determines your Tier.</p>
+
+          <p>Higher tiers unlock exclusive Portal contests with larger prize pools.</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => router.push("/lobby")}
+          className="mt-4 text-sm text-green-400 hover:underline"
+        >
+          Go to Lobby →
+        </button>
+      </div>
+
       <div className="group relative">
         <div className="relative mb-10 overflow-hidden rounded-xl border border-green-500/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg shadow-green-500/10 transition-all duration-300 hover:-translate-y-[2px] hover:shadow-green-500/20">
           <div className="pointer-events-none absolute inset-0 animate-pulse rounded-xl bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-20 blur-2xl" />
@@ -247,6 +269,8 @@ export default function PortalPage() {
           />
         </div>
       </div>
+
+      <div className="mt-2 text-xs text-gray-500">Earn progress by entering contests in the Lobby.</div>
 
       <div className="mb-6">
         <h3 className="text-md font-semibold mb-2">Available Contests</h3>

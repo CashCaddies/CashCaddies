@@ -1594,3 +1594,20 @@ header * {
 .animate-flash {
   animation: flash 0.35s ease-out forwards;
 }
+
+/* Portal entry — screen dim (separate class: .animate-fade is used by header ticker) */
+@keyframes portalEntryScreenFade {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-portal-entry-screen {
+  animation: portalEntryScreenFade 0.35s ease-out forwards;
+}

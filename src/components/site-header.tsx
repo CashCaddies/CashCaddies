@@ -226,8 +226,10 @@ export function SiteHeader() {
   return (
     <header className="relative w-full">
       {isEntering && (
-        <div className="pointer-events-none fixed inset-0 z-[999]">
-          <div className="animate-flash absolute inset-0 bg-yellow-400/10" />
+        <div className="pointer-events-none fixed inset-0 z-[999] flex items-center justify-center">
+          <div className="animate-portal-entry-screen absolute inset-0 bg-black/20" />
+
+          <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 animate-flash rounded-full bg-yellow-400/20 blur-3xl" />
         </div>
       )}
       <HeaderAuthSection
