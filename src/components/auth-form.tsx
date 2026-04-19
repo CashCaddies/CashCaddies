@@ -55,6 +55,23 @@ export function AuthForm({ mode }: Props) {
       ? nextParam
       : "/";
 
+  async function persistLastSourceUpdate(userId: string) {
+    if (typeof window === "undefined" || !supabase) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const sourceUpdate = params.get("source_update");
+      if (!sourceUpdate) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ last_source_update: sourceUpdate })
+        .eq("id", userId);
+      if (error) return;
+    } catch {
+      /* non-blocking attribution */
+    }
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -131,6 +148,7 @@ export function AuthForm({ mode }: Props) {
     } = await supabase.auth.getSession();
 
     if (session) {
+      await persistLastSourceUpdate(session.user.id);
       router.push(next);
     } else {
       setLoading(false);
@@ -218,6 +236,9 @@ export function AuthForm({ mode }: Props) {
     }
 
     setStatus("Welcome! Redirecting…");
+    if (authData.user) {
+      await persistLastSourceUpdate(authData.user.id);
+    }
     router.push(next);
     setLoading(false);
   }

@@ -40,7 +40,7 @@ function renderUpdateBodyWithSignupLink(content: string, updateId: string): Reac
                   }
                 } catch (e) {}
 
-                window.location.href = "/signup?next=/";
+                window.location.href = `/signup?next=/&source_update=${updateId}`;
               }}
               className="mt-3 inline-block px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/40 text-green-300 hover:bg-green-500/20 transition font-medium"
             >
