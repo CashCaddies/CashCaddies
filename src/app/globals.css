@@ -1611,3 +1611,35 @@ header * {
 .animate-portal-entry-screen {
   animation: portalEntryScreenFade 0.35s ease-out forwards;
 }
+
+@keyframes burstFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.9);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -6px) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -20px) scale(1);
+  }
+}
+
+.animate-burst-float {
+  animation: burstFloat 1.2s ease-out forwards;
+}
+
+@keyframes burstGlow {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-burst-glow {
+  animation: burstGlow 0.7s ease-out forwards;
+}

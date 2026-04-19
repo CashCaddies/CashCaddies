@@ -34,6 +34,8 @@ export default function PortalPage() {
   const [showTierUnlock, setShowTierUnlock] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [contests, setContests] = useState<any[]>([]);
+  const [burstAmount, setBurstAmount] = useState<number | null>(null);
+  const [burstKey, setBurstKey] = useState(0);
 
   const prevTierRef = useRef<number | null>(null);
 
@@ -100,6 +102,26 @@ export default function PortalPage() {
   );
 
   const contribution = Number(profile?.season_contribution || 0);
+
+  const prevContributionRef = useRef(contribution);
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | undefined;
+    if (contribution > prevContributionRef.current) {
+      const diff = contribution - prevContributionRef.current;
+      setBurstAmount(diff);
+      setBurstKey((k) => k + 1);
+
+      t = setTimeout(() => {
+        setBurstAmount(null);
+      }, 1200);
+    }
+
+    prevContributionRef.current = contribution;
+    return () => {
+      if (t) clearTimeout(t);
+    };
+  }, [contribution]);
 
   const currentThreshold = TIER_THRESHOLDS[userTier - 1];
   const nextThreshold = TIER_THRESHOLDS[userTier] || null;
@@ -262,11 +284,30 @@ export default function PortalPage() {
           <span>${contribution.toLocaleString()}</span>
         </div>
 
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-900">
-          <div
-            className="h-full bg-green-500 transition-all"
-            style={{ width: `${progressPercent}%` }}
-          />
+        <div className="relative">
+          {burstAmount && (
+            <div
+              key={burstKey}
+              className="pointer-events-none absolute left-1/2 -top-6 z-10 -translate-x-1/2 animate-burst-float font-semibold text-green-400"
+            >
+              {`+$${Number(burstAmount).toFixed(2)}`}
+            </div>
+          )}
+
+          <div className="relative overflow-hidden rounded-full">
+            {burstAmount && (
+              <div
+                key={`${burstKey}-glow`}
+                className="animate-burst-glow pointer-events-none absolute inset-0 bg-green-400/20 blur-md"
+              />
+            )}
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-900">
+              <div
+                className="h-full bg-green-500 transition-all duration-700 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
