@@ -74,6 +74,19 @@ export default function HomePage() {
     }
   }, [loading]);
 
+  useEffect(() => {
+    if (!loading && updates.length > 0 && typeof navigator !== "undefined" && navigator.sendBeacon) {
+      updates.forEach((update) => {
+        const id = update?.id;
+        if (!id) return;
+        navigator.sendBeacon(
+          "/api/track-update-impression",
+          new Blob([JSON.stringify({ updateId: id })], { type: "application/json" }),
+        );
+      });
+    }
+  }, [loading, updates]);
+
   if (loading) {
     return null;
   }

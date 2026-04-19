@@ -16,6 +16,11 @@ function formatPct(clicks: number, rate: number): string {
   return `${(rate * 100).toFixed(1)}%`;
 }
 
+function formatCtr(impressions: number, clicks: number): string {
+  if (impressions <= 0 || !Number.isFinite(clicks)) return "—";
+  return `${((clicks / impressions) * 100).toFixed(1)}%`;
+}
+
 export default async function UpdatePerformancePage() {
   await requireAdmin();
 
@@ -36,6 +41,7 @@ export default async function UpdatePerformancePage() {
   // Aggregates run in Postgres (views); supabase-js has no .group() on .from().select().
   const { data: clickCounts } = await admin.from("update_cta_click_counts").select("update_id, click_count");
   const { data: conversionCounts } = await admin.from("update_conversion_counts").select("update_id, conversion_count");
+  const { data: impressionCounts } = await admin.from("update_impression_counts").select("update_id, impression_count");
 
   const clicksMap = new Map<string, number>();
   clickCounts?.forEach((row) => {
@@ -51,10 +57,18 @@ export default async function UpdatePerformancePage() {
     conversionsMap.set(id, Number(row.conversion_count ?? 0));
   });
 
+  const impressionsMap = new Map<string, number>();
+  impressionCounts?.forEach((row) => {
+    const id = row.update_id as string | null | undefined;
+    if (!id) return;
+    impressionsMap.set(id, Number(row.impression_count ?? 0));
+  });
+
   type Row = {
     id: string;
     title: string;
     createdAt: string | null;
+    impressions: number;
     clicks: number;
     signups: number;
     rate: number;
@@ -63,6 +77,7 @@ export default async function UpdatePerformancePage() {
   const rows: Row[] = (updates ?? []).map((u) => {
     const row = u as { id: string; message?: string | null; created_at?: string | null };
     const id = String(row.id);
+    const impressions = impressionsMap.get(id) ?? 0;
     const clicks = clicksMap.get(id) ?? 0;
     const signups = conversionsMap.get(id) ?? 0;
     const rate = clicks > 0 ? signups / clicks : 0;
@@ -70,6 +85,7 @@ export default async function UpdatePerformancePage() {
       id,
       title: titleFromMessage(row.message),
       createdAt: row.created_at ?? null,
+      impressions,
       clicks,
       signups,
       rate,
@@ -91,7 +107,7 @@ export default async function UpdatePerformancePage() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8b98a5]">Admin</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Update performance</h1>
         <p className="mt-2 max-w-2xl text-sm text-[#8b98a5]">
-          CTA clicks and signup conversions per founder update.{" "}
+          Impressions, CTA clicks, CTR, and signup conversions per founder update.{" "}
           <Link href="/admin/stats" className="font-medium text-emerald-400/90 underline hover:text-emerald-300">
             Back to Stats
           </Link>
@@ -109,12 +125,14 @@ export default async function UpdatePerformancePage() {
           <p className="text-sm text-[#8b98a5]">No founder updates yet.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[900px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-[#2a3039] text-xs font-semibold uppercase tracking-wide text-[#8b98a5]">
                   <th className="pb-3 pr-4">Title</th>
                   <th className="pb-3 pr-4">Date</th>
+                  <th className="pb-3 pr-4 text-right tabular-nums">Impressions</th>
                   <th className="pb-3 pr-4 text-right tabular-nums">Clicks</th>
+                  <th className="pb-3 pr-4 text-right tabular-nums">CTR</th>
                   <th className="pb-3 pr-4 text-right tabular-nums">Signups</th>
                   <th className="pb-3 text-right tabular-nums">Conversion</th>
                 </tr>
@@ -145,7 +163,11 @@ export default async function UpdatePerformancePage() {
                             })
                           : "—"}
                       </td>
+                      <td className="py-3 pr-4 text-right tabular-nums">{r.impressions}</td>
                       <td className="py-3 pr-4 text-right tabular-nums">{r.clicks}</td>
+                      <td className="py-3 pr-4 text-right tabular-nums text-slate-300">
+                        {formatCtr(r.impressions, r.clicks)}
+                      </td>
                       <td className="py-3 pr-4 text-right tabular-nums">{r.signups}</td>
                       <td className="py-3 text-right tabular-nums text-slate-300">{formatPct(r.clicks, r.rate)}</td>
                     </tr>
