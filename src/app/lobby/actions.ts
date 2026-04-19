@@ -13,6 +13,7 @@ import {
   assertContestEntryCapacityOk,
   assertContestEntryEligible,
 } from "@/lib/contest-entry-eligibility";
+import { recordPortalSeasonContributionFromEntryFee } from "@/lib/portal-season-contribution";
 import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 
 function round2(n: number): number {
@@ -191,6 +192,8 @@ export async function confirmLobbyContestEntry(payload: {
     }
     return { ok: false, error: luErr.message };
   }
+
+  await recordPortalSeasonContributionFromEntryFee(supabase, user.id, fee);
 
   revalidatePath("/lobby");
   revalidatePath("/dashboard");

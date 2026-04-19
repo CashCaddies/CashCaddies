@@ -20,6 +20,7 @@ import {
   assertContestEntryCapacityOk,
   assertContestEntryEligible,
 } from "@/lib/contest-entry-eligibility";
+import { recordPortalSeasonContributionFromEntryFee } from "@/lib/portal-season-contribution";
 import { mapContestEntryFailure } from "@/lib/supabase/queries/enterContest";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
 import { lateSwapWindowOpenForContest } from "@/lib/late-swap";
@@ -294,6 +295,8 @@ export async function submitLineup(payload: {
     });
     return { ok: false, error: "Could not link contest entry to lineup. You were not charged." };
   }
+
+  await recordPortalSeasonContributionFromEntryFee(supabase, user.id, entryFeeUsd);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
@@ -896,6 +899,8 @@ export async function enterContestWithSavedLineup(payload: {
     }
     return { ok: false, error: upErr.message };
   }
+
+  await recordPortalSeasonContributionFromEntryFee(supabase, user.id, entryFeeUsd);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/lineups");

@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseContestUuid } from "@/lib/contest-id";
 import { normalizeContestEntryErrorMessage } from "@/lib/contest-entry-eligibility";
 import { tierFromPoints } from "@/lib/loyalty";
+import { recordPortalSeasonContributionFromEntryFee } from "@/lib/portal-season-contribution";
 import { assertAccountBalanceCreditAllowed } from "@/lib/wallet-limit";
 
 function round2(n: number): number {
@@ -77,6 +78,8 @@ export async function chargeContestEntry(
         : "Could not create contest entry.";
     return { ok: false, error: normalizeContestEntryErrorMessage(msg) };
   }
+
+  await recordPortalSeasonContributionFromEntryFee(admin, params.userId, entryFeeUsd);
 
   return {
     ok: true,
