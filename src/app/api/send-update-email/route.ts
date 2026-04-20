@@ -13,6 +13,26 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/** Title line for email subject — no leading "CashCaddies" (prefix adds it once). */
+function subjectTitleFromParsed(title: string): string {
+  let s = title.replace(/\s+/g, " ").trim();
+  if (!s) {
+    return "New Update";
+  }
+  // Strip repeated brand prefix so we never get "CashCaddies — CashCaddies …"
+  for (let n = 0; n < 3; n++) {
+    const stripped = s
+      .replace(/^cashcaddies\s*([\u2014\-–—:]\s*)?/i, "")
+      .replace(/^cashcaddies\s+/i, "")
+      .trim();
+    if (stripped === s) {
+      break;
+    }
+    s = stripped;
+  }
+  return s || "New Update";
+}
+
 const FOUNDER_BROADCAST_EMAIL = "cashcaddies@outlook.com";
 
 type FounderUpdateRow = {
@@ -134,13 +154,14 @@ export async function POST(req: Request) {
 
     const rawMessage = String(row.message ?? "");
     const parsed = parseUpdate(rawMessage);
-    const subtitleEscaped = escapeHtml(
-      (parsed.title && parsed.title.trim()) ? parsed.title : "New Update",
-    );
+    const headlineTitle =
+      parsed.title && parsed.title.trim() ? parsed.title.trim() : "New Update";
+    const subtitleEscaped = escapeHtml(headlineTitle);
     const bodySource = parsed.content?.trim() ? parsed.content : rawMessage;
     const bodyHtml = escapeHtml(bodySource).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
 
-    const subject = "CashCaddies Update";
+    const title = subjectTitleFromParsed(headlineTitle);
+    const subject = `CashCaddies — ${title} (${new Date().toLocaleDateString()})`;
 
     const html = `
   <div style="background:#0b1220;padding:40px 20px;font-family:Arial,sans-serif;">

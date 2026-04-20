@@ -259,19 +259,20 @@ Your update here...`}
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
                   {user?.email === FOUNDER_UPDATES_EMAIL ? (
-                    <div className="relative z-[9999] flex shrink-0 flex-wrap items-center gap-[10px]">
+                    <div className="relative z-[9999] flex shrink-0 flex-wrap items-center gap-3">
                       <button
                         type="button"
+                        className="rounded-md border border-yellow-500 px-3 py-1.5 text-sm text-yellow-200 hover:bg-yellow-500/10 hover:opacity-80"
                         onClick={() => {
                           setEditingId(a.id);
                           setEditText(a.content);
                         }}
-                        className="rounded border border-yellow-500 px-3 py-1 text-sm text-yellow-200 hover:bg-yellow-500/10"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
+                        className="rounded-md border border-green-500 px-3 py-1.5 text-sm text-green-300 hover:bg-green-500/10 hover:opacity-80"
                         onClick={async () => {
                           console.log("SEND EMAIL CLICKED", a.id);
 
@@ -307,12 +308,12 @@ Your update here...`}
                             alert("Email failed");
                           }
                         }}
-                        className="rounded border border-green-500 px-3 py-1 text-sm text-green-300 hover:bg-green-500/10"
                       >
                         Send Email
                       </button>
                       <button
                         type="button"
+                        className="rounded-md border border-red-500 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/10 hover:opacity-80"
                         onClick={async () => {
                           const confirmDelete = confirm("Delete this update?");
                           if (!confirmDelete) return;
@@ -339,7 +340,6 @@ Your update here...`}
 
                           setUpdates((prev) => prev.filter((u) => u.id !== a.id));
                         }}
-                        className="rounded border border-red-500 px-3 py-1 text-sm text-red-300 hover:bg-red-500/10"
                       >
                         Delete
                       </button>
