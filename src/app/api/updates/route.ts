@@ -41,6 +41,7 @@ export async function GET() {
         title: "Update",
         content: u.message,
         created_at: u.created_at,
+        visibility: (u as { visibility?: string | null }).visibility ?? "public",
       })) ?? [];
 
     return NextResponse.json({ updates: formatted });

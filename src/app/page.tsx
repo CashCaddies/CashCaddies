@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useWallet } from "@/hooks/use-wallet";
 import { supabase } from "@/lib/supabase/client";
 import { parseUpdate } from "@/utils/parseUpdate";
 
@@ -55,6 +56,7 @@ function renderUpdateBodyWithSignupLink(content: string, updateId: string): Reac
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const { fullUser } = useWallet();
   const [raw, setRaw] = useState("");
   const [updates, setUpdates] = useState<any[]>([]);
   const [reply, setReply] = useState("");
@@ -62,6 +64,21 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [audienceByUpdateId, setAudienceByUpdateId] = useState<Record<string, string>>({});
+  const [visibilityByUpdateId, setVisibilityByUpdateId] = useState<Record<string, string>>({});
+
+  const userRole = user ? (fullUser?.role?.toLowerCase().trim() || "user") : "guest";
+
+  const visibleUpdates = useMemo(() => {
+    return updates.filter((update) => {
+      if (user?.email === FOUNDER_UPDATES_EMAIL) return true;
+      const v = update.visibility ?? "public";
+      if (v === "public") return true;
+      if (v === "members" && user) return true;
+      if (v === "staff" && ["admin", "senior_admin"].includes(userRole)) return true;
+      if (v === "founders" && userRole === "founder") return true;
+      return false;
+    });
+  }, [updates, user, userRole]);
 
   const getSessionId = () => {
     let sessionId = localStorage.getItem("cc_session_id");
@@ -85,11 +102,11 @@ export default function HomePage() {
   }, [loading]);
 
   useEffect(() => {
-    if (!loading && updates.length > 0 && typeof navigator !== "undefined") {
+    if (!loading && visibleUpdates.length > 0 && typeof navigator !== "undefined") {
       void (async () => {
         const sessionId = getSessionId();
 
-        for (const update of updates) {
+        for (const update of visibleUpdates) {
           const id = update?.id;
           if (!id) continue;
 
@@ -137,7 +154,7 @@ export default function HomePage() {
         }
       })();
     }
-  }, [loading, updates]);
+  }, [loading, visibleUpdates]);
 
   if (loading) {
     return null;
@@ -222,9 +239,14 @@ Your update here...`}
             <p>No updates yet.</p>
             <p className="mt-1 text-sm">We&apos;ll keep you posted here.</p>
           </div>
+        ) : visibleUpdates.length === 0 ? (
+          <div className="mt-16 text-center text-gray-500">
+            <p>No updates to show for your account.</p>
+            <p className="mt-1 text-sm">Sign in or check back when content is public.</p>
+          </div>
         ) : (
           <div className="flex flex-col gap-4 md:gap-6">
-            {updates.map((a, i) => (
+            {visibleUpdates.map((a, i) => (
               <div
                 key={a.id}
                 className={`relative z-0 rounded-xl border bg-black/60 p-5 backdrop-blur-sm transition-all hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10 ${
@@ -335,6 +357,64 @@ Your update here...`}
                     </div>
                   ) : null}
                 </div>
+
+                {user?.email === FOUNDER_UPDATES_EMAIL ? (
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <select
+                      className="rounded border border-gray-700 bg-black px-2 py-1 text-xs"
+                      value={visibilityByUpdateId[a.id] || a.visibility || "public"}
+                      onChange={(e) =>
+                        setVisibilityByUpdateId((prev) => ({
+                          ...prev,
+                          [a.id]: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="public">Public</option>
+                      <option value="members">Members</option>
+                      <option value="staff">Staff</option>
+                      <option value="founders">Founders</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      className="rounded border border-gray-600 px-2 py-1 text-xs text-gray-200 hover:bg-gray-800"
+                      onClick={async () => {
+                        const visibility = visibilityByUpdateId[a.id] || a.visibility || "public";
+
+                        const {
+                          data: { session },
+                        } = await supabase.auth.getSession();
+
+                        const res = await fetch("/api/update-visibility", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${session?.access_token}`,
+                          },
+                          body: JSON.stringify({
+                            updateId: a.id,
+                            visibility,
+                          }),
+                        });
+
+                        const data = await res.json().catch(() => ({}));
+
+                        if (!res.ok) {
+                          alert(typeof data.error === "string" ? data.error : "Save failed");
+                          return;
+                        }
+
+                        setUpdates((prev) =>
+                          prev.map((u) => (u.id === a.id ? { ...u, visibility } : u)),
+                        );
+                        alert("Visibility updated");
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : null}
 
                 <div className="mt-2 text-xs text-gray-500">{new Date(a.created_at).toLocaleString()}</div>
 
