@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     } else if (effectiveAudience === "founders") {
       query = query.eq("role", "founder");
     } else if (effectiveAudience === "members") {
-      query = query.neq("role", "guest");
+      query = query.eq("role", "user");
     } else if (effectiveAudience === "public") {
       // send to all users (no extra filter)
     }
