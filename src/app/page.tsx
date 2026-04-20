@@ -257,12 +257,17 @@ Your update here...`}
                 ) : null}
 
                 <div className="mb-2 flex items-start justify-between gap-2">
-                  <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs uppercase tracking-widest text-green-400 mb-1">
+                      Founder&apos;s Update
+                    </div>
+                    <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
+                  </div>
                   {user?.email === FOUNDER_UPDATES_EMAIL ? (
-                    <div className="relative z-[9999] flex shrink-0 flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        className="rounded-md border border-yellow-500 px-3 py-1.5 text-sm text-yellow-200 hover:bg-yellow-500/10 hover:opacity-80"
+                        className="rounded-md border border-yellow-500 px-3 py-1.5 text-sm text-yellow-200 hover:bg-yellow-500/10 hover:opacity-80 shadow-sm"
                         onClick={() => {
                           setEditingId(a.id);
                           setEditText(a.content);
@@ -272,7 +277,7 @@ Your update here...`}
                       </button>
                       <button
                         type="button"
-                        className="rounded-md border border-green-500 px-3 py-1.5 text-sm text-green-300 hover:bg-green-500/10 hover:opacity-80"
+                        className="rounded-md border border-green-500 px-3 py-1.5 text-sm text-green-300 hover:bg-green-500/10 hover:opacity-80 shadow-sm"
                         onClick={async () => {
                           console.log("SEND EMAIL CLICKED", a.id);
 
@@ -313,7 +318,7 @@ Your update here...`}
                       </button>
                       <button
                         type="button"
-                        className="rounded-md border border-red-500 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/10 hover:opacity-80"
+                        className="rounded-md border border-red-500 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/10 hover:opacity-80 shadow-sm"
                         onClick={async () => {
                           const confirmDelete = confirm("Delete this update?");
                           if (!confirmDelete) return;
@@ -412,42 +417,55 @@ Your update here...`}
                     <textarea
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
-                      className="w-full rounded border border-gray-700 bg-black p-2 text-white"
+                      className="w-full min-h-[200px] md:min-h-[300px] resize-y leading-relaxed rounded border border-gray-700 bg-black p-2 text-white"
                     />
 
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const {
-                          data: { session },
-                        } = await supabase.auth.getSession();
+                    <div className="mt-3 flex items-center gap-3">
+                      <button
+                        type="button"
+                        className="rounded-md border border-green-500 px-3 py-1.5 text-sm text-green-300 hover:bg-green-500/10 hover:opacity-80 shadow-sm"
+                        onClick={async () => {
+                          const {
+                            data: { session },
+                          } = await supabase.auth.getSession();
 
-                        const res = await fetch("/api/updates", {
-                          method: "PATCH",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${session?.access_token}`,
-                          },
-                          body: JSON.stringify({
-                            id: a.id,
-                            message: editText,
-                          }),
-                        });
+                          const res = await fetch("/api/updates", {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${session?.access_token}`,
+                            },
+                            body: JSON.stringify({
+                              id: a.id,
+                              message: editText,
+                            }),
+                          });
 
-                        const json = await res.json();
+                          const json = await res.json();
 
-                        if (!res.ok) {
-                          alert("ERROR: " + json.error);
-                          return;
-                        }
+                          if (!res.ok) {
+                            alert("ERROR: " + json.error);
+                            return;
+                          }
 
-                        setEditingId(null);
-                        location.reload();
-                      }}
-                      className="mt-2 text-sm text-green-400"
-                    >
-                      Save
-                    </button>
+                          setEditingId(null);
+                          location.reload();
+                        }}
+                      >
+                        Save
+                      </button>
+
+                      <button
+                        type="button"
+                        className="rounded-md border border-blue-500 px-3 py-1.5 text-sm text-blue-300 hover:bg-blue-500/10 hover:opacity-80 shadow-sm"
+                        onClick={() => {
+                          setActiveUpdate(a.id);
+                          setReply("");
+                        }}
+                      >
+                        Respond
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200 md:text-base">
@@ -455,16 +473,18 @@ Your update here...`}
                   </p>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveUpdate(a.id);
-                    setReply("");
-                  }}
-                  className="mt-3 text-sm text-green-400 hover:underline"
-                >
-                  Respond
-                </button>
+                {editingId !== a.id ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveUpdate(a.id);
+                      setReply("");
+                    }}
+                    className="mt-3 text-sm text-green-400 hover:underline"
+                  >
+                    Respond
+                  </button>
+                ) : null}
 
                 {activeUpdate === a.id && (
                   <div className="mt-3">
