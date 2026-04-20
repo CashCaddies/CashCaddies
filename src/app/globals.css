@@ -152,8 +152,8 @@ body {
 }
 
 .ccButton:focus-visible {
-  outline: 2px solid rgba(16, 185, 129, 0.6);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -318,8 +318,8 @@ body {
 }
 
 .walletStat:focus-visible {
-  outline: 2px solid rgba(255, 215, 0, 0.45);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.45);
 }
 
 /* Header wallet: label stays slate; amount only — brand gold + soft luxury glow */
@@ -1398,8 +1398,8 @@ body {
 
 .adminActions .adminAction:focus-visible,
 .adminActions button:focus-visible {
-  outline: 2px solid rgba(16, 185, 129, 0.55);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.55);
 }
 
 * {
