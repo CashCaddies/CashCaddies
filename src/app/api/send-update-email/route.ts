@@ -144,21 +144,20 @@ export async function POST(req: Request) {
 
     const isDev = process.env.NODE_ENV !== "production";
 
-    if (isDev && !process.env.RESEND_TEST_EMAIL) {
-      return NextResponse.json(
-        { error: "Missing RESEND_TEST_EMAIL in development" },
-        { status: 503 },
-      );
-    }
+    const testEmail = process.env.RESEND_TEST_EMAIL || "koepsell1992@gmail.com";
 
     for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
       for (const email of batch) {
         try {
+          if (isDev) {
+            console.log("DEV MODE EMAIL →", testEmail);
+          }
+
           const { data, error } = await resend.emails.send({
             from: "CashCaddies <updates@cashcaddies.com>",
-            to: isDev ? process.env.RESEND_TEST_EMAIL! : email,
+            to: isDev ? testEmail : email,
             subject: "CashCaddies Update",
             html: emailHtml,
           });
