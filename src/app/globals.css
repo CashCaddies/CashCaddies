@@ -1457,11 +1457,6 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* TEMP */
-input {
-  outline: 3px solid red !important;
-}
-
 /* Prevent any stray selects from floating into header */
 select {
   position: relative !important;
@@ -1719,7 +1714,6 @@ div[style*="position: absolute"] {
   pointer-events: auto !important;
 }
 
-/* Debug helper (optional visual) */
-.debug-outline * {
-  outline: 1px solid red;
+* {
+  outline: none !important;
 }

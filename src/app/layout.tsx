@@ -56,7 +56,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className="min-h-[100dvh] overflow-y-auto overflow-x-hidden bg-slate-950 text-slate-100">
-        <div className="app-shell">
+        <div className="app-shell no-outline">
           <div className="app-container">
             <SupabaseProvider>
               <AppProviders>
