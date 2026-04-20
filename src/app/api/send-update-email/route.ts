@@ -95,7 +95,7 @@ export async function POST(req: Request) {
         try {
           const { data, error } = await resend.emails.send({
             from: "CashCaddies <onboarding@resend.dev>",
-            to: "your_verified_resend_email_here",
+            to: "YOUR_REAL_EMAIL@gmail.com",
             subject: "CashCaddies Update",
             html: emailHtml,
           });
