@@ -255,7 +255,7 @@ export async function POST(req: Request) {
           to: testEmail,
           subject,
           html,
-          reply_to: "cashcaddies@outlook.com",
+          replyTo: "cashcaddies@outlook.com",
         });
 
         if (error) {
@@ -282,7 +282,7 @@ export async function POST(req: Request) {
             to: email,
             subject,
             html,
-            reply_to: "cashcaddies@outlook.com",
+            replyTo: "cashcaddies@outlook.com",
           });
 
           await sleep(250);

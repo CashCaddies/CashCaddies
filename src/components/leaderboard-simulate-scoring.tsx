@@ -7,8 +7,8 @@ import {
   recalculateWaveAssignmentForContest,
   refetchContestScoringLeaderboards,
   runPgaCutCalculationForContest,
-} from "@/app/contest/[contestId]/scoring-actions";
-import { revalidateAfterSimulateScoring } from "@/app/admin/scoring/revalidate-simulate-action";
+} from "@/app/(protected)/contest/[contestId]/scoring-actions";
+import { revalidateAfterSimulateScoring } from "@/app/(protected)/admin/scoring/revalidate-simulate-action";
 import { simulateContestLineupScoresFromBrowser } from "@/lib/simulate-scoring-client";
 import type { LeaderboardDisplayRow } from "@/lib/contest-leaderboard-data";
 import type { GolferLeaderboardRow } from "@/lib/leaderboard";

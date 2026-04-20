@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { runProtectionEngineV1 } from "@/app/admin/settlement/protection-engine-actions";
+import { runProtectionEngineV1 } from "@/app/(protected)/admin/settlement/protection-engine-actions";
 
 type Contest = { id: string; name: string };
 

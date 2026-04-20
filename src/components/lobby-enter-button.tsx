@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { confirmLobbyContestEntry, precheckContestEntryCapacity } from "@/app/lobby/actions";
+import { confirmLobbyContestEntry, precheckContestEntryCapacity } from "@/app/(protected)/lobby/actions";
 import { InsufficientFundsModal } from "@/components/insufficient-funds-modal";
 import { useAuth } from "@/contexts/auth-context";
 import { refreshWallet, useWallet } from "@/hooks/use-wallet";

@@ -1,6 +1,6 @@
 "use client";
 
-import { adminToggleEntryProtectionForced } from "@/app/admin/entry-protection/actions";
+import { adminToggleEntryProtectionForced } from "@/app/(protected)/admin/entry-protection/actions";
 import {
   ENTRY_PROTECTED_BADGE,
   ENTRY_PROTECTED_TOOLTIP,

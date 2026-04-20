@@ -8,7 +8,7 @@ import {
   adminSetLateSwapEnabled,
   adminSettleContest,
   adminStartContest,
-} from "@/app/admin/contest-lifecycle/actions";
+} from "@/app/(protected)/admin/contest-lifecycle/actions";
 import type { ContestLifecycle } from "@/lib/contest-state";
 
 type Props = {

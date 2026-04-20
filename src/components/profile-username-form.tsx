@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { updateProfileUsername } from "@/app/dashboard/profile/actions";
+import { updateProfileUsername } from "@/app/(protected)/dashboard/profile/actions";
 import { isPlaceholderUsername, isValidHandle } from "@/lib/username";
 
 type Props = {

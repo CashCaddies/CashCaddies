@@ -13,7 +13,7 @@ import {
   formatProtectedEntriesPercent,
 } from "@/lib/contest-lobby-shared";
 import { resolveEffectiveContestLifecycle } from "@/lib/contest-state";
-import { deleteContestAdmin } from "@/app/admin/contests/actions";
+import { deleteContestAdmin } from "@/app/(protected)/admin/contests/actions";
 import { supabase } from "@/lib/supabase/client";
 import { AdminContestControls } from "@/components/admin-contest-controls";
 import { ContestFullBadge, ContestLifecycleStatusBadge, ContestLockCountdown } from "@/components/contest-card";

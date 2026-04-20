@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAdminMetrics, type AdminDashboardMetrics } from "@/app/admin/admin-dashboard-metrics";
+import { getAdminMetrics, type AdminDashboardMetrics } from "@/app/(protected)/admin/admin-dashboard-metrics";
 
 function formatMoney(n: number) {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

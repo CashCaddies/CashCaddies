@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useWallet } from "@/hooks/use-wallet";
-import { getAdminNewFeedbackCount } from "@/app/admin/feedback/actions";
+import { getAdminNewFeedbackCount } from "@/app/(protected)/admin/feedback/actions";
 import { isAdmin, isSeniorAdmin } from "@/lib/permissions";
 
 export type DashboardNavMode = "dashboard" | "single";

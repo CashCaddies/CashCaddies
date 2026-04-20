@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { saveGolferFantasyScore } from "@/app/admin/scoring/actions";
+import { saveGolferFantasyScore } from "@/app/(protected)/admin/scoring/actions";
 import { fantasyPointsFromCounts, POINTS_BIRDIE, POINTS_BOGEY, POINTS_PAR } from "@/lib/scoring";
 
 type GolferOption = { id: string; name: string; fantasy_points: number };

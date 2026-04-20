@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { triggerAutoContestSettlement, type TriggerAutoContestSettlementResult } from "@/app/admin/settlement/auto-actions";
+import { triggerAutoContestSettlement, type TriggerAutoContestSettlementResult } from "@/app/(protected)/admin/settlement/auto-actions";
 
 export function AdminTriggerSettlement() {
   const [secret, setSecret] = useState("");

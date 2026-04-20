@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { createPremiumCheckoutSession } from "@/app/premium/actions";
+import { createPremiumCheckoutSession } from "@/app/(protected)/premium/actions";
 
 type Props = {
   /** When true, user already has an active paid premium grant. */

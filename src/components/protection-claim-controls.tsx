@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import {
   submitProtectionClaim,
   type ProtectionResolution,
-} from "@/app/dashboard/protection/actions";
+} from "@/app/(protected)/dashboard/protection/actions";
 import type { InsuranceClaimRow } from "@/hooks/use-insurance-claims";
 
 function ClaimStatusBadge({ status }: { status: string }) {

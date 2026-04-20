@@ -2,7 +2,7 @@
 
 import { useFormStatus } from "react-dom";
 import { useState } from "react";
-import { runFullPayout, type RunFullPayoutResult } from "@/app/admin/settlement/run-full-payout";
+import { runFullPayout, type RunFullPayoutResult } from "@/app/(protected)/admin/settlement/run-full-payout";
 
 type Props = {
   contestId: string;

@@ -2,7 +2,7 @@
 
 import { useFormStatus } from "react-dom";
 import { useState } from "react";
-import { runContestSettlement, type RunContestSettlementResult } from "@/app/admin/settlement/actions";
+import { runContestSettlement, type RunContestSettlementResult } from "@/app/(protected)/admin/settlement/actions";
 
 type Props = {
   contests: { id: string; name: string }[];

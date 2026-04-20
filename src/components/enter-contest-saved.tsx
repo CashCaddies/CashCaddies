@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { enterContestWithSavedLineup } from "@/app/lineup/actions";
+import { enterContestWithSavedLineup } from "@/app/(protected)/lineup/actions";
 import { InsufficientFundsModal } from "@/components/insufficient-funds-modal";
 import type { DraftLineupPlayer } from "@/lib/contest-enter";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { editContestEntryLineup, saveLineupDraft, submitLineup } from "@/app/lineup/actions";
+import { editContestEntryLineup, saveLineupDraft, submitLineup } from "@/app/(protected)/lineup/actions";
 import { refreshWallet } from "@/hooks/use-wallet";
 import { useWallet } from "@/hooks/use-wallet";
 import { splitEntryFeeUsd } from "@/lib/contest-fee-split";

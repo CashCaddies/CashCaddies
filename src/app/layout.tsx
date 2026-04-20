@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";
 import { DebugOutlineStrip } from "@/components/debug-outline-strip";
@@ -11,8 +8,6 @@ import { SiteHeader } from "@/components/site-header";
 import SoftLaunchCountdown from "@/components/SoftLaunchCountdown";
 import SupabaseProvider from "@/lib/supabase-provider";
 import "./globals.css";
-
-export const dynamic = "force-dynamic";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,88 +46,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // --- SUPABASE SERVER CLIENT ---
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {
-          // no-op in layout
-        },
-      },
-    },
-  );
-
-  // --- GET USER ---
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // --- CURRENT PATH (best-effort; gate runs for every logged-in user) ---
-  const headerList = await headers();
-
-  let pathname = headerList.get("next-url") || "";
-
-  if (pathname.startsWith("http")) {
-    try {
-      pathname = new URL(pathname).pathname;
-    } catch {
-      pathname = "";
-    }
-  } else if (pathname.includes("?")) {
-    pathname = pathname.split("?")[0] ?? pathname;
-  }
-
-  if (!pathname) {
-    const referer = headerList.get("referer");
-    if (referer) {
-      try {
-        const ref = new URL(referer);
-        const host = headerList.get("x-forwarded-host") || headerList.get("host") || "";
-        if (host && ref.host === host) {
-          pathname = ref.pathname;
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-
-  // Do not default unknown path to "/" — that would treat every request as home and bypass the gate.
-  // If still empty, pathname stays "" (not in allowed list → redirect when !hasAccess).
-
-  // --- BETA ACCESS CHECK ---
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("beta_access")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const hasAccess = profile?.beta_access === true;
-
-    const allowed =
-      pathname === "/" ||
-      pathname.startsWith("/login") ||
-      pathname.startsWith("/signup") ||
-      pathname.startsWith("/api");
-
-    if (!hasAccess && !allowed) {
-      redirect("/");
-    }
-  }
-
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>

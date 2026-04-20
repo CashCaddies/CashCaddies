@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { addDevTestFunds100 } from "@/app/dashboard/dev-wallet-actions";
+import { addDevTestFunds100 } from "@/app/(protected)/dashboard/dev-wallet-actions";
 
 type Props = {
   onSuccess: () => void;
