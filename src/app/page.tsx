@@ -138,6 +138,25 @@ export default function HomePage() {
     }
   }, [loading, updates]);
 
+  const handleSendEmail = async (updateId: string) => {
+    try {
+      const res = await fetch("/api/send-update-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      alert("Email sent");
+    } catch (err) {
+      console.error("send email error:", err);
+      alert("Failed to send email");
+    }
+  };
+
   if (loading) {
     return null;
   }
@@ -247,6 +266,13 @@ Your update here...`}
                         className="text-sm text-yellow-400"
                       >
                         Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSendEmail(a.id)}
+                        className="ml-3 text-blue-400 hover:text-blue-300"
+                      >
+                        Send Email
                       </button>
                       <button
                         type="button"
