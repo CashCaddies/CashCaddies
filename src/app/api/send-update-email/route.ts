@@ -12,6 +12,8 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+const FOUNDER_BROADCAST_EMAIL = "cashcaddies@outlook.com";
+
 type FounderUpdateRow = {
   message?: string | null;
   visibility?: string | null;
@@ -23,6 +25,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email not configured (RESEND_API_KEY)" }, { status: 503 });
     }
 
+    const authHeader = req.headers.get("authorization");
+
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { updateId } = await req.json();
 
     const supabase = createClient(
@@ -30,6 +43,41 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
+
+    const supabaseAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+
+    const { data: userData, error: authUserError } = await supabaseAuth.auth.getUser(token);
+
+    if (authUserError || !userData?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: callerProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userData.user.id)
+      .maybeSingle();
+
+    const metaRole = userData.user.user_metadata?.role;
+    const userRole =
+      typeof callerProfile?.role === "string" && callerProfile.role.trim() !== ""
+        ? callerProfile.role.trim().toLowerCase()
+        : typeof metaRole === "string"
+          ? metaRole.toLowerCase().trim()
+          : "user";
+
+    const callerEmail = userData.user.email?.trim().toLowerCase() ?? "";
+    const canSend =
+      callerEmail === FOUNDER_BROADCAST_EMAIL ||
+      ["admin", "senior_admin", "founder"].includes(userRole);
+
+    if (!canSend) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const { data: update, error } = await supabase
       .from("founder_updates")
@@ -46,6 +94,12 @@ export async function POST(req: Request) {
     console.log("USING VISIBILITY:", row.visibility);
 
     const effectiveAudience = row.visibility || "public";
+
+    const allowed = ["public", "members", "staff", "founders"];
+
+    if (!allowed.includes(effectiveAudience)) {
+      return NextResponse.json({ error: "Invalid visibility" }, { status: 400 });
+    }
 
     console.log("EFFECTIVE AUDIENCE:", effectiveAudience);
 
@@ -88,14 +142,23 @@ export async function POST(req: Request) {
 
     const BATCH_SIZE = 10;
 
+    const isDev = process.env.NODE_ENV !== "production";
+
+    if (isDev && !process.env.RESEND_TEST_EMAIL?.trim()) {
+      return NextResponse.json(
+        { error: "RESEND_TEST_EMAIL is required in development" },
+        { status: 503 },
+      );
+    }
+
     for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
-      for (let j = 0; j < batch.length; j++) {
+      for (const email of batch) {
         try {
           const { data, error } = await resend.emails.send({
-            from: "CashCaddies <onboarding@resend.dev>",
-            to: "YOUR_REAL_EMAIL@gmail.com",
+            from: "CashCaddies <updates@cashcaddies.com>",
+            to: isDev ? process.env.RESEND_TEST_EMAIL! : email,
             subject: "CashCaddies Update",
             html: emailHtml,
           });
@@ -106,7 +169,9 @@ export async function POST(req: Request) {
           }
         } catch (err) {
           console.error("SEND THROW ERROR:", err);
-          return NextResponse.json({ error: "Email failed" }, { status: 500 });
+          const message =
+            err instanceof Error ? err.message : String((err as { message?: unknown })?.message ?? err);
+          return NextResponse.json({ error: message || "Email failed" }, { status: 500 });
         }
       }
 
