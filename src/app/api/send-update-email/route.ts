@@ -154,7 +154,7 @@ export async function POST(req: Request) {
       for (const email of batch) {
         try {
           if (isDev) {
-            console.log("DEV MODE EMAIL →", testEmail);
+            console.log("DEV EMAIL →", testEmail);
           }
 
           const { data, error } = await resend.emails.send({
