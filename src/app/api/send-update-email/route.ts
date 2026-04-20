@@ -13,21 +13,6 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
-const SIGNUP_CTA_SENTENCE = "Click here to create your account and request beta access.";
-
-const SIGNUP_CTA_LINK_HTML = `<a href="https://cashcaddies.com" style="color:#22c55e;text-decoration:underline;">Click here to create your account and request beta access</a>`;
-
-/** Escapes text, turns newlines into `<br/>`, and replaces the signup CTA sentence with a real link. */
-function formatEmailBodyHtml(source: string): string {
-  if (!source.includes(SIGNUP_CTA_SENTENCE)) {
-    return escapeHtml(source).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
-  }
-  const parts = source.split(SIGNUP_CTA_SENTENCE);
-  return parts
-    .map((part) => escapeHtml(part).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>"))
-    .join(SIGNUP_CTA_LINK_HTML);
-}
-
 const FOUNDER_BROADCAST_EMAIL = "cashcaddies@outlook.com";
 
 type FounderUpdateRow = {
@@ -153,9 +138,11 @@ export async function POST(req: Request) {
       (parsed.title && parsed.title.trim()) ? parsed.title : "New Update",
     );
     const bodySource = parsed.content?.trim() ? parsed.content : rawMessage;
-    const bodyHtml = formatEmailBodyHtml(bodySource);
+    const bodyHtml = escapeHtml(bodySource).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
 
-    const emailHtml = `
+    const subject = "CashCaddies Update";
+
+    const html = `
   <div style="background:#0b1220;padding:40px 20px;font-family:Arial,sans-serif;">
     
     <div style="max-width:600px;margin:0 auto;background:#111827;border-radius:12px;padding:30px;border:1px solid #1f2937;">
@@ -169,16 +156,17 @@ export async function POST(req: Request) {
         ${subtitleEscaped}
       </p>
 
+      <hr style="border:none;border-top:1px solid #1f2937;margin:20px 0;" />
+
       <div style="
   margin-bottom:20px;
-  padding:10px 14px;
-  background:#111827;
-  border:1px solid #22c55e;
-  border-radius:6px;
-  color:#22c55e;
-  font-size:13px;
+  padding:12px;
+  background:linear-gradient(90deg,#22c55e,#eab308);
+  color:#000;
   font-weight:bold;
   text-align:center;
+  border-radius:6px;
+  font-size:14px;
 ">
   Message From The Owner
 </div>
@@ -188,29 +176,26 @@ export async function POST(req: Request) {
         ${bodyHtml}
       </div>
 
-      <!-- CTA BUTTON -->
-      <div style="margin-top:30px;text-align:center;">
-        <a href="https://cashcaddies.com"
-           style="
-             display:inline-block;
-             padding:14px 24px;
-             background:linear-gradient(90deg,#22c55e,#eab308);
-             color:#000;
-             font-weight:bold;
-             text-decoration:none;
-             border-radius:8px;
-           ">
-           Enter CashCaddies
-        </a>
-      </div>
+<div style="margin-top:25px;text-align:center;">
+  <a href="https://cashcaddies.com"
+     style="
+       color:#22c55e;
+       font-weight:bold;
+       text-decoration:underline;
+       font-size:15px;
+     ">
+     Create your account &amp; request beta access
+  </a>
+</div>
 
       <!-- FOOTER -->
       <p style="margin-top:30px;color:#6b7280;font-size:12px;text-align:center;">
         © ${new Date().getFullYear()} CashCaddies
       </p>
 
-      <div style="display:none;white-space:nowrap;">
-        CashCaddies | Premium Golf DFS | Updates | CashCaddies.com
+      <div style="display:none;max-height:0;overflow:hidden;">
+        CashCaddies Update CashCaddies Update CashCaddies Update
+        Premium Golf DFS Platform CashCaddies.com
       </div>
 
     </div>
@@ -225,34 +210,39 @@ export async function POST(req: Request) {
 
     const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-    sendLoop: for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
+    if (isDev) {
+      try {
+        const { error } = await resend.emails.send({
+          from: "CashCaddies <updates@cashcaddies.com>",
+          to: testEmail,
+          subject,
+          html,
+        });
+
+        if (error) {
+          console.error("RESEND ERROR:", error);
+          return NextResponse.json({ error: error.message || "Email failed" }, { status: 500 });
+        }
+      } catch (err) {
+        console.error("SEND THROW ERROR:", err);
+        const message =
+          err instanceof Error ? err.message : String((err as { message?: unknown })?.message ?? err);
+        return NextResponse.json({ error: message || "Email failed" }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, sent: 1, mode: "dev" });
+    }
+
+    for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
       for (const email of batch) {
         try {
-          if (isDev) {
-            console.log("DEV EMAIL →", testEmail);
-            const { error } = await resend.emails.send({
-              from: "CashCaddies <updates@cashcaddies.com>",
-              to: testEmail,
-              subject: "CashCaddies Update",
-              html: emailHtml,
-            });
-
-            await sleep(250);
-
-            if (error) {
-              console.error("RESEND ERROR:", error);
-              return NextResponse.json({ error: error.message || "Email failed" }, { status: 500 });
-            }
-            break sendLoop;
-          }
-
           const { error } = await resend.emails.send({
             from: "CashCaddies <updates@cashcaddies.com>",
             to: email,
-            subject: "CashCaddies Update",
-            html: emailHtml,
+            subject,
+            html,
           });
 
           await sleep(250);
@@ -274,7 +264,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      sent: isDev ? 1 : limitedEmails.length,
+      sent: limitedEmails.length,
       visibility: effectiveAudience,
     });
   } catch (err) {
