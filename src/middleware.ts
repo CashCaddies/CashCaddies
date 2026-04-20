@@ -8,6 +8,8 @@ import { type NextRequest, NextResponse } from "next/server";
  * and layout gates may not run with valid credentials.
  */
 export async function middleware(request: NextRequest) {
+  console.log("MIDDLEWARE RUNNING:", request.nextUrl.pathname);
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
