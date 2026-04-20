@@ -251,9 +251,33 @@ Your update here...`}
                       <div className="relative z-[9999] pointer-events-auto">
                         <button
                           type="button"
-                          onClick={() => {
-                            console.log("CLICK WORKING");
-                            alert("CLICK WORKING");
+                          onClick={async () => {
+                            console.log("SEND EMAIL CLICKED", a.id);
+
+                            try {
+                              const res = await fetch("/api/send-update-email", {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                  updateId: a.id,
+                                }),
+                              });
+
+                              const data = await res.json();
+                              console.log("EMAIL RESPONSE:", data);
+
+                              if (!res.ok) {
+                                alert(typeof data.error === "string" ? data.error : "Email failed");
+                                return;
+                              }
+
+                              alert("Email sent");
+                            } catch (err) {
+                              console.error("EMAIL ERROR:", err);
+                              alert("Email failed");
+                            }
                           }}
                           className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer"
                         >

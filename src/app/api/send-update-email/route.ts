@@ -1,12 +1,9 @@
+import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
   try {
     const { updateId } = await req.json();
-
-    if (!updateId) {
-      return new Response(JSON.stringify({ error: "Missing updateId" }), { status: 400 });
-    }
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,19 +15,23 @@ export async function POST(req: Request) {
 
     const { data: update, error } = await supabase
       .from("founder_updates")
-      .select("id, message")
+      .select("*")
       .eq("id", updateId)
       .single();
 
     if (error || !update) {
-      return new Response(JSON.stringify({ error: "Update not found" }), { status: 404 });
+      return NextResponse.json({ error: "Update not found" }, { status: 400 });
     }
 
-    console.log("SEND EMAIL:", (update as { message?: string }).message ?? update.id);
+    const row = update as { message?: string | null; id: string };
+    console.log("SENDING EMAIL FOR:", row.message?.slice(0, 120) ?? row.id);
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return NextResponse.json({
+      success: true,
+      update,
+    });
   } catch (err) {
-    console.error("send-update-email error:", err);
-    return new Response(JSON.stringify({ error: "server error" }), { status: 500 });
+    console.error(err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
