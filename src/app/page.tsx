@@ -259,7 +259,7 @@ Your update here...`}
             {updates.map((a, i) => (
               <div
                 key={a.id}
-                className={`rounded-xl border bg-black/60 p-5 backdrop-blur-sm transition-all hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10 ${
+                className={`relative z-0 rounded-xl border bg-black/60 p-5 backdrop-blur-sm transition-all hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10 ${
                   i === 0 ? "border-green-500/60 shadow-md shadow-green-500/10" : "border-gray-800"
                 }`}
               >
@@ -289,7 +289,7 @@ Your update here...`}
                           console.log("BUTTON CLICKED");
                           handleSendEmail(a.id);
                         }}
-                        className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer z-50 relative"
+                        className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer relative z-[9999] pointer-events-auto"
                       >
                         Send Email
                       </button>
