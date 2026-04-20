@@ -176,16 +176,33 @@ export async function POST(req: Request) {
         ${bodyHtml}
       </div>
 
-<div style="margin-top:25px;text-align:center;">
-  <a href="https://cashcaddies.com"
-     style="
-       color:#22c55e;
-       font-weight:bold;
-       text-decoration:underline;
-       font-size:15px;
-     ">
-     Create your account &amp; request beta access
-  </a>
+<div style="margin-top:24px;margin-bottom:24px;">
+  <div style="text-align:center;">
+    <a href="https://cashcaddies.com"
+       style="
+         color:#22c55e;
+         font-weight:bold;
+         text-decoration:underline;
+         font-size:15px;
+       ">
+       Create your account &amp; request beta access
+    </a>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <a href="https://cashcaddies.com"
+       style="
+         display:inline-block;
+         padding:14px 28px;
+         border-radius:10px;
+         font-weight:600;
+         text-decoration:none;
+         color:#02120b;
+         background:linear-gradient(90deg,#22c55e,#eab308);
+       ">
+       Enter CashCaddies
+    </a>
+  </div>
 </div>
 
       <!-- FOOTER -->
