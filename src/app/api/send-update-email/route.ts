@@ -13,6 +13,21 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+const SIGNUP_CTA_SENTENCE = "Click here to create your account and request beta access.";
+
+const SIGNUP_CTA_LINK_HTML = `<a href="https://cashcaddies.com" style="color:#22c55e;text-decoration:underline;">Click here to create your account and request beta access</a>`;
+
+/** Escapes text, turns newlines into `<br/>`, and replaces the signup CTA sentence with a real link. */
+function formatEmailBodyHtml(source: string): string {
+  if (!source.includes(SIGNUP_CTA_SENTENCE)) {
+    return escapeHtml(source).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
+  }
+  const parts = source.split(SIGNUP_CTA_SENTENCE);
+  return parts
+    .map((part) => escapeHtml(part).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>"))
+    .join(SIGNUP_CTA_LINK_HTML);
+}
+
 const FOUNDER_BROADCAST_EMAIL = "cashcaddies@outlook.com";
 
 type FounderUpdateRow = {
@@ -138,7 +153,7 @@ export async function POST(req: Request) {
       (parsed.title && parsed.title.trim()) ? parsed.title : "New Update",
     );
     const bodySource = parsed.content?.trim() ? parsed.content : rawMessage;
-    const bodyEscaped = escapeHtml(bodySource).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
+    const bodyHtml = formatEmailBodyHtml(bodySource);
 
     const emailHtml = `
   <div style="background:#0b1220;padding:40px 20px;font-family:Arial,sans-serif;">
@@ -154,9 +169,23 @@ export async function POST(req: Request) {
         ${subtitleEscaped}
       </p>
 
+      <div style="
+  margin-bottom:20px;
+  padding:10px 14px;
+  background:#111827;
+  border:1px solid #22c55e;
+  border-radius:6px;
+  color:#22c55e;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center;
+">
+  Message From The Owner
+</div>
+
       <!-- BODY -->
       <div style="color:#e5e7eb;line-height:1.6;font-size:15px;">
-        ${bodyEscaped}
+        ${bodyHtml}
       </div>
 
       <!-- CTA BUTTON -->
@@ -180,6 +209,10 @@ export async function POST(req: Request) {
         © ${new Date().getFullYear()} CashCaddies
       </p>
 
+      <div style="display:none;white-space:nowrap;">
+        CashCaddies | Premium Golf DFS | Updates | CashCaddies.com
+      </div>
+
     </div>
   </div>
 `;
@@ -192,18 +225,32 @@ export async function POST(req: Request) {
 
     const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-    for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
+    sendLoop: for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
       for (const email of batch) {
         try {
           if (isDev) {
             console.log("DEV EMAIL →", testEmail);
+            const { error } = await resend.emails.send({
+              from: "CashCaddies <updates@cashcaddies.com>",
+              to: testEmail,
+              subject: "CashCaddies Update",
+              html: emailHtml,
+            });
+
+            await sleep(250);
+
+            if (error) {
+              console.error("RESEND ERROR:", error);
+              return NextResponse.json({ error: error.message || "Email failed" }, { status: 500 });
+            }
+            break sendLoop;
           }
 
-          const { data, error } = await resend.emails.send({
+          const { error } = await resend.emails.send({
             from: "CashCaddies <updates@cashcaddies.com>",
-            to: isDev ? testEmail : email,
+            to: email,
             subject: "CashCaddies Update",
             html: emailHtml,
           });
@@ -227,7 +274,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      sent: limitedEmails.length,
+      sent: isDev ? 1 : limitedEmails.length,
       visibility: effectiveAudience,
     });
   } catch (err) {

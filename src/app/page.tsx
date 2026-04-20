@@ -259,60 +259,58 @@ Your update here...`}
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="text-lg font-semibold text-white md:text-xl">{a.title}</div>
                   {user?.email === FOUNDER_UPDATES_EMAIL ? (
-                    <div className="flex shrink-0 items-center">
+                    <div className="relative z-[9999] flex shrink-0 flex-wrap items-center gap-[10px]">
                       <button
                         type="button"
                         onClick={() => {
                           setEditingId(a.id);
                           setEditText(a.content);
                         }}
-                        className="text-sm text-yellow-400"
+                        className="rounded border border-yellow-500 px-3 py-1 text-sm text-yellow-200 hover:bg-yellow-500/10"
                       >
                         Edit
                       </button>
-                      <div className="relative z-[9999] pointer-events-auto flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            console.log("SEND EMAIL CLICKED", a.id);
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          console.log("SEND EMAIL CLICKED", a.id);
 
-                            try {
-                              const {
-                                data: { session },
-                              } = await supabase.auth.getSession();
+                          try {
+                            const {
+                              data: { session },
+                            } = await supabase.auth.getSession();
 
-                              const res = await fetch("/api/send-update-email", {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  ...(session?.access_token
-                                    ? { Authorization: `Bearer ${session.access_token}` }
-                                    : {}),
-                                },
-                                body: JSON.stringify({
-                                  updateId: a.id,
-                                }),
-                              });
+                            const res = await fetch("/api/send-update-email", {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                ...(session?.access_token
+                                  ? { Authorization: `Bearer ${session.access_token}` }
+                                  : {}),
+                              },
+                              body: JSON.stringify({
+                                updateId: a.id,
+                              }),
+                            });
 
-                              const data = await res.json();
-                              console.log("EMAIL RESPONSE:", data);
+                            const data = await res.json();
+                            console.log("EMAIL RESPONSE:", data);
 
-                              if (!res.ok) {
-                                alert(typeof data.error === "string" ? data.error : "Email failed");
-                                return;
-                              }
-
-                              alert("Email sent");
-                            } catch (err) {
-                              console.error("EMAIL ERROR:", err);
-                              alert("Email failed");
+                            if (!res.ok) {
+                              alert(typeof data.error === "string" ? data.error : "Email failed");
+                              return;
                             }
-                          }}
-                          className="text-blue-400 hover:text-blue-300"
-                        >
-                          Send Email
-                        </button>
-                      </div>
+
+                            alert("Email sent");
+                          } catch (err) {
+                            console.error("EMAIL ERROR:", err);
+                            alert("Email failed");
+                          }
+                        }}
+                        className="rounded border border-green-500 px-3 py-1 text-sm text-green-300 hover:bg-green-500/10"
+                      >
+                        Send Email
+                      </button>
                       <button
                         type="button"
                         onClick={async () => {
@@ -341,7 +339,7 @@ Your update here...`}
 
                           setUpdates((prev) => prev.filter((u) => u.id !== a.id));
                         }}
-                        className="ml-3 text-sm text-red-400"
+                        className="rounded border border-red-500 px-3 py-1 text-sm text-red-300 hover:bg-red-500/10"
                       >
                         Delete
                       </button>
