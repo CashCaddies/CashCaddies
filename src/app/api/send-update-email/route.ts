@@ -91,20 +91,21 @@ export async function POST(req: Request) {
     for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
-      const results = await Promise.all(
-        batch.map((email) =>
-          resend.emails.send({
+      for (let j = 0; j < batch.length; j++) {
+        try {
+          const { data, error } = await resend.emails.send({
             from: "CashCaddies <onboarding@resend.dev>",
-            to: email,
+            to: "your_verified_resend_email_here",
             subject: "CashCaddies Update",
             html: emailHtml,
-          }),
-        ),
-      );
+          });
 
-      for (const r of results) {
-        if (r.error) {
-          console.error(r.error);
+          if (error) {
+            console.error("RESEND ERROR:", error);
+            return NextResponse.json({ error: error.message || "Email failed" }, { status: 500 });
+          }
+        } catch (err) {
+          console.error("SEND THROW ERROR:", err);
           return NextResponse.json({ error: "Email failed" }, { status: 500 });
         }
       }
