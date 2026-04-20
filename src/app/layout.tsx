@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";
 import { DebugOutlineStrip } from "@/components/debug-outline-strip";
@@ -46,11 +49,72 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // --- SUPABASE SERVER CLIENT ---
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {
+          // no-op in layout
+        },
+      },
+    },
+  );
+
+  // --- GET USER ---
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // --- GET CURRENT PATH ---
+  const headerList = await headers();
+  let pathname =
+    headerList.get("x-pathname") ||
+    headerList.get("next-url") ||
+    "";
+
+  if (pathname.startsWith("http")) {
+    try {
+      pathname = new URL(pathname).pathname;
+    } catch {
+      pathname = "";
+    }
+  } else if (pathname.includes("?")) {
+    pathname = pathname.split("?")[0] ?? pathname;
+  }
+
+  // --- BETA ACCESS CHECK ---
+  if (user && pathname) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("beta_access")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const hasAccess = profile?.beta_access === true;
+
+    const allowedPaths =
+      pathname === "/" ||
+      pathname.startsWith("/login") ||
+      pathname.startsWith("/signup") ||
+      pathname.startsWith("/api");
+
+    if (!hasAccess && !allowedPaths) {
+      redirect("/");
+    }
+  }
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>

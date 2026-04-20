@@ -56,7 +56,7 @@ function renderUpdateBodyWithSignupLink(content: string, updateId: string): Reac
 
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const { fullUser } = useWallet();
+  const { fullUser, wallet: profile } = useWallet();
   const [raw, setRaw] = useState("");
   const [updates, setUpdates] = useState<any[]>([]);
   const [reply, setReply] = useState("");
@@ -64,6 +64,7 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [visibilityByUpdateId, setVisibilityByUpdateId] = useState<Record<string, string>>({});
+  const [joining, setJoining] = useState(false);
 
   const userRole = user ? (fullUser?.role?.toLowerCase().trim() || "user") : "guest";
 
@@ -159,18 +160,72 @@ export default function HomePage() {
     return null;
   }
 
+  const joinWaitlist = async () => {
+    if (joining) return;
+
+    setJoining(true);
+
+    const res = await fetch("/api/join-waitlist", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+
+    setJoining(false);
+
+    if (res.status === 401) {
+      alert("Sign in to join the waitlist");
+      return;
+    }
+
+    if (res.ok) {
+      alert("You're on the waitlist. You'll be approved soon.");
+      location.reload();
+    } else {
+      alert("Error joining waitlist");
+    }
+  };
+
   return (
     <>
       {!user ? (
         <div className="p-6 text-center">
           <h1 className="text-3xl font-semibold text-green-400">CashCaddies</h1>
           <p className="mt-2 text-gray-400">Premium Daily Fantasy Golf</p>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = "/signup?next=/";
+            }}
+            className="mt-4 rounded-md border border-green-500 px-4 py-2 text-green-300 hover:bg-green-500/10"
+          >
+            Join Beta Waitlist
+          </button>
+          <p className="mt-2 text-xs text-gray-500">Create an account to join — you&apos;ll confirm from home after signing in.</p>
         </div>
       ) : null}
 
       <div className="mx-auto max-w-3xl px-4">
         <h1 className="mb-4 text-xl font-semibold text-white md:text-2xl">CashCaddies Updates</h1>
         <div className="mb-4 h-px bg-gray-800" />
+
+        {user ? (
+          profile?.beta_access ? null : (
+            <div className="mb-4">
+              {profile?.beta_waitlist ? (
+                <div className="mt-3 text-sm text-green-400">You are on the waitlist</div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={joinWaitlist}
+                  disabled={joining}
+                  className="mt-3 rounded-md border border-green-500 px-4 py-2 text-green-300 hover:bg-green-500/10 disabled:opacity-50"
+                >
+                  Join Beta Waitlist
+                </button>
+              )}
+            </div>
+          )
+        ) : null}
 
         {user?.email === FOUNDER_UPDATES_EMAIL ? (
           <div className="mb-6">

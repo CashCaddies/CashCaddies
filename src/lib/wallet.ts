@@ -6,6 +6,10 @@ export type ProfileRow = {
   username: string;
   /** Closed beta access flag. */
   beta_user?: boolean;
+  /** Waitlist interest (profiles.beta_waitlist). */
+  beta_waitlist?: boolean;
+  /** Beta product access (profiles.beta_access). */
+  beta_access?: boolean;
   /** Advanced DFS tools (tee waves, ownership); admin-granted. */
   is_beta_tester?: boolean;
   /** Stripe current period end (ISO); paid premium active while in the future. */
@@ -36,6 +40,8 @@ export type UserWalletRow = ProfileRow;
 export function normalizeProfileRow(row: {
   username?: string | null;
   beta_user?: boolean | null;
+  beta_waitlist?: boolean | null;
+  beta_access?: boolean | null;
   is_beta_tester?: boolean | null;
   premium_expires_at?: string | null;
   beta_status?: string | null;
@@ -63,6 +69,8 @@ export function normalizeProfileRow(row: {
   return {
     username: typeof row.username === "string" && row.username.trim() !== "" ? row.username.trim() : "",
     beta_user: row.beta_user === true,
+    beta_waitlist: row.beta_waitlist === true,
+    beta_access: row.beta_access === true,
     is_beta_tester: row.is_beta_tester === true,
     premium_expires_at:
       typeof row.premium_expires_at === "string" && row.premium_expires_at.trim() !== ""
