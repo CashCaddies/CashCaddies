@@ -36,6 +36,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Update not found" }, { status: 400 });
     }
 
+    const { data: users, error: usersError } = await supabase.from("profiles").select("email");
+
+    if (usersError || !users) {
+      return NextResponse.json({ error: "Failed to load users" }, { status: 500 });
+    }
+
+    const emails = [...new Set(users.map((u) => u.email).filter(Boolean) as string[])];
+
+    const limitedEmails = emails.slice(0, 50); // prevent blast
+
+    if (limitedEmails.length === 0) {
+      return NextResponse.json({ error: "No recipient emails" }, { status: 400 });
+    }
+
     const row = update as { message?: string | null };
     const bodyHtml = escapeHtml(String(row.message ?? "")).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
 
@@ -46,11 +60,9 @@ export async function POST(req: Request) {
       <a href="https://cashcaddies.com">View Platform</a>
     `;
 
-    const toEmail = process.env.RESEND_TO_EMAIL?.trim() || "your@email.com";
-
     const { data, error: emailError } = await resend.emails.send({
       from: "CashCaddies <onboarding@resend.dev>",
-      to: [toEmail],
+      to: limitedEmails,
       subject: "CashCaddies Update",
       html: emailHtml,
     });
