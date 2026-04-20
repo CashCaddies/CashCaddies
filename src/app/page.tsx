@@ -283,11 +283,13 @@ Your update here...`}
                       </button>
                       <button
                         type="button"
-                        onClick={() => {
-                          console.log("UPDATE ID:", a.id);
-                          void handleSendEmail(a.id);
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log("BUTTON CLICKED");
+                          handleSendEmail(a.id);
                         }}
-                        className="ml-3 text-blue-400 hover:text-blue-300"
+                        className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer z-50 relative"
                       >
                         Send Email
                       </button>
