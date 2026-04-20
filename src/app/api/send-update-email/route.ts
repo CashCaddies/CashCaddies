@@ -142,6 +142,15 @@ export async function POST(req: Request) {
 
     const BATCH_SIZE = 10;
 
+    const isDev = process.env.NODE_ENV !== "production";
+
+    if (isDev && !process.env.RESEND_TEST_EMAIL) {
+      return NextResponse.json(
+        { error: "Missing RESEND_TEST_EMAIL in development" },
+        { status: 503 },
+      );
+    }
+
     for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
@@ -149,7 +158,7 @@ export async function POST(req: Request) {
         try {
           const { data, error } = await resend.emails.send({
             from: "CashCaddies <updates@cashcaddies.com>",
-            to: email,
+            to: isDev ? process.env.RESEND_TEST_EMAIL! : email,
             subject: "CashCaddies Update",
             html: emailHtml,
           });
