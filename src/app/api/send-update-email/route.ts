@@ -86,18 +86,30 @@ export async function POST(req: Request) {
       <a href="https://cashcaddies.com">View Platform</a>
     `;
 
-    for (const email of limitedEmails) {
-      const { error: emailError } = await resend.emails.send({
-        from: "CashCaddies <onboarding@resend.dev>",
-        to: email,
-        subject: "CashCaddies Update",
-        html: emailHtml,
-      });
+    const BATCH_SIZE = 10;
 
-      if (emailError) {
-        console.error(emailError);
-        return NextResponse.json({ error: "Email failed" }, { status: 500 });
+    for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
+      const batch = limitedEmails.slice(i, i + BATCH_SIZE);
+
+      const results = await Promise.all(
+        batch.map((email) =>
+          resend.emails.send({
+            from: "CashCaddies <onboarding@resend.dev>",
+            to: email,
+            subject: "CashCaddies Update",
+            html: emailHtml,
+          }),
+        ),
+      );
+
+      for (const r of results) {
+        if (r.error) {
+          console.error(r.error);
+          return NextResponse.json({ error: "Email failed" }, { status: 500 });
+        }
       }
+
+      console.log("SENT BATCH:", i / BATCH_SIZE + 1);
     }
 
     return NextResponse.json({
