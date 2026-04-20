@@ -60,10 +60,10 @@ export function WalletModal({ open, onClose, onConfirm, busy }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="presentation">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none" role="presentation">
       <button
         type="button"
-        className="absolute inset-0 bg-black/65 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/65 backdrop-blur-[2px] pointer-events-auto"
         aria-label="Close deposit dialog"
         onClick={onClose}
       />
@@ -71,7 +71,7 @@ export function WalletModal({ open, onClose, onConfirm, busy }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-md rounded-2xl border border-yellow-500/25 bg-slate-950/95 p-6 shadow-[0_0_48px_rgba(212,175,55,0.15)]"
+        className="relative w-full max-w-md rounded-2xl border border-yellow-500/25 bg-slate-950/95 p-6 shadow-[0_0_48px_rgba(212,175,55,0.15)] pointer-events-auto"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <h2 id={titleId} className="text-lg font-bold text-white">

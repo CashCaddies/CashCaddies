@@ -138,39 +138,6 @@ export default function HomePage() {
     }
   }, [loading, updates]);
 
-  const handleSendEmail = async (updateId: string) => {
-    console.log("SEND EMAIL CLICKED", updateId);
-    console.log("UPDATE ID:", updateId);
-    try {
-      const res = await fetch("/api/send-update-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updateId }),
-      });
-
-      const raw = await res.text();
-      let data: { error?: string } = {};
-      try {
-        data = raw ? (JSON.parse(raw) as { error?: string }) : {};
-      } catch (parseErr) {
-        console.error("send-update-email: response was not JSON", { status: res.status, raw, parseErr });
-        alert(`Failed to send email (invalid response, HTTP ${res.status})`);
-        return;
-      }
-
-      if (!res.ok) {
-        const msg = typeof data.error === "string" ? data.error : `HTTP ${res.status}`;
-        console.error("send-update-email: request failed", { status: res.status, data, raw });
-        throw new Error(msg);
-      }
-
-      alert("Email sent");
-    } catch (err) {
-      console.error("send email error:", err);
-      alert(`Failed to send email: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  };
-
   if (loading) {
     return null;
   }
@@ -281,18 +248,18 @@ Your update here...`}
                       >
                         Edit
                       </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log("BUTTON CLICKED");
-                          handleSendEmail(a.id);
-                        }}
-                        className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer relative z-[9999] pointer-events-auto"
-                      >
-                        Send Email
-                      </button>
+                      <div className="relative z-[9999] pointer-events-auto">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            console.log("CLICK WORKING");
+                            alert("CLICK WORKING");
+                          }}
+                          className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer"
+                        >
+                          Send Email
+                        </button>
+                      </div>
                       <button
                         type="button"
                         onClick={async () => {

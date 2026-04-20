@@ -1700,3 +1700,26 @@ button:active {
 .animate-portal-glow-inner {
   animation: portalGlowInner 2s ease-in-out infinite;
 }
+
+/* ===== GLOBAL CLICK FIX ===== */
+
+/* Allow clicks everywhere by default */
+* {
+  pointer-events: auto !important;
+}
+
+/* Prevent invisible overlays from blocking */
+div[style*="position: fixed"],
+div[style*="position: absolute"] {
+  pointer-events: auto !important;
+}
+
+/* If something is meant to block clicks, it must explicitly opt-in */
+.block-clicks {
+  pointer-events: auto !important;
+}
+
+/* Debug helper (optional visual) */
+.debug-outline * {
+  outline: 1px solid red;
+}
