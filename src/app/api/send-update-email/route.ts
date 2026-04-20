@@ -146,6 +146,8 @@ export async function POST(req: Request) {
 
     const testEmail = process.env.RESEND_TEST_EMAIL || "koepsell1992@gmail.com";
 
+    const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
     for (let i = 0; i < limitedEmails.length; i += BATCH_SIZE) {
       const batch = limitedEmails.slice(i, i + BATCH_SIZE);
 
@@ -161,6 +163,8 @@ export async function POST(req: Request) {
             subject: "CashCaddies Update",
             html: emailHtml,
           });
+
+          await sleep(250);
 
           if (error) {
             console.error("RESEND ERROR:", error);
