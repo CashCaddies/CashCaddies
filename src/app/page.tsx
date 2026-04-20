@@ -63,7 +63,6 @@ export default function HomePage() {
   const [activeUpdate, setActiveUpdate] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const [audienceByUpdateId, setAudienceByUpdateId] = useState<Record<string, string>>({});
   const [visibilityByUpdateId, setVisibilityByUpdateId] = useState<Record<string, string>>({});
 
   const userRole = user ? (fullUser?.role?.toLowerCase().trim() || "user") : "guest";
@@ -272,24 +271,10 @@ Your update here...`}
                         Edit
                       </button>
                       <div className="relative z-[9999] pointer-events-auto flex items-center gap-2">
-                        <select
-                          className="rounded border border-gray-700 bg-black px-2 py-1 text-xs"
-                          value={audienceByUpdateId[a.id] ?? "all"}
-                          onChange={(e) =>
-                            setAudienceByUpdateId((prev) => ({ ...prev, [a.id]: e.target.value }))
-                          }
-                        >
-                          <option value="all">All</option>
-                          <option value="staff">Staff</option>
-                          <option value="founders">Founders</option>
-                          <option value="misc">Misc</option>
-                        </select>
-
                         <button
                           type="button"
                           onClick={async () => {
-                            const selectedAudience = audienceByUpdateId[a.id] ?? "all";
-                            console.log("SEND EMAIL CLICKED", a.id, selectedAudience);
+                            console.log("SEND EMAIL CLICKED", a.id);
 
                             try {
                               const res = await fetch("/api/send-update-email", {
@@ -299,7 +284,6 @@ Your update here...`}
                                 },
                                 body: JSON.stringify({
                                   updateId: a.id,
-                                  audience: selectedAudience,
                                 }),
                               });
 

@@ -18,7 +18,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email not configured (RESEND_API_KEY)" }, { status: 503 });
     }
 
-    const { updateId, audience } = await req.json();
+    const body = await req.json();
+    const { updateId, audience } = body as { updateId?: string; audience?: string };
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,15 +37,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Update not found" }, { status: 400 });
     }
 
+    const updateRow = update as { message?: string | null; visibility?: string | null };
+
+    // If no audience passed → use visibility (same rules as who sees the update)
+    const effectiveAudience = audience || updateRow.visibility || "all";
+
+    console.log("AUDIENCE:", effectiveAudience);
+
     let query = supabase.from("profiles").select("email, role");
 
-    if (audience === "staff") {
-      query = query.eq("role", "staff");
-    } else if (audience === "founders") {
+    if (effectiveAudience === "staff") {
+      query = query.in("role", ["admin", "senior_admin"]);
+    } else if (effectiveAudience === "founders") {
       query = query.eq("role", "founder");
-    } else if (audience === "misc") {
-      query = query.eq("role", "misc");
+    } else if (effectiveAudience === "misc") {
+      query = query.eq("role", "user");
     }
+    // "all", "public", "members" = no filter (every profile email)
 
     const { data: users, error: usersError } = await query;
 
@@ -56,12 +65,13 @@ export async function POST(req: Request) {
 
     const limitedEmails = emails.slice(0, 50); // prevent blast
 
+    console.log("RECIPIENT COUNT:", limitedEmails.length);
+
     if (limitedEmails.length === 0) {
       return NextResponse.json({ error: "No recipient emails" }, { status: 400 });
     }
 
-    const row = update as { message?: string | null };
-    const bodyHtml = escapeHtml(String(row.message ?? "")).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
+    const bodyHtml = escapeHtml(String(updateRow.message ?? "")).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
 
     const emailHtml = `
       <h2>CashCaddies Update</h2>
@@ -70,19 +80,25 @@ export async function POST(req: Request) {
       <a href="https://cashcaddies.com">View Platform</a>
     `;
 
-    const { data, error: emailError } = await resend.emails.send({
-      from: "CashCaddies <onboarding@resend.dev>",
-      to: limitedEmails,
-      subject: "CashCaddies Update",
-      html: emailHtml,
-    });
+    for (const email of limitedEmails) {
+      const { error: emailError } = await resend.emails.send({
+        from: "CashCaddies <onboarding@resend.dev>",
+        to: email,
+        subject: "CashCaddies Update",
+        html: emailHtml,
+      });
 
-    if (emailError) {
-      console.error(emailError);
-      return NextResponse.json({ error: "Email failed" }, { status: 500 });
+      if (emailError) {
+        console.error(emailError);
+        return NextResponse.json({ error: "Email failed" }, { status: 500 });
+      }
     }
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({
+      success: true,
+      sent: limitedEmails.length,
+      audience: effectiveAudience,
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
