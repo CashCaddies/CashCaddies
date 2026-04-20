@@ -61,6 +61,7 @@ export default function HomePage() {
   const [activeUpdate, setActiveUpdate] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [audienceByUpdateId, setAudienceByUpdateId] = useState<Record<string, string>>({});
 
   const getSessionId = () => {
     let sessionId = localStorage.getItem("cc_session_id");
@@ -248,11 +249,25 @@ Your update here...`}
                       >
                         Edit
                       </button>
-                      <div className="relative z-[9999] pointer-events-auto">
+                      <div className="relative z-[9999] pointer-events-auto flex items-center gap-2">
+                        <select
+                          className="rounded border border-gray-700 bg-black px-2 py-1 text-xs"
+                          value={audienceByUpdateId[a.id] ?? "all"}
+                          onChange={(e) =>
+                            setAudienceByUpdateId((prev) => ({ ...prev, [a.id]: e.target.value }))
+                          }
+                        >
+                          <option value="all">All</option>
+                          <option value="staff">Staff</option>
+                          <option value="founders">Founders</option>
+                          <option value="misc">Misc</option>
+                        </select>
+
                         <button
                           type="button"
                           onClick={async () => {
-                            console.log("SEND EMAIL CLICKED", a.id);
+                            const selectedAudience = audienceByUpdateId[a.id] ?? "all";
+                            console.log("SEND EMAIL CLICKED", a.id, selectedAudience);
 
                             try {
                               const res = await fetch("/api/send-update-email", {
@@ -262,6 +277,7 @@ Your update here...`}
                                 },
                                 body: JSON.stringify({
                                   updateId: a.id,
+                                  audience: selectedAudience,
                                 }),
                               });
 
@@ -279,7 +295,7 @@ Your update here...`}
                               alert("Email failed");
                             }
                           }}
-                          className="ml-3 text-blue-400 hover:text-blue-300 cursor-pointer"
+                          className="text-blue-400 hover:text-blue-300"
                         >
                           Send Email
                         </button>

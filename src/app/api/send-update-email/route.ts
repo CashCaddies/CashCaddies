@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email not configured (RESEND_API_KEY)" }, { status: 503 });
     }
 
-    const { updateId } = await req.json();
+    const { updateId, audience } = await req.json();
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,13 +36,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Update not found" }, { status: 400 });
     }
 
-    const { data: users, error: usersError } = await supabase.from("profiles").select("email");
+    let query = supabase.from("profiles").select("email, role");
+
+    if (audience === "staff") {
+      query = query.eq("role", "staff");
+    } else if (audience === "founders") {
+      query = query.eq("role", "founder");
+    } else if (audience === "misc") {
+      query = query.eq("role", "misc");
+    }
+
+    const { data: users, error: usersError } = await query;
 
     if (usersError || !users) {
       return NextResponse.json({ error: "Failed to load users" }, { status: 500 });
     }
 
-    const emails = [...new Set(users.map((u) => u.email).filter(Boolean) as string[])];
+    const emails = users.map((u) => u.email).filter(Boolean) as string[];
 
     const limitedEmails = emails.slice(0, 50); // prevent blast
 
