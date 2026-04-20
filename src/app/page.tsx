@@ -139,6 +139,8 @@ export default function HomePage() {
   }, [loading, updates]);
 
   const handleSendEmail = async (updateId: string) => {
+    console.log("SEND EMAIL CLICKED", updateId);
+    console.log("UPDATE ID:", updateId);
     try {
       const res = await fetch("/api/send-update-email", {
         method: "POST",
@@ -146,14 +148,26 @@ export default function HomePage() {
         body: JSON.stringify({ updateId }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+      let data: { error?: string } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as { error?: string }) : {};
+      } catch (parseErr) {
+        console.error("send-update-email: response was not JSON", { status: res.status, raw, parseErr });
+        alert(`Failed to send email (invalid response, HTTP ${res.status})`);
+        return;
+      }
 
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        const msg = typeof data.error === "string" ? data.error : `HTTP ${res.status}`;
+        console.error("send-update-email: request failed", { status: res.status, data, raw });
+        throw new Error(msg);
+      }
 
       alert("Email sent");
     } catch (err) {
       console.error("send email error:", err);
-      alert("Failed to send email");
+      alert(`Failed to send email: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
@@ -269,7 +283,10 @@ Your update here...`}
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleSendEmail(a.id)}
+                        onClick={() => {
+                          console.log("UPDATE ID:", a.id);
+                          void handleSendEmail(a.id);
+                        }}
                         className="ml-3 text-blue-400 hover:text-blue-300"
                       >
                         Send Email
