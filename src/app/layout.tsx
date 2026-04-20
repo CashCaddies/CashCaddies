@@ -12,6 +12,8 @@ import SoftLaunchCountdown from "@/components/SoftLaunchCountdown";
 import SupabaseProvider from "@/lib/supabase-provider";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -77,12 +79,10 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // --- GET CURRENT PATH ---
+  // --- CURRENT PATH (best-effort; gate runs for every logged-in user) ---
   const headerList = await headers();
-  let pathname =
-    headerList.get("x-pathname") ||
-    headerList.get("next-url") ||
-    "";
+
+  let pathname = headerList.get("next-url") || "";
 
   if (pathname.startsWith("http")) {
     try {
@@ -94,8 +94,26 @@ export default async function RootLayout({
     pathname = pathname.split("?")[0] ?? pathname;
   }
 
+  if (!pathname) {
+    const referer = headerList.get("referer");
+    if (referer) {
+      try {
+        const ref = new URL(referer);
+        const host = headerList.get("x-forwarded-host") || headerList.get("host") || "";
+        if (host && ref.host === host) {
+          pathname = ref.pathname;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  // Do not default unknown path to "/" — that would treat every request as home and bypass the gate.
+  // If still empty, pathname stays "" (not in allowed list → redirect when !hasAccess).
+
   // --- BETA ACCESS CHECK ---
-  if (user && pathname) {
+  if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("beta_access")
@@ -104,13 +122,13 @@ export default async function RootLayout({
 
     const hasAccess = profile?.beta_access === true;
 
-    const allowedPaths =
+    const allowed =
       pathname === "/" ||
       pathname.startsWith("/login") ||
       pathname.startsWith("/signup") ||
       pathname.startsWith("/api");
 
-    if (!hasAccess && !allowedPaths) {
+    if (!hasAccess && !allowed) {
       redirect("/");
     }
   }
