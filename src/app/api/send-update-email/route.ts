@@ -12,14 +12,18 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
+type FounderUpdateRow = {
+  message?: string | null;
+  visibility?: string | null;
+};
+
 export async function POST(req: Request) {
   try {
     if (!process.env.RESEND_API_KEY?.trim()) {
       return NextResponse.json({ error: "Email not configured (RESEND_API_KEY)" }, { status: 503 });
     }
 
-    const body = await req.json();
-    const { updateId, audience } = body as { updateId?: string; audience?: string };
+    const { updateId } = await req.json();
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,12 +41,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Update not found" }, { status: 400 });
     }
 
-    const updateRow = update as { message?: string | null; visibility?: string | null };
+    const row = update as FounderUpdateRow;
 
-    // If no audience passed → use visibility (same rules as who sees the update)
-    const effectiveAudience = audience || updateRow.visibility || "all";
+    console.log("USING VISIBILITY:", row.visibility);
 
-    console.log("AUDIENCE:", effectiveAudience);
+    const effectiveAudience = row.visibility || "public";
+
+    console.log("EFFECTIVE AUDIENCE:", effectiveAudience);
 
     let query = supabase.from("profiles").select("email, role");
 
@@ -50,10 +55,11 @@ export async function POST(req: Request) {
       query = query.in("role", ["admin", "senior_admin"]);
     } else if (effectiveAudience === "founders") {
       query = query.eq("role", "founder");
-    } else if (effectiveAudience === "misc") {
-      query = query.eq("role", "user");
+    } else if (effectiveAudience === "members") {
+      query = query.neq("role", "guest");
+    } else if (effectiveAudience === "public") {
+      // send to all users (no extra filter)
     }
-    // "all", "public", "members" = no filter (every profile email)
 
     const { data: users, error: usersError } = await query;
 
@@ -71,7 +77,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No recipient emails" }, { status: 400 });
     }
 
-    const bodyHtml = escapeHtml(String(updateRow.message ?? "")).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
+    const bodyHtml = escapeHtml(String(row.message ?? "")).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
 
     const emailHtml = `
       <h2>CashCaddies Update</h2>
@@ -97,7 +103,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       sent: limitedEmails.length,
-      audience: effectiveAudience,
+      visibility: effectiveAudience,
     });
   } catch (err) {
     console.error(err);
