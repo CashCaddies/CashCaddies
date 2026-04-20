@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { parseUpdate } from "@/utils/parseUpdate";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -131,14 +132,57 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No recipient emails" }, { status: 400 });
     }
 
-    const bodyHtml = escapeHtml(String(row.message ?? "")).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
+    const rawMessage = String(row.message ?? "");
+    const parsed = parseUpdate(rawMessage);
+    const subtitleEscaped = escapeHtml(
+      (parsed.title && parsed.title.trim()) ? parsed.title : "New Update",
+    );
+    const bodySource = parsed.content?.trim() ? parsed.content : rawMessage;
+    const bodyEscaped = escapeHtml(bodySource).replace(/\r\n/g, "\n").replace(/\n/g, "<br/>");
 
     const emailHtml = `
-      <h2>CashCaddies Update</h2>
-      <p>${bodyHtml}</p>
-      <br/>
-      <a href="https://cashcaddies.com">View Platform</a>
-    `;
+  <div style="background:#0b1220;padding:40px 20px;font-family:Arial,sans-serif;">
+    
+    <div style="max-width:600px;margin:0 auto;background:#111827;border-radius:12px;padding:30px;border:1px solid #1f2937;">
+      
+      <!-- HEADER -->
+      <h1 style="color:#22c55e;margin-bottom:10px;">
+        CashCaddies Update
+      </h1>
+
+      <p style="color:#9ca3af;margin-bottom:25px;">
+        ${subtitleEscaped}
+      </p>
+
+      <!-- BODY -->
+      <div style="color:#e5e7eb;line-height:1.6;font-size:15px;">
+        ${bodyEscaped}
+      </div>
+
+      <!-- CTA BUTTON -->
+      <div style="margin-top:30px;text-align:center;">
+        <a href="https://cashcaddies.com"
+           style="
+             display:inline-block;
+             padding:14px 24px;
+             background:linear-gradient(90deg,#22c55e,#eab308);
+             color:#000;
+             font-weight:bold;
+             text-decoration:none;
+             border-radius:8px;
+           ">
+           Enter CashCaddies
+        </a>
+      </div>
+
+      <!-- FOOTER -->
+      <p style="margin-top:30px;color:#6b7280;font-size:12px;text-align:center;">
+        © ${new Date().getFullYear()} CashCaddies
+      </p>
+
+    </div>
+  </div>
+`;
 
     const BATCH_SIZE = 10;
 
