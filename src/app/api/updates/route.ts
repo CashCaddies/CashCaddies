@@ -10,11 +10,8 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.log("UPDATES DATA ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  console.log("UPDATES DATA:", data);
 
   return NextResponse.json({ data });
 }
