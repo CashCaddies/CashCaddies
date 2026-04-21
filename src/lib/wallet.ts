@@ -8,8 +8,6 @@ export type ProfileRow = {
   beta_user?: boolean;
   /** Waitlist interest (profiles.beta_waitlist). */
   beta_waitlist?: boolean;
-  /** Beta product access (profiles.beta_access). */
-  beta_access?: boolean;
   /** When admin approved beta access (profiles.beta_approved_at). */
   beta_approved_at?: string | null;
   /** Advanced DFS tools (tee waves, ownership); admin-granted. */
@@ -43,7 +41,6 @@ export function normalizeProfileRow(row: {
   username?: string | null;
   beta_user?: boolean | null;
   beta_waitlist?: boolean | null;
-  beta_access?: boolean | null;
   beta_approved_at?: string | null;
   is_beta_tester?: boolean | null;
   premium_expires_at?: string | null;
@@ -73,7 +70,6 @@ export function normalizeProfileRow(row: {
     username: typeof row.username === "string" && row.username.trim() !== "" ? row.username.trim() : "",
     beta_user: row.beta_user === true,
     beta_waitlist: row.beta_waitlist === true,
-    beta_access: row.beta_access === true,
     beta_approved_at:
       typeof row.beta_approved_at === "string" && row.beta_approved_at.trim() !== ""
         ? row.beta_approved_at.trim()

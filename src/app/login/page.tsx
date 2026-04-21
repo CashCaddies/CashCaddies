@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AuthForm } from "@/components/auth-form";
-import { BETA_ACCESS_DENIED_QUERY, CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
+import { BETA_STATUS_DENIED_QUERY, CLOSED_BETA_ACCESS_MESSAGE } from "@/lib/supabase/beta-access";
 
 export const metadata: Metadata = {
   title: "Log in",
@@ -17,7 +17,7 @@ type Props = {
 
 export default async function LoginPage(props: Props) {
   const { reason } = await props.searchParams;
-  const betaDenied = reason === BETA_ACCESS_DENIED_QUERY;
+  const betaDenied = reason === BETA_STATUS_DENIED_QUERY;
 
   return (
     <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col justify-center">

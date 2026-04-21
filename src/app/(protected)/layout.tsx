@@ -1,57 +1,43 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-/** Never cache this segment; beta gate must run on every navigation/request. */
-export const dynamic = "force-dynamic";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
+  console.log("PROTECTED LAYOUT HIT");
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            /* Server Components may have read-only cookies; root middleware refreshes session. */
-          }
-        },
-      },
-    },
-  );
+  const supabase = await createClient();
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  console.log("USER:", user);
+  console.log("USER ERROR:", userError);
+
+  if (!user || userError) {
+    console.log("REDIRECT: NO USER");
     redirect("/");
   }
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("beta_access")
+    .select("*")
     .eq("id", user.id)
-    .maybeSingle();
+    .single();
 
-  if (profileError) {
-    redirect("/");
-  }
+  console.log("PROFILE:", profile);
+  console.log("PROFILE ERROR:", profileError);
 
-  if (profile?.beta_access !== true) {
+  const isApproved =
+    profile?.beta_status === "approved" ||
+    profile?.beta_access === true;
+
+  if (profileError || !profile || !isApproved) {
+    console.log("REDIRECT: NOT APPROVED");
     redirect("/");
   }
 

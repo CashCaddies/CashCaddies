@@ -209,7 +209,7 @@ export default function HomePage() {
         <div className="mb-4 h-px bg-gray-800" />
 
         {user ? (
-          profile?.beta_access ? null : (
+          profile?.beta_status === "approved" ? null : (
             <div className="mb-4">
               {profile?.beta_waitlist ? (
                 <div className="mt-3 text-sm text-green-400">You are on the waitlist</div>

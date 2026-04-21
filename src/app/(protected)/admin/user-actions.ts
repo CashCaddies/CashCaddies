@@ -263,7 +263,7 @@ export async function toggleBetaUser(user_id: string): Promise<ActionResult> {
     .from("profiles")
     .update({
       beta_user: nextValue,
-      beta_access: nextValue,
+      beta_status: nextValue ? "approved" : "rejected",
       beta_approved_at: nextValue ? ts : null,
       updated_at: ts,
     })
@@ -274,7 +274,7 @@ export async function toggleBetaUser(user_id: string): Promise<ActionResult> {
 
   revalidatePath("/admin");
   revalidatePath("/dashboard/beta-management");
-  return { ok: true, message: `beta_user set to ${nextValue ? "true" : "false"} (beta_access synced).` };
+  return { ok: true, message: `beta_user set to ${nextValue ? "true" : "false"} (beta_status synced).` };
 }
 
 export async function toggleFoundingTester(user_id: string): Promise<ActionResult> {
@@ -320,7 +320,6 @@ async function updateUserBetaStatus(
           beta_user: true,
           beta_status: "approved",
           beta_waitlist: false,
-          beta_access: true,
           beta_approved_at: approvedAt,
           updated_at: approvedAt,
         })
@@ -348,7 +347,6 @@ async function updateUserBetaStatus(
           founding_tester: true,
           beta_priority: "founder",
           beta_waitlist: false,
-          beta_access: true,
           beta_approved_at: approvedAt,
           updated_at: approvedAt,
         })
@@ -373,7 +371,6 @@ async function updateUserBetaStatus(
           beta_user: false,
           beta_status: "rejected",
           beta_waitlist: false,
-          beta_access: false,
           beta_approved_at: null,
           updated_at: new Date().toISOString(),
         })
@@ -396,7 +393,6 @@ async function updateUserBetaStatus(
         .from("profiles")
         .update({
           beta_waitlist: Boolean(mode.enabled),
-          beta_access: false,
           updated_at: new Date().toISOString(),
         })
         .eq("id", targetId);
@@ -772,7 +768,6 @@ export async function bulkUpdateBetaStatus(
         beta_user: true,
         beta_status: "approved",
         beta_waitlist: false,
-        beta_access: true,
         beta_approved_at: approvedAt,
         updated_at: approvedAt,
       })
@@ -817,7 +812,6 @@ export async function bulkUpdateBetaStatus(
       beta_user: false,
       beta_status: "rejected",
       beta_waitlist: false,
-      beta_access: false,
       beta_approved_at: null,
       updated_at: new Date().toISOString(),
     })

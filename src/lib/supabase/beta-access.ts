@@ -6,8 +6,8 @@ import { isAdmin } from "@/lib/permissions";
 export const CLOSED_BETA_ACCESS_MESSAGE =
   "CashCaddies is currently in a closed beta. If you would like access, email contact@cashcaddies.com";
 
-/** `login?reason=` value set by middleware when session exists but email is not allowlisted. */
-export const BETA_ACCESS_DENIED_QUERY = "beta_access";
+/** `login?reason=` value when beta program access is denied (canonical: profiles.beta_status). */
+export const BETA_STATUS_DENIED_QUERY = "beta_status";
 
 function adminBypassEmailsFromEnv(): string[] {
   const raw = process.env.ADMIN_EMAILS ?? process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "";
