@@ -237,8 +237,8 @@ export function SiteHeader() {
         render={(ctx) => (
           <>
             <div className="w-full border-b border-[#1f2937] bg-[#020617]">
-              <div className="relative mx-auto max-w-7xl px-4 py-3">
-                <div className="flex w-full items-center justify-between gap-6 md:gap-8">
+              <div className="relative mx-auto max-w-7xl px-4 py-4 md:py-5">
+                <div className="flex w-full items-center justify-between gap-5 md:gap-8">
                   {/* LEFT — brand */}
                   <div className="flex min-w-fit items-center gap-3">
                     <Link
@@ -294,6 +294,12 @@ export function SiteHeader() {
                       >
                         Click to enter CC Portal
                       </div>
+                      <Link
+                        href="/faq"
+                        className="mt-2.5 inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-slate-900/60 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-100/95 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.08)] transition hover:border-emerald-500/45 hover:bg-slate-900/90 hover:text-emerald-200 md:text-xs"
+                      >
+                        FAQ
+                      </Link>
                     </div>
                   </div>
 
@@ -596,17 +602,29 @@ export function SiteHeader() {
                       >
                         Lobby
                       </button>
+
+                      <Link
+                        href="/faq"
+                        onClick={() => setMenuOpen(false)}
+                        className="text-left font-medium text-amber-300 hover:text-amber-200"
+                      >
+                        FAQ
+                      </Link>
                     </div>
                   </div>
                 ) : null}
               </div>
 
-              <div className="mx-auto max-w-7xl px-4 pb-3 pt-1">
-                <div className="flex max-w-fit items-center gap-2 whitespace-nowrap">
-                  <Link href="/faq#safety-coverage" className="text-sm text-green-400 transition hover:text-green-300 md:text-base">
+              <div className="mx-auto max-w-7xl border-t border-slate-800/60 px-4 pb-4 pt-3">
+                <div className="flex max-w-fit flex-wrap items-center gap-x-3 gap-y-1">
+                  <Link
+                    href="/faq#safety-coverage"
+                    className="text-sm font-medium text-green-400 underline decoration-green-500/30 underline-offset-4 transition hover:text-emerald-300 hover:decoration-emerald-400/50 md:text-base"
+                  >
                     Safety Coverage Fund
                   </Link>
-                  <span className="text-sm text-yellow-400 md:text-base">PREMIUM GOLF DFS</span>
+                  <span className="hidden h-4 w-px bg-slate-700 sm:inline-block" aria-hidden />
+                  <span className="text-sm font-medium text-amber-400/95 md:text-base">PREMIUM GOLF DFS</span>
                 </div>
               </div>
             </div>

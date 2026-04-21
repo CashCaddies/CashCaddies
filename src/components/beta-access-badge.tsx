@@ -17,15 +17,15 @@ function LockIcon({ className }: { className?: string }) {
 
 export function BetaAccessBadge() {
   return (
-    <div className="border-b border-slate-800/80 bg-slate-950/80 px-4 py-2.5 sm:py-3">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 text-center">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/35 bg-slate-900/70 px-3 py-1 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.08)] sm:gap-2 sm:px-3.5 sm:py-1.5">
-          <LockIcon className="h-3 w-3 shrink-0 text-amber-400/85 sm:h-3.5 sm:w-3.5" />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-100/90 sm:text-[11px] sm:tracking-[0.14em]">
+    <div className="border-b border-emerald-950/50 bg-slate-950/90 px-4 py-3 backdrop-blur-sm sm:py-3.5">
+      <div className="mx-auto flex max-w-3xl flex-col items-center gap-2.5 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-slate-900/80 px-3.5 py-1.5 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.1)] sm:px-4 sm:py-2">
+          <LockIcon className="h-3.5 w-3.5 shrink-0 text-amber-400/90 sm:h-4 sm:w-4" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-100/95 sm:text-[11px] sm:tracking-[0.16em]">
             Closed Beta – Invite Only
           </span>
         </div>
-        <div className="max-w-xl space-y-2 text-[10px] leading-relaxed text-slate-500 sm:text-xs sm:leading-relaxed">
+        <div className="max-w-xl space-y-2 text-[10px] leading-relaxed text-slate-400 sm:text-xs sm:leading-relaxed">
           <p>
             CashCaddies is currently in closed beta testing. We are selecting a small group of fantasy golf players to
             help refine the platform.
