@@ -16,20 +16,27 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 mt-10">
-      <h1 className="mb-4 text-xl font-semibold text-white md:text-2xl">
+    <div className="mx-auto max-w-3xl px-4 mt-10 space-y-8">
+      <h1 className="text-2xl font-semibold text-white">
         CashCaddies Updates
       </h1>
 
       {updates.length === 0 ? (
         <p className="text-gray-400">No updates yet.</p>
       ) : (
-        updates.map((u: any) => (
-          <div key={u.id} className="mb-4 border-b border-gray-700 pb-4">
-            <h2 className="text-lg font-semibold text-white">{u.title}</h2>
-            <p className="text-gray-300">{u.content}</p>
-          </div>
-        ))
+        updates
+          .filter((u: any) => u.title !== "Test Update")
+          .map((u: any) => (
+            <div
+              key={u.id}
+              className="rounded-lg border border-gray-700 p-6 bg-[#0b1220] space-y-4"
+            >
+              <h2 className="text-xl font-bold text-white">{u.title}</h2>
+              <div className="text-gray-300 whitespace-pre-line leading-relaxed">
+                {u.content}
+              </div>
+            </div>
+          ))
       )}
     </div>
   );
