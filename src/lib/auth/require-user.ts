@@ -25,7 +25,7 @@ export async function requireUser() {
     profile?.founding_tester === true;
 
   if (!isApproved) {
-    redirect("/");
+    redirect("/not-approved");
   }
 
   return { user, profile };
