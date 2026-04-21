@@ -17,7 +17,7 @@ function LockIcon({ className }: { className?: string }) {
 
 export function BetaAccessBadge() {
   return (
-    <div className="border-b border-emerald-950/50 bg-slate-950/90 px-4 py-3 backdrop-blur-sm sm:py-3.5">
+    <div className="border-b border-emerald-950/50 bg-slate-950/90 px-4 py-2.5 backdrop-blur-sm sm:py-3">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-2.5 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-slate-900/80 px-3.5 py-1.5 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.1)] sm:px-4 sm:py-2">
           <LockIcon className="h-3.5 w-3.5 shrink-0 text-amber-400/90 sm:h-4 sm:w-4" />

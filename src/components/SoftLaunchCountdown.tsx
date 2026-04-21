@@ -50,7 +50,7 @@ export default function SoftLaunchCountdown() {
   }
 
   return (
-    <div className="flex w-full flex-col items-center justify-center border-y border-amber-400/30 bg-slate-950 py-4">
+    <div className="flex w-full flex-col items-center justify-center border-y border-amber-400/30 bg-slate-950 py-3 sm:py-3.5">
       <p className="mb-2 px-4 text-center text-sm font-semibold text-amber-400 md:text-base">
         Soft Launch Target – August 1
       </p>
