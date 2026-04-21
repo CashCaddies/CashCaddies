@@ -5,6 +5,7 @@ import { FeedbackAdminTable } from "@/app/(protected)/admin/feedback/feedback-ad
 import { getAdminNewFeedbackCount, listBetaFeedbackAdmin } from "@/app/(protected)/admin/feedback/actions";
 import type { BetaFeedbackAdminRow } from "@/app/(protected)/admin/feedback/feedback-admin-types";
 import { AdminHubNav } from "@/components/admin-hub-nav";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
@@ -13,6 +14,7 @@ type PageProps = {
 };
 
 export default async function AdminFeedbackPage({ searchParams }: PageProps) {
+  await requireUser();
   const { userId } = await requireAdmin();
 
   const admin = createServiceRoleClient();

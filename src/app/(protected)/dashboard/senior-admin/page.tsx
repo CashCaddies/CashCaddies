@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 import { MaxBetaUsersForm } from "./max-beta-users-form";
 
-export default function SeniorAdminHomePage() {
+export default async function SeniorAdminHomePage() {
+  await requireUser();
   return (
     <div className="pageWrap space-y-8 py-8">
       <header>

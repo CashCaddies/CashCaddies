@@ -2,8 +2,10 @@ import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LobbyPageContent } from "@/components/lobby-page-content";
+import { requireUser } from "@/lib/auth/require-user";
 
 export default async function LobbyPage() {
+  await requireUser();
   const cookieStore = await cookies();
 
   const supabase = createServerClient(

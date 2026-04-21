@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LineupBuilder } from "@/components/lineup-builder";
+import { requireUser } from "@/lib/auth/require-user";
 import { getPayEntryBlockedBannerForUser } from "@/lib/contest-entry-eligibility";
 import { loadContestForLineupPage } from "@/lib/contest-resolve";
 import { CONTEST_ENTRIES_READ_BASE } from "@/lib/contest-entries-read-columns";
@@ -34,6 +35,7 @@ async function payEntryBannerForContest(resolvedId: string): Promise<string | nu
 }
 
 export default async function LineupPage(props: LineupPageProps) {
+  await requireUser();
   const { contest, edit, entryId } = await props.searchParams;
   const editTrim = edit?.trim();
   const entryTrim = entryId?.trim();

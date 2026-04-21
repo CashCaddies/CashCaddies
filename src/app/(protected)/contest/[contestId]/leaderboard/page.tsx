@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import LiveLeaderboard from "./live-leaderboard";
+import { requireUser } from "@/lib/auth/require-user";
 import { getContestLeaderboard } from "@/lib/supabase/queries/getContestLeaderboard";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ type PageProps = {
 };
 
 export default async function ContestLiveLeaderboardPage(props: PageProps) {
+  await requireUser();
   const { contestId } = await props.params;
   const id = contestId?.trim() ?? "";
 

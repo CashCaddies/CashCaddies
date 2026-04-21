@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContestEntriesSection } from "@/components/contest-entries-section";
+import { requireUser } from "@/lib/auth/require-user";
 import { ContestLifecycleBadge } from "@/components/contest-card";
 import { ensureContestEntryProtection } from "@/lib/entry-protection-server";
 import { fetchLobbyContestById, formatLobbyEntryFeeUsd } from "@/lib/contest-lobby-fetch";
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export default async function ContestDetailPage({ params }: Props) {
+  await requireUser();
   const { contestId } = await params;
   const id = contestId?.trim() ?? "";
   if (!id) {

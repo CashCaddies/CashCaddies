@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const metadata: Metadata = {
   title: "Fair Play Principles · CashCaddies",
@@ -7,7 +8,8 @@ export const metadata: Metadata = {
     "CashCaddies Fair Play Principles: integrity, transparency, and respect for every player in the community.",
 };
 
-export default function FairPlayPage() {
+export default async function FairPlayPage() {
+  await requireUser();
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div>

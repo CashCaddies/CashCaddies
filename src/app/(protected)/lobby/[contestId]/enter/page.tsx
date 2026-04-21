@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EnterContestWithSavedLineup } from "@/components/enter-contest-saved";
+import { requireUser } from "@/lib/auth/require-user";
 import { fetchDraftLineupsForContest } from "@/lib/contest-enter";
 import { getPayEntryBlockedBannerForUser } from "@/lib/contest-entry-eligibility";
 import { loadContestForLineupPage } from "@/lib/contest-resolve";
@@ -12,6 +13,7 @@ type PageProps = {
 };
 
 export default async function EnterContestPage(props: PageProps) {
+  await requireUser();
   const { contestId: raw } = await props.params;
   const contestId = raw?.trim() ?? "";
   if (!contestId || contestId === "default") {

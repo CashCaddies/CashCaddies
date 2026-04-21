@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const metadata: Metadata = {
   title: "Privacy Policy · CashCaddies",
@@ -30,7 +31,8 @@ const SECTIONS: { title: string; body: string }[] = [
   },
 ];
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  await requireUser();
   return (
     <div className="mx-auto max-w-2xl space-y-8 px-1 sm:px-0">
       <div>

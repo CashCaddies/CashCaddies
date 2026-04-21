@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
@@ -22,6 +23,7 @@ function formatCtr(impressions: number, clicks: number): string {
 }
 
 export default async function UpdatePerformancePage() {
+  await requireUser();
   await requireAdmin();
 
   const admin = createServiceRoleClient();

@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { AppProviders } from "@/components/app-providers";
 import { DebugOutlineStrip } from "@/components/debug-outline-strip";
 import { ConditionalBetaBanner } from "@/components/conditional-beta-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import SoftLaunchCountdown from "@/components/SoftLaunchCountdown";
+import { isAdmin } from "@/lib/permissions";
+import { createClient } from "@/lib/supabase/server";
 import SupabaseProvider from "@/lib/supabase-provider";
 import "./globals.css";
+
+export const dynamic = "force-dynamic";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,11 +52,90 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function pathnameFromHeaders(): Promise<string> {
+  const headerList = await headers();
+  let pathname = headerList.get("next-url") || "";
+
+  if (pathname.startsWith("http")) {
+    try {
+      pathname = new URL(pathname).pathname;
+    } catch {
+      pathname = "";
+    }
+  } else if (pathname.includes("?")) {
+    pathname = pathname.split("?")[0] ?? pathname;
+  }
+
+  if (!pathname) {
+    const referer = headerList.get("referer");
+    const host = headerList.get("host");
+    if (referer && host && referer.includes(host)) {
+      try {
+        pathname = new URL(referer).pathname;
+      } catch {
+        pathname = "";
+      }
+    }
+  }
+
+  if (pathname.includes("#")) {
+    pathname = pathname.split("#")[0] ?? pathname;
+  }
+
+  return pathname || "";
+}
+
+function isPublicPath(pathname: string): boolean {
+  if (pathname === "/" || pathname === "/login" || pathname === "/signup") return true;
+  if (pathname.startsWith("/login") || pathname.startsWith("/signup")) return true;
+  return false;
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = await pathnameFromHeaders();
+  const isPublicRoute = isPublicPath(pathname);
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && !isPublicRoute) {
+    redirect("/");
+  }
+
+  if (user) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    let isApproved = false;
+    if (!profileError && profile) {
+      const p = profile as {
+        beta_status?: string | null;
+        beta_access?: boolean | null;
+        role?: string | null;
+        founding_tester?: boolean | null;
+      };
+      isApproved =
+        p.beta_status === "approved" ||
+        p.beta_access === true ||
+        isAdmin(p.role) ||
+        p.founding_tester === true;
+    }
+
+    if (!isApproved && !isPublicRoute) {
+      redirect("/");
+    }
+  }
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>

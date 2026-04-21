@@ -2,10 +2,12 @@ import Link from "next/link";
 import { getAdminNewFeedbackCount } from "@/app/(protected)/admin/feedback/actions";
 import { AdminHubNav } from "@/components/admin-hub-nav";
 import { AdminDashboardMetricsPanel } from "@/components/admin-dashboard-metrics-panel";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export default async function AdminStatsPage() {
+  await requireUser();
   const { userId } = await requireAdmin();
 
   const admin = createServiceRoleClient();

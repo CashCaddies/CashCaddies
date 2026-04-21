@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { AdminScoringForm } from "@/components/admin-scoring-form";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 export default async function AdminScoringPage() {
+  await requireUser();
   await requireAdmin();
 
   let golfers: { id: string; name: string; fantasy_points: number }[] = [];

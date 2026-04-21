@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPayoutHistory, type PayoutHistoryRow } from "@/lib/admin/get-payout-history";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { formatPayoutUserDisplay } from "@/lib/admin/payout-profile-display";
 
@@ -15,6 +16,7 @@ function filterHref(contestId: string, paid?: "true" | "false") {
 }
 
 export default async function PayoutHistoryPage({ searchParams }: PageProps) {
+  await requireUser();
   await requireAdmin();
 
   const sp = await searchParams;

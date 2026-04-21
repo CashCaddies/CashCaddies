@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth/require-user";
 import { supabase } from "@/lib/supabase/client";
 import { WinningsView, type WinningsRow } from "./winnings-view";
 
 export default async function WinningsPage() {
-    const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await requireUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent("/dashboard/winnings")}`);

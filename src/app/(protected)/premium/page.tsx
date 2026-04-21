@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PremiumSubscribeButton } from "@/components/premium-subscribe-button";
+import { requireUser } from "@/lib/auth/require-user";
 import { getDfsPremiumViewerForRequest } from "@/lib/dfs-premium-viewer";
 import { getPremiumPriceDisplayLabel } from "@/lib/stripe";
 
@@ -15,6 +16,7 @@ export default async function PremiumPage({
 }: {
   searchParams: Promise<{ checkout?: string }>;
 }) {
+  await requireUser();
   const sp = await searchParams;
   const checkout = sp.checkout;
   const viewer = await getDfsPremiumViewerForRequest();

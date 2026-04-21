@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 
-export default function SeniorAdminManagersPage() {
+export default async function SeniorAdminManagersPage() {
+  await requireUser();
   return (
     <div className="pageWrap space-y-6 py-8">
       <header>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ContestLeaderboardLive } from "@/app/(protected)/contest/[contestId]/contest-leaderboard-live";
+import { requireUser } from "@/lib/auth/require-user";
 import { getContestLeaderboard } from "@/lib/supabase/queries/getContestLeaderboard";
 import { supabase } from "@/lib/supabase/client";
 
@@ -11,6 +12,7 @@ type PageProps = {
 };
 
 export default async function ContestLeaderboardPage(props: PageProps) {
+  await requireUser();
   const { contestId } = await props.params;
   const id = contestId?.trim() ?? "";
 

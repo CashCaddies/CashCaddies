@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 
 /**
  * Hub for contest leaderboards — pick a contest from the lobby to view live rankings.
  */
-export default function LeaderboardPage() {
+export default async function LeaderboardPage() {
+  await requireUser();
   return (
     <div className="pageWrap py-10">
       <h1 className="text-2xl font-bold text-white">Leaderboards</h1>

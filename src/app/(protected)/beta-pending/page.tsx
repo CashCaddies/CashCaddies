@@ -1,12 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const metadata: Metadata = {
   title: "Beta access pending · CashCaddies",
   description: "Your CashCaddies account is pending private beta approval.",
 };
 
-export default function BetaPendingPage() {
+export default async function BetaPendingPage() {
+  await requireUser();
   return (
     <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col justify-center px-4">
       <section className="rounded-xl border border-slate-800 bg-slate-900/40 px-6 py-8 shadow-sm">

@@ -4,6 +4,7 @@ import { AdminInsuranceForm } from "@/components/admin-insurance-form";
 import { AdminPayoutHistoryTable } from "@/components/admin-payout-history";
 import { AdminProtectionEngineForm } from "@/components/admin-protection-engine-form";
 import { AdminSettlementForm } from "@/components/admin-settlement-form";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 
@@ -12,6 +13,7 @@ type PageProps = {
 };
 
 export default async function AdminSettlementPage({ searchParams }: PageProps) {
+  await requireUser();
   await requireAdmin();
 
   let contests: { id: string; name: string }[] = [];

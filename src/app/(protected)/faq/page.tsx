@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FaqAccordion } from "@/components/faq-accordion";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const metadata: Metadata = {
   title: "FAQ · CashCaddies",
@@ -247,7 +248,8 @@ const SUPPORT_ITEMS = [
   },
 ];
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  await requireUser();
   return (
     <div className="min-h-screen bg-[#020617] px-6 py-16 text-white">
       <div className="mx-auto max-w-3xl">
