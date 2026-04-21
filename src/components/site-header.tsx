@@ -29,7 +29,7 @@ const navItems = [
 ] as const;
 
 const navButtonBase =
-  "rounded-md border border-white/10 bg-white/5 px-5 py-2.5 text-base font-medium transition hover:bg-white/10 whitespace-nowrap";
+  "rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-[15px] font-medium transition-all duration-200 ease-out hover:border-emerald-500/35 hover:bg-emerald-950/30 hover:shadow-[0_0_22px_rgba(16,185,129,0.18)] whitespace-nowrap";
 
 /**
  * Full DFS header when user has beta or admin access.
@@ -236,11 +236,11 @@ export function SiteHeader() {
       <HeaderAuthSection
         render={(ctx) => (
           <>
-            <div className="w-full border-b border-[#1f2937] bg-[#020617]">
-              <div className="relative mx-auto max-w-7xl px-4 py-4 md:py-5">
-                <div className="flex w-full items-center justify-between gap-5 md:gap-8">
+            <div className="w-full border-b border-white/[0.06] bg-[#020617]">
+              <div className="relative mx-auto max-w-5xl px-4 py-3 md:py-4">
+                <div className="flex w-full flex-col items-stretch gap-4 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4 lg:gap-6">
                   {/* LEFT — brand */}
-                  <div className="flex min-w-fit items-center gap-3">
+                  <div className="flex min-w-0 items-center justify-center gap-3 md:justify-start">
                     <Link
                       href="/"
                       className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-2xl font-semibold tracking-tight text-transparent md:text-3xl"
@@ -250,7 +250,7 @@ export function SiteHeader() {
                   </div>
 
                   {/* CENTER — ball */}
-                  <div className="flex flex-1 justify-center">
+                  <div className="flex justify-center md:col-start-2">
                     <div className="flex min-w-[140px] flex-shrink-0 flex-col items-center justify-center">
                       <div>
                         <button
@@ -290,13 +290,13 @@ export function SiteHeader() {
                       </div>
                       <div
                         onClick={handlePortalEntry}
-                        className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
+                        className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all duration-200 hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
                       >
                         Click to enter CC Portal
                       </div>
                       <Link
                         href="/faq"
-                        className="mt-2.5 inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-slate-900/60 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-100/95 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.08)] transition hover:border-emerald-500/45 hover:bg-slate-900/90 hover:text-emerald-200 md:text-xs"
+                        className="mt-2 inline-flex items-center justify-center rounded-xl border border-amber-500/25 bg-slate-900/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-100/95 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.08)] transition-all duration-200 hover:border-emerald-500/40 hover:bg-slate-900/85 hover:text-emerald-200 hover:shadow-[0_0_18px_rgba(52,211,153,0.15)] md:text-xs"
                       >
                         FAQ
                       </Link>
@@ -304,12 +304,12 @@ export function SiteHeader() {
                   </div>
 
                   {/* RIGHT — create account + nav + wallet + auth */}
-                  <div className="flex shrink-0 items-center gap-3">
+                  <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 md:col-start-3 md:justify-end">
                     {!sessionUser ? (
                       <button
                         type="button"
                         onClick={() => router.push("/signup")}
-                        className="rounded-md bg-green-500 px-3 py-1.5 text-xs font-semibold text-black hover:bg-green-600 md:px-4 md:py-2 md:text-sm"
+                        className="rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-black transition-all duration-200 ease-out hover:bg-emerald-400 hover:shadow-[0_0_24px_rgba(52,211,153,0.35)] md:px-5 md:py-3 md:text-[15px]"
                       >
                         Create Account
                       </button>
@@ -325,7 +325,7 @@ export function SiteHeader() {
                             onClick={() => void handleProtectedNav(item.href)}
                             className={`${navButtonBase} ${
                               isActive
-                                ? "border-emerald-500/30 bg-emerald-950/35 text-emerald-300 hover:bg-emerald-950/45"
+                                ? "border-emerald-500/35 bg-emerald-950/40 text-emerald-300 shadow-[0_0_18px_rgba(16,185,129,0.12)] hover:bg-emerald-950/50 hover:shadow-[0_0_24px_rgba(16,185,129,0.22)]"
                                 : "text-slate-200"
                             }`}
                           >
@@ -344,7 +344,7 @@ export function SiteHeader() {
                           <div className="relative flex items-center">
                             <button
                               type="button"
-                              className="notif-bell relative text-lg text-white"
+                              className="notif-bell relative rounded-lg p-0.5 text-lg text-white transition-all duration-200 hover:bg-white/5"
                               onClick={() => {
                                 setNotifOpen((o) => !o);
                                 setProfileOpen(false);
@@ -383,7 +383,7 @@ export function SiteHeader() {
                                       });
                                       setNotifOpen(false);
                                     }}
-                                    className="mb-2 text-xs text-green-400"
+                                    className="mb-2 text-xs text-green-400 transition-colors duration-200 hover:text-emerald-300"
                                   >
                                     Mark all as read
                                   </button>
@@ -397,7 +397,7 @@ export function SiteHeader() {
                                         if (ok) setNotifOpen(false);
                                       });
                                     }}
-                                    className="mt-2 text-green-400"
+                                    className="mt-2 text-green-400 transition-colors duration-200 hover:text-emerald-300"
                                   >
                                     View All
                                   </button>
@@ -414,7 +414,7 @@ export function SiteHeader() {
                             setNotifOpen(false);
                             setProfileOpen(!profileOpen);
                           }}
-                          className="rounded-full focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                          className="rounded-full transition-all duration-200 hover:ring-2 hover:ring-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-green-500/50"
                         >
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-black">
                             {getInitials(sessionUser?.email)}
@@ -438,7 +438,7 @@ export function SiteHeader() {
                                   if (ok) setProfileOpen(false);
                                 });
                               }}
-                              className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800"
+                              className="block w-full px-4 py-2 text-left text-sm text-white transition-colors duration-200 hover:bg-gray-800"
                             >
                               Dashboard
                             </button>
@@ -450,7 +450,7 @@ export function SiteHeader() {
                                   if (ok) setProfileOpen(false);
                                 });
                               }}
-                              className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800"
+                              className="block w-full px-4 py-2 text-left text-sm text-white transition-colors duration-200 hover:bg-gray-800"
                             >
                               Wallet
                             </button>
@@ -466,7 +466,7 @@ export function SiteHeader() {
                                       if (ok) setProfileOpen(false);
                                     });
                                   }}
-                                  className="block w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800"
+                                  className="block w-full text-left px-4 py-2 text-sm text-yellow-400 transition-colors duration-200 hover:bg-gray-800"
                                 >
                                   Admin Tools
                                 </button>
@@ -478,7 +478,7 @@ export function SiteHeader() {
                                       if (ok) setProfileOpen(false);
                                     });
                                   }}
-                                  className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                                  className="block w-full text-left px-4 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-800"
                                 >
                                   Notifications
                                   <span className="ml-2 text-green-400 text-xs">
@@ -499,7 +499,7 @@ export function SiteHeader() {
                                 setProfileOpen(false);
                                 router.push("/");
                               }}
-                              className="block w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-800"
+                              className="block w-full px-4 py-2 text-left text-sm text-red-400 transition-colors duration-200 hover:bg-gray-800"
                             >
                               Logout
                             </button>
@@ -508,7 +508,11 @@ export function SiteHeader() {
                         </div>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => router.push("/login")} className="text-sm text-white">
+                      <button
+                        type="button"
+                        onClick={() => router.push("/login")}
+                        className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-200 transition-all duration-200 hover:bg-white/[0.06] hover:text-white hover:shadow-[0_0_18px_rgba(255,255,255,0.06)]"
+                      >
                         Login
                       </button>
                     )}
@@ -517,7 +521,7 @@ export function SiteHeader() {
                       aria-expanded={menuOpen}
                       aria-label={menuOpen ? "Close menu" : "Open menu"}
                       onClick={() => setMenuOpen((o) => !o)}
-                      className="ml-2 text-2xl text-white md:hidden"
+                      className="ml-2 rounded-lg p-1 text-2xl text-white transition-all duration-200 hover:bg-white/10 md:hidden"
                     >
                       ☰
                     </button>
@@ -525,7 +529,7 @@ export function SiteHeader() {
                 </div>
 
                 {menuOpen ? (
-                  <div className="absolute left-0 top-full z-50 w-full border-t border-gray-800 bg-black md:hidden">
+                  <div className="absolute left-0 top-full z-50 w-full border-t border-white/10 bg-black md:hidden">
                     <div className="flex flex-col gap-4 p-4">
                       {sessionUser ? (
                         <>
@@ -536,7 +540,7 @@ export function SiteHeader() {
                                 if (ok) setMenuOpen(false);
                               });
                             }}
-                            className="text-left text-white"
+                            className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
                           >
                             Dashboard
                           </button>
@@ -548,7 +552,7 @@ export function SiteHeader() {
                                 if (ok) setMenuOpen(false);
                               });
                             }}
-                            className="text-left text-white"
+                            className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
                           >
                             Wallet
                           </button>
@@ -560,7 +564,7 @@ export function SiteHeader() {
                               setMenuOpen(false);
                               router.push("/");
                             }}
-                            className="text-left text-red-400"
+                            className="rounded-lg px-1 py-1 text-left text-red-400 transition-colors duration-200 hover:bg-red-500/10"
                           >
                             Logout
                           </button>
@@ -573,7 +577,7 @@ export function SiteHeader() {
                               router.push("/login");
                               setMenuOpen(false);
                             }}
-                            className="text-left text-white"
+                            className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
                           >
                             Login
                           </button>
@@ -584,7 +588,7 @@ export function SiteHeader() {
                               router.push("/signup");
                               setMenuOpen(false);
                             }}
-                            className="text-left text-green-400"
+                            className="rounded-lg px-1 py-1 text-left text-emerald-400 transition-colors duration-200 hover:bg-emerald-500/10"
                           >
                             Create Account
                           </button>
@@ -598,7 +602,7 @@ export function SiteHeader() {
                             if (ok) setMenuOpen(false);
                           });
                         }}
-                        className="text-left text-white"
+                        className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
                       >
                         Lobby
                       </button>
@@ -606,7 +610,7 @@ export function SiteHeader() {
                       <Link
                         href="/faq"
                         onClick={() => setMenuOpen(false)}
-                        className="text-left font-medium text-amber-300 hover:text-amber-200"
+                        className="rounded-lg px-1 py-1 text-left font-medium text-amber-300 transition-colors duration-200 hover:bg-amber-500/10 hover:text-amber-200"
                       >
                         FAQ
                       </Link>
@@ -615,15 +619,15 @@ export function SiteHeader() {
                 ) : null}
               </div>
 
-              <div className="mx-auto max-w-7xl border-t border-slate-800/60 px-4 pb-4 pt-3">
-                <div className="flex max-w-fit flex-wrap items-center gap-x-3 gap-y-1">
+              <div className="mx-auto max-w-5xl border-t border-slate-500/20 px-4 pb-3 pt-2.5">
+                <div className="flex max-w-fit flex-wrap items-center justify-center gap-x-3 gap-y-1 md:justify-start">
                   <Link
                     href="/faq#safety-coverage"
-                    className="text-sm font-medium text-green-400 underline decoration-green-500/30 underline-offset-4 transition hover:text-emerald-300 hover:decoration-emerald-400/50 md:text-base"
+                    className="text-sm font-medium text-green-400 underline decoration-green-500/30 underline-offset-4 transition-all duration-200 hover:text-emerald-300 hover:decoration-emerald-400/50 md:text-base"
                   >
                     Safety Coverage Fund
                   </Link>
-                  <span className="hidden h-4 w-px bg-slate-700 sm:inline-block" aria-hidden />
+                  <span className="hidden h-4 w-px bg-slate-500/30 sm:inline-block" aria-hidden />
                   <span className="text-sm font-medium text-amber-400/95 md:text-base">PREMIUM GOLF DFS</span>
                 </div>
               </div>
