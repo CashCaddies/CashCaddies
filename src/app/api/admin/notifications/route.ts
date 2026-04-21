@@ -1,26 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 import { verifyBearerAdmin } from "@/lib/auth/verifyBearerAdmin";
 
 export async function GET(req: Request) {
-  const auth = await verifyBearerAdmin(req);
-  if ("error" in auth) {
-    return new Response(JSON.stringify({ error: auth.error }), { status: auth.status });
+  try {
+    const auth = await verifyBearerAdmin(req);
+    if ("error" in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("user_notifications").select("*");
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const supabase = await createClient();
-
-  const [approvals, support, bugs] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_beta_tester", false),
-    supabase.from("update_responses").select("*", { count: "exact", head: true }).eq("is_read", false),
-    supabase.from("update_responses").select("*", { count: "exact", head: true }).eq("tag", "bug").eq("is_read", false),
-  ]);
-
-  return new Response(
-    JSON.stringify({
-      approvals: approvals.count || 0,
-      support: support.count || 0,
-      bugs: bugs.count || 0,
-    }),
-    { status: 200 },
-  );
 }
