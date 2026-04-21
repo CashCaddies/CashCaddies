@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { verifyBearerAdmin } from "@/lib/auth/verifyBearerAdmin";
 
 export async function GET(req: Request) {
@@ -10,15 +10,19 @@ export async function GET(req: Request) {
     }
 
     const supabase = await createClient();
-    const { data, error } = await supabase.from("user_notifications").select("*");
+
+    const { data, error } = await supabase
+      .from("user_notifications")
+      .select("id, user_id, kind, title")
+      .order("id", { ascending: false })
+      .limit(50);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ data });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
