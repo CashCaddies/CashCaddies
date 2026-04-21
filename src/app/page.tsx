@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [updates, setUpdates] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -11,7 +13,7 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
-  const isAdmin = true;
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_FOUNDER_EMAIL;
 
   useEffect(() => {
     fetchUpdates();
@@ -39,11 +41,14 @@ export default function HomePage() {
     setLoading(false);
   };
 
-  const saveEdit = async (id: string) => {
+  const saveEdit = async (id: string, title: string) => {
     await fetch("/api/admin/edit-update", {
       method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id,
+        title,
         content: editContent,
       }),
     });
@@ -111,7 +116,7 @@ export default function HomePage() {
                 />
 
                 <button
-                  onClick={() => saveEdit(u.id)}
+                  onClick={() => saveEdit(u.id, u.title)}
                   className="bg-blue-600 px-3 py-1 rounded text-white"
                 >
                   Save
