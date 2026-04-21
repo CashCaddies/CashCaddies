@@ -1,4 +1,4 @@
-import { getServiceClient } from "@/lib/supabase/service";
+import { createClient } from "@/lib/supabase/server";
 import { verifyBearerAdmin } from "@/lib/auth/verifyBearerAdmin";
 
 export async function GET(req: Request) {
@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ error: auth.error }), { status: auth.status });
   }
 
-  const supabase = getServiceClient();
+  const supabase = await createClient();
 
   const [approvals, support, bugs] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_beta_tester", false),
