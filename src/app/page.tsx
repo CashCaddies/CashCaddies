@@ -3,15 +3,23 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 
+type UpdateRow = {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+};
+
 export default function HomePage() {
   const { user } = useAuth();
-  const [updates, setUpdates] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<UpdateRow[]>([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const isAdmin = user?.email === process.env.NEXT_PUBLIC_FOUNDER_EMAIL;
 
@@ -41,6 +49,11 @@ export default function HomePage() {
     setLoading(false);
   };
 
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditContent("");
+  };
+
   const saveEdit = async (id: string, title: string) => {
     await fetch("/api/admin/edit-update", {
       method: "POST",
@@ -53,9 +66,36 @@ export default function HomePage() {
       }),
     });
 
-    setEditingId(null);
-    setEditContent("");
+    cancelEdit();
     await fetchUpdates();
+  };
+
+  const deleteUpdate = async (id: string) => {
+    if (!confirm("Delete this update permanently?")) return;
+
+    setDeletingId(id);
+    try {
+      const res = await fetch("/api/admin/delete-update", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(typeof json.error === "string" ? json.error : "Failed to delete");
+        return;
+      }
+      if (editingId === id) cancelEdit();
+      await fetchUpdates();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const startEdit = (row: UpdateRow) => {
+    setEditingId(row.id);
+    setEditContent(row.content);
   };
 
   return (
@@ -87,6 +127,97 @@ export default function HomePage() {
             >
               {loading ? "Posting..." : "Post Update"}
             </button>
+          </div>
+        )}
+
+        {updates.length > 0 && (
+          <div className="mb-8 space-y-4">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
+              Latest posts
+            </h2>
+            <ul className="space-y-4">
+              {updates.map((u) => {
+                const dateLabel = u.created_at
+                  ? new Date(u.created_at).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : null;
+                const isEditing = editingId === u.id;
+                const busyDelete = deletingId === u.id;
+
+                return (
+                  <li
+                    key={u.id}
+                    className="rounded-xl border border-white/[0.12] bg-[#0b1220]/95 p-4 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.45)] sm:p-5"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base font-semibold tracking-tight text-white sm:text-lg">
+                          {u.title}
+                        </h3>
+                        {dateLabel && (
+                          <p className="mt-1 text-xs text-slate-500">{dateLabel}</p>
+                        )}
+                      </div>
+                      {isAdmin && (
+                        <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => void saveEdit(u.id, u.title)}
+                                className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-500 sm:text-sm"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEdit}
+                                className="rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700 sm:text-sm"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startEdit(u)}
+                                className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200 transition-colors hover:bg-amber-500/20 sm:text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void deleteUpdate(u.id)}
+                                disabled={busyDelete}
+                                className="rounded-lg border border-rose-500/35 bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-200 transition-colors hover:bg-rose-950/70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+                              >
+                                {busyDelete ? "Deleting…" : "Delete"}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {isEditing ? (
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={8}
+                        className="mt-4 w-full rounded-lg border border-slate-600 bg-black/40 p-3 text-sm leading-relaxed text-slate-100 placeholder:text-slate-600 sm:text-[15px]"
+                      />
+                    ) : (
+                      <div className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-300 sm:text-[15px]">
+                        {u.content}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         )}
 
