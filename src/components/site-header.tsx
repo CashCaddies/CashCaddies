@@ -309,7 +309,7 @@ export function SiteHeader() {
                   </div>
 
                   {/* RIGHT — create account + nav + wallet + auth */}
-                  <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 md:col-start-3 md:justify-end md:gap-3">
+                  <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 md:col-start-3 md:flex-col md:items-end md:justify-center md:gap-2.5">
                     {!sessionUser ? (
                       <button
                         type="button"
@@ -319,11 +319,7 @@ export function SiteHeader() {
                         Create Account
                       </button>
                     ) : null}
-                    <div
-                      className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-1 md:flex"
-                      role="navigation"
-                      aria-label="Primary"
-                    >
+                    <div className="hidden items-center gap-2 md:flex" role="navigation" aria-label="Primary">
                       {navItems.map((item) => {
                         const isActive = item.isActive(pathname ?? "");
                         return (
@@ -343,21 +339,19 @@ export function SiteHeader() {
                         );
                       })}
                     </div>
-                    <div className="hidden h-6 w-px bg-white/12 md:block" aria-hidden />
-                    <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-2 py-1">
+                    <div className="flex items-center gap-2">
                       {ctx.premiumHeaderTag}
                       <HeaderStats />
                     </div>
-                    <div className="hidden h-6 w-px bg-white/12 md:block" aria-hidden />
                     {!isReady ? (
                       ctx.authControls
                     ) : sessionUser ? (
-                      <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-2 py-1">
+                      <div className="flex items-center gap-2.5 md:min-h-[48px] md:gap-3">
                         {isAdmin ? (
                           <div className="relative flex items-center">
                             <button
                               type="button"
-                              className="notif-bell relative rounded-lg p-0.5 text-lg text-white transition-all duration-200 hover:bg-white/5"
+                              className="notif-bell relative rounded-lg p-1 text-lg text-white transition-all duration-200 hover:bg-white/5"
                               onClick={() => {
                                 setNotifOpen((o) => !o);
                                 setProfileOpen(false);
@@ -419,7 +413,7 @@ export function SiteHeader() {
                             ) : null}
                           </div>
                         ) : null}
-                        <div className="relative profile-dropdown flex items-center">
+                        <div className="relative profile-dropdown flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => {
@@ -429,15 +423,15 @@ export function SiteHeader() {
                           }}
                           className="rounded-full transition-all duration-200 hover:ring-2 hover:ring-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-green-500/50"
                         >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-black">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-sm font-bold text-black md:h-11 md:w-11">
                             {getInitials(sessionUser?.email)}
                           </div>
                         </button>
                         {privilegedAdmin ? (
-                          <span className="ml-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded">Owner</span>
+                          <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded">Owner</span>
                         ) : null}
                         {!privilegedAdmin && founder ? (
-                          <span className="ml-2 text-xs bg-yellow-500 text-black px-2 py-0.5 rounded">
+                          <span className="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded">
                             Founding Member
                           </span>
                         ) : null}
