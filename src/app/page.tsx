@@ -12,6 +12,36 @@ type UpdateRow = {
   created_at: string;
 };
 
+type RawUpdateRow = {
+  id?: unknown;
+  title?: unknown;
+  content?: unknown;
+  created_at?: unknown;
+};
+
+function normalizeUpdateRow(row: RawUpdateRow, index: number): UpdateRow {
+  const rawId = row.id;
+  const id = typeof rawId === "string" && rawId.trim().length > 0 ? rawId : `legacy-${index}`;
+
+  const rawTitle = row.title;
+  const title = typeof rawTitle === "string" && rawTitle.trim().length > 0
+    ? rawTitle
+    : "Untitled update";
+
+  const rawContent = row.content;
+  const content = typeof rawContent === "string" ? rawContent : String(rawContent ?? "");
+
+  const rawCreatedAt = row.created_at;
+  const createdAt = typeof rawCreatedAt === "string" ? rawCreatedAt : "";
+
+  return {
+    id,
+    title,
+    content,
+    created_at: createdAt,
+  };
+}
+
 export default function HomePage() {
   const { user } = useAuth();
   const [updates, setUpdates] = useState<UpdateRow[]>([]);
@@ -56,7 +86,12 @@ export default function HomePage() {
   const fetchUpdates = async () => {
     const res = await fetch("/api/updates", { cache: "no-store" });
     const json = await res.json();
-    setUpdates(json.data || []);
+
+    const rows = Array.isArray(json.data)
+      ? json.data.map((row: RawUpdateRow, index: number) => normalizeUpdateRow(row, index))
+      : [];
+
+    setUpdates(rows);
   };
 
   const postUpdate = async () => {
@@ -80,14 +115,14 @@ export default function HomePage() {
     setEditContent("");
   };
 
-  const saveEdit = async (id: string, title: string) => {
+  const saveEdit = async (id: string, cardTitle: string) => {
     await fetch("/api/admin/edit-update", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id,
-        title,
+        title: cardTitle,
         content: editContent,
       }),
     });
@@ -107,11 +142,13 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
+
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         alert(typeof json.error === "string" ? json.error : "Failed to delete");
         return;
       }
+
       if (editingId === id) cancelEdit();
       await fetchUpdates();
     } finally {
@@ -156,11 +193,12 @@ export default function HomePage() {
           </div>
         )}
 
-        {updates.length > 0 && (
+        {updates.length > 0 ? (
           <div className="mb-8 space-y-4">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
               Latest posts
             </h2>
+
             <ul className="space-y-4">
               {updates.map((u) => {
                 const dateLabel = u.created_at
@@ -182,10 +220,9 @@ export default function HomePage() {
                         <h3 className="text-base font-semibold tracking-tight text-white sm:text-lg">
                           {u.title}
                         </h3>
-                        {dateLabel && (
-                          <p className="mt-1 text-xs text-slate-500">{dateLabel}</p>
-                        )}
+                        {dateLabel && <p className="mt-1 text-xs text-slate-500">{dateLabel}</p>}
                       </div>
+
                       {isAdmin && (
                         <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
                           {isEditing ? (
@@ -220,7 +257,7 @@ export default function HomePage() {
                                 disabled={busyDelete}
                                 className="rounded-lg border border-rose-500/35 bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-200 transition-colors hover:bg-rose-950/70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
                               >
-                                {busyDelete ? "Deleting…" : "Delete"}
+                                {busyDelete ? "Deleting..." : "Delete"}
                               </button>
                             </>
                           )}
@@ -245,81 +282,16 @@ export default function HomePage() {
               })}
             </ul>
           </div>
+        ) : (
+          <div className="rounded-2xl border border-white/[0.14] bg-[#0b1220]/90 p-6 shadow-[0_10px_50px_-12px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.05] sm:p-8">
+            <p className="text-lg font-semibold leading-snug text-emerald-400 sm:text-xl">
+              CashCaddies is now in closed beta.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-[15px]">
+              Invite-only during beta. contact@cashcaddies.com
+            </p>
+          </div>
         )}
-
-        <div
-          className="group mx-auto max-w-3xl space-y-8 rounded-2xl border border-white/[0.14] bg-[#0b1220]/90 p-6 shadow-[0_10px_50px_-12px_rgba(0,0,0,0.55),0_0_0_1px_rgba(16,185,129,0.06)] ring-1 ring-white/[0.05] transition-[border-color,box-shadow] duration-300 hover:border-emerald-400/25 hover:shadow-[0_14px_56px_-10px_rgba(0,0,0,0.5),0_0_0_1px_rgba(16,185,129,0.12),0_0_40px_-6px_rgba(16,185,129,0.14)] sm:space-y-10 sm:p-8"
-        >
-          {/* Title */}
-          <h2 className="text-xl font-semibold tracking-tight text-white sm:text-[1.35rem]">
-            CashCaddies Update
-          </h2>
-
-          {/* Headline */}
-          <p className="text-lg font-semibold leading-snug text-emerald-400 sm:text-xl">
-            CashCaddies is now in closed beta
-          </p>
-
-          {/* What’s live */}
-          <div className="space-y-3 pt-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
-              What’s live
-            </p>
-            <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-slate-300 sm:text-[15px] sm:leading-relaxed">
-              <li>The full platform structure is built</li>
-              <li>Users can create accounts and access core areas (when approved)</li>
-              <li>FAQ and updates system are live</li>
-              <li>Safety Coverage Fund is introduced (early version)</li>
-            </ul>
-          </div>
-
-          {/* In progress */}
-          <div className="space-y-3 pt-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
-              What we’re refining
-            </p>
-            <ul className="list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-slate-300 sm:text-[15px] sm:leading-relaxed">
-              <li>Contest system depth</li>
-              <li>Live data and scoring reliability</li>
-              <li>User onboarding and identity flow</li>
-              <li>Overall experience polish</li>
-            </ul>
-          </div>
-
-          {/* Story */}
-          <div className="space-y-4 pt-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
-              Why CashCaddies exists
-            </p>
-            <div className="rounded-xl border border-white/[0.08] border-l-[3px] border-l-emerald-500/55 bg-gradient-to-br from-[#05080e] via-[#070d14] to-[#0c1520] p-5 pl-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_0_24px_-8px_rgba(16,185,129,0.08)] sm:border-l-4 sm:p-6 sm:pl-7">
-              <div className="space-y-4 text-sm leading-[1.7] text-slate-300 sm:text-[15px] sm:leading-[1.75]">
-                <p>Golf got better. DFS didn’t.</p>
-                <p>
-                  Players got stronger, faster, and started withdrawing more often —
-                  and nothing changed on the user side.
-                </p>
-                <p>
-                  If your golfer withdraws, you lose. That’s it.
-                </p>
-                <p>
-                  No protection. No accountability. No evolution.
-                </p>
-                <p>
-                  CashCaddies exists to fix that gap — to build a system where users
-                  aren’t left exposed, and where the platform reflects how golf works today.
-                </p>
-                <p className="text-[15px] font-semibold leading-snug text-white sm:text-base">
-                  This isn’t a tweak to DFS. It’s a rebuild.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <p className="border-t border-white/[0.06] pt-2 text-sm leading-relaxed text-emerald-400/95 sm:pt-3">
-            Invite-only during beta — contact@cashcaddies.com
-          </p>
-        </div>
       </div>
     </div>
   );
