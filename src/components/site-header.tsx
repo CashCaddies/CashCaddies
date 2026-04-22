@@ -309,7 +309,7 @@ export function SiteHeader() {
                   </div>
 
                   {/* RIGHT — create account + nav + wallet + auth */}
-                  <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 md:col-start-3 md:justify-end">
+                  <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 md:col-start-3 md:justify-end md:gap-3">
                     {!sessionUser ? (
                       <button
                         type="button"
@@ -319,7 +319,11 @@ export function SiteHeader() {
                         Create Account
                       </button>
                     ) : null}
-                    <div className="hidden items-center gap-3 md:flex" role="navigation" aria-label="Primary">
+                    <div
+                      className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-1 md:flex"
+                      role="navigation"
+                      aria-label="Primary"
+                    >
                       {navItems.map((item) => {
                         const isActive = item.isActive(pathname ?? "");
                         return (
@@ -339,12 +343,16 @@ export function SiteHeader() {
                         );
                       })}
                     </div>
-                    {ctx.premiumHeaderTag}
-                    <HeaderStats />
+                    <div className="hidden h-6 w-px bg-white/12 md:block" aria-hidden />
+                    <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-2 py-1">
+                      {ctx.premiumHeaderTag}
+                      <HeaderStats />
+                    </div>
+                    <div className="hidden h-6 w-px bg-white/12 md:block" aria-hidden />
                     {!isReady ? (
                       ctx.authControls
                     ) : sessionUser ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-2 py-1">
                         {isAdmin ? (
                           <div className="relative flex items-center">
                             <button
