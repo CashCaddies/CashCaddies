@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { getUserRole } from "@/lib/getUserRole";
+import { isAdmin as hasAdminRole } from "@/lib/permissions";
 
 type UpdateRow = {
   id: string;
@@ -16,16 +18,40 @@ export default function HomePage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [profileRole, setProfileRole] = useState<string>("user");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const isAdmin = user?.email === process.env.NEXT_PUBLIC_FOUNDER_EMAIL;
+  const isAdmin = hasAdminRole(profileRole);
 
   useEffect(() => {
-    fetchUpdates();
+    void fetchUpdates();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!user?.id) {
+      setProfileRole("user");
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void getUserRole(user.id)
+      .then((role) => {
+        if (!cancelled) setProfileRole(role);
+      })
+      .catch(() => {
+        if (!cancelled) setProfileRole("user");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const fetchUpdates = async () => {
     const res = await fetch("/api/updates", { cache: "no-store" });
