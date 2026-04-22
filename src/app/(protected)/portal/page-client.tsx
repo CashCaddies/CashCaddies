@@ -249,13 +249,13 @@ export default function PortalPage() {
           <div className="relative rounded border border-gray-800 bg-black p-3 text-xs leading-relaxed text-gray-300 shadow-lg">
             <div className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-gray-800 bg-black" />
 
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               <Image
                 src={golfBall}
                 alt="tier"
                 width={28}
                 height={28}
-                className="pointer-events-none translate-y-[1px]"
+                className="pointer-events-none translate-y-[1px] object-contain drop-shadow-[0_0_9px_rgba(250,204,21,0.34)]"
               />
               <div className="font-semibold text-white">Tier System</div>
             </div>
@@ -339,7 +339,7 @@ export default function PortalPage() {
         ))}
       </div>
 
-      <div className="flex justify-center my-6 relative">
+      <div className="relative my-6 flex flex-col items-center justify-center">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-green-500/10 blur-xl" />
 
         <button
@@ -349,16 +349,21 @@ export default function PortalPage() {
             playPortalSound();
             setShowRules(true);
           }}
-          className="relative z-10 cursor-pointer transition-transform duration-200 ease-out hover:scale-110 active:scale-95 will-change-transform float"
+          className="group relative z-10 cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-[1.07] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a1322] float"
         >
-          <Image
-            src={golfBall}
-            alt="portal rules"
-            width={42}
-            height={42}
-            className="pointer-events-none drop-shadow-md"
-          />
+          <div className="flex items-center justify-center bg-transparent">
+            <Image
+              src={golfBall}
+              alt="portal rules"
+              width={42}
+              height={42}
+              className="pointer-events-none cursor-pointer object-contain drop-shadow-[0_0_10px_rgba(250,204,21,0.35)] transition duration-300 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_0_25px_rgba(250,204,21,0.76)] group-active:scale-[0.95]"
+            />
+          </div>
         </button>
+        <p className="mt-2 text-xs font-semibold tracking-[0.09em] text-emerald-200/85">
+          View Portal Rules
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -507,7 +512,13 @@ export default function PortalPage() {
             <div className="mb-4 text-4xl font-bold text-white">Tier {userTier}</div>
 
             <div className="flex justify-center">
-              <Image src={golfBall} alt="unlock" width={80} height={80} className="animate-bounce" />
+              <Image
+                src={golfBall}
+                alt="unlock"
+                width={80}
+                height={80}
+                className="animate-bounce object-contain drop-shadow-[0_0_20px_rgba(250,204,21,0.65)]"
+              />
             </div>
           </div>
         </div>

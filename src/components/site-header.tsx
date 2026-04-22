@@ -238,26 +238,31 @@ export function SiteHeader() {
           <>
             <div className="w-full border-b border-white/[0.06] bg-[#020617]">
               <div className="relative mx-auto max-w-5xl px-4 py-3 md:py-4">
-                <div className="flex w-full flex-col items-stretch gap-4 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-4 lg:gap-6">
+                <div className="flex w-full flex-col items-stretch gap-4 md:grid md:grid-cols-3 md:items-center md:gap-4 lg:gap-6">
                   {/* LEFT — brand */}
-                  <div className="flex min-w-0 items-center justify-center gap-3 md:justify-start">
-                    <Link
-                      href="/"
-                      className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-2xl font-semibold tracking-tight text-transparent md:text-3xl"
-                    >
-                      CashCaddies
-                    </Link>
+                  <div className="flex min-w-0 items-center justify-center md:col-start-2">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <Link
+                        href="/"
+                        className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-[2rem] font-semibold tracking-tight text-transparent drop-shadow-[0_0_20px_rgba(52,211,153,0.2)] md:text-[2.35rem]"
+                      >
+                        CashCaddies
+                      </Link>
+                      <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300/90 md:text-xs">
+                        PREMIUM GOLF DFS
+                      </span>
+                    </div>
                   </div>
 
                   {/* CENTER — ball */}
-                  <div className="flex justify-center md:col-start-2">
+                  <div className="flex items-center justify-center md:col-start-1 md:justify-start">
                     <div className="flex min-w-[140px] flex-shrink-0 flex-col items-center justify-center">
                       <div>
                         <button
                           type="button"
                           aria-label="Enter CC Portal"
                           onClick={handlePortalEntry}
-                          className="group relative cursor-pointer transition-transform duration-150 ease-out will-change-transform hover:scale-110 hover:rotate-3 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400/30"
+                          className="group relative cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-[1.07] hover:rotate-2 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
                         >
                           <div className="relative flex items-center justify-center">
                             <div
@@ -276,13 +281,13 @@ export function SiteHeader() {
     animate-portal-glow-inner
   "
                             />
-                            <div className="relative z-10">
+                            <div className="relative z-10 flex items-center justify-center bg-transparent">
                               <Image
                                 src={golfBall}
                                 alt="portal"
                                 width={56}
                                 height={56}
-                                className="pointer-events-none h-14 w-14 animate-[portalFloat_3s_ease-in-out_infinite] object-contain transition duration-300 group-hover:scale-110 group-hover:rotate-6 group-active:scale-90 md:h-20 md:w-20"
+                                className="pointer-events-none h-14 w-14 animate-[portalFloat_3s_ease-in-out_infinite] cursor-pointer object-contain drop-shadow-[0_0_11px_rgba(250,204,21,0.36)] transition duration-300 ease-out group-hover:scale-[1.1] group-hover:rotate-3 group-hover:drop-shadow-[0_0_26px_rgba(250,204,21,0.78)] group-active:scale-[0.95] md:h-20 md:w-20"
                               />
                             </div>
                           </div>
@@ -290,7 +295,7 @@ export function SiteHeader() {
                       </div>
                       <div
                         onClick={handlePortalEntry}
-                        className="mt-1 cursor-pointer text-center text-[10px] text-green-400 whitespace-nowrap transition-all duration-200 hover:opacity-80 hover:scale-[1.02] hover:underline md:text-xs"
+                        className="mt-1 cursor-pointer whitespace-nowrap text-center text-[11px] font-semibold tracking-[0.03em] text-emerald-300/90 transition-all duration-200 hover:scale-[1.02] hover:text-emerald-200 hover:underline md:text-xs"
                       >
                         Click to enter CC Portal
                       </div>
@@ -627,8 +632,6 @@ export function SiteHeader() {
                   >
                     Safety Coverage Fund
                   </Link>
-                  <span className="hidden h-4 w-px bg-slate-500/30 sm:inline-block" aria-hidden />
-                  <span className="text-sm font-medium text-amber-400/95 md:text-base">PREMIUM GOLF DFS</span>
                 </div>
               </div>
             </div>
