@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import AvatarSelector from "@/components/avatar-selector";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { formatMoney } from "@/lib/wallet";
 import { FounderBadge } from "@/components/founder-badge";
@@ -164,6 +165,18 @@ export default function ProfilePage() {
                       {wallet.founding_tester === true ? <FounderBadge /> : null}
                     </p>
                     <ProfileUsernameForm initialUsername={wallet.username} onUpdated={() => void refresh()} />
+
+                    <div className="mt-6 rounded-xl border border-slate-700/80 bg-slate-950/60 p-4">
+                      <h4 className="text-sm font-semibold uppercase tracking-[0.12em] text-emerald-300">
+                        Avatar Presets
+                      </h4>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Select a preset avatar style. Save behavior will be wired next.
+                      </p>
+                      <div className="mt-4">
+                        <AvatarSelector />
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <p className="text-sm text-slate-400">Loading profileâ€¦</p>

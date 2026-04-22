@@ -292,16 +292,7 @@ export default function HomePage() {
                 })}
               </ul>
             </section>
-          ) : (
-            <section className="rounded-2xl border border-white/[0.14] bg-[#0b1220]/92 p-6 shadow-[0_16px_46px_-20px_rgba(0,0,0,0.68)] ring-1 ring-white/[0.04] sm:p-8">
-              <p className="text-lg font-semibold leading-snug text-emerald-400 sm:text-xl">
-                CashCaddies is now in closed beta.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-[15px]">
-                Invite-only during beta. contact@cashcaddies.com
-              </p>
-            </section>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

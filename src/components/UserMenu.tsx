@@ -5,7 +5,6 @@ import { Shield } from "lucide-react";
 import { FounderBadge } from "@/components/founder-badge";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { hasPermission, isAdmin, isSeniorAdmin } from "@/lib/permissions";
 
@@ -22,7 +21,7 @@ type Props = {
   /** Fallback label, e.g. @handle or Account */
   label: string;
   locked?: boolean;
-  /** Paid / admin premium â€” show crown next to handle. */
+  /** Paid / admin premium — show crown next to handle. */
   premiumSubscriber?: boolean;
 };
 
@@ -46,9 +45,8 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  /** Direct `profiles` fetch â€” backup if parent props lag or omit role / founding_tester. */
+  /** Direct `profiles` fetch — backup if parent props lag or omit role / founding_tester. */
   const [profileState, setProfile] = useState<UserMenuProfile | null>(null);
-  const [authUser, setAuthUser] = useState<User | null>(null);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -62,7 +60,6 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
       } = await supabase.auth.getUser();
 
       if (!mounted) return;
-      setAuthUser(user ?? null);
 
       if (!user) return;
 
@@ -128,57 +125,44 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
 
   const avatarSrc = profile?.avatar_url?.trim() || "/default-avatar.svg";
 
-  const metaUsername =
-    authUser?.user_metadata &&
-    typeof authUser.user_metadata.username === "string" &&
-    authUser.user_metadata.username.trim() !== ""
-      ? authUser.user_metadata.username.trim()
-      : "";
-  const emailLocal = authUser?.email?.split("@")[0]?.trim() ?? "";
-  const profileUsername = (profile?.username?.trim() || profileState?.username?.trim() || "").trim();
-  const labelHandle = label.replace(/^@/, "").trim();
-
-  const displayName =
-    profileUsername ||
-    metaUsername ||
-    emailLocal ||
-    labelHandle ||
-    "Account";
-
   const adminBadgeLabel = isSeniorAdminUser ? "SENIOR" : "ADMIN";
+
+  const handleLine =
+    profile?.username?.trim() || profileState?.username?.trim()
+      ? `@${(profile?.username?.trim() || profileState?.username?.trim() || "").trim()}`
+      : label;
 
   return (
     <div ref={rootRef} className="userMenu">
       <div className="userTrigger !gap-3">
-        <button
-          type="button"
-          className="flex shrink-0 cursor-pointer items-center border-0 bg-transparent p-0"
-          aria-expanded={open}
-          aria-haspopup="menu"
-          onClick={() => setOpen((v) => !v)}
-          title="Open account menu"
+        <div
+          className="avatar flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-yellow-400"
+          aria-hidden
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-yellow-400">
-            {/* eslint-disable-next-line @next/next/no-img-element -- remote avatar URLs from Supabase Storage */}
-            <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
-          </div>
-          <span className="sr-only">Open account menu</span>
-        </button>
+          {/* eslint-disable-next-line @next/next/no-img-element -- remote avatar URLs from Supabase Storage */}
+          <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
+        </div>
 
-        <Link
-          href="/profile"
-          className="flex min-w-0 flex-1 flex-col leading-tight text-left text-emerald-400 no-underline transition-colors hover:text-emerald-300"
-          onClick={close}
-          title={displayName}
-        >
-          <span className="username inline-flex max-w-[10rem] items-center gap-1 truncate text-sm font-medium">
-            {premiumSubscriber ? (
-              <span className="shrink-0 text-amber-400" title="Premium member" aria-hidden="true">
-                👑
-              </span>
-            ) : null}
-            {displayName}
-          </span>
+        <div className="flex min-w-0 flex-1 flex-col leading-tight">
+          <button
+            type="button"
+            className="username flex max-w-[10rem] flex-col items-start rounded-md px-0.5 py-0.5 text-left text-sm font-medium text-emerald-400 transition-colors hover:bg-white/5 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+            aria-expanded={open}
+            aria-haspopup="menu"
+            onClick={() => setOpen((v) => !v)}
+            title="Open account menu"
+          >
+            <span className="inline-flex min-w-0 max-w-full items-center gap-1 truncate">
+              {premiumSubscriber ? (
+                <span className="shrink-0 text-amber-400" title="Premium member" aria-hidden="true">
+                  👑
+                </span>
+              ) : null}
+              <span className="truncate font-semibold tracking-tight">{handleLine}</span>
+            </span>
+            <span className="sr-only">Open account menu</span>
+          </button>
+
           <div className="mt-0.5 flex flex-wrap items-center gap-2">
             {showFounderBadge ? <FounderBadge /> : null}
             {isAdminUser ? (
@@ -187,14 +171,14 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
               </span>
             ) : null}
           </div>
-        </Link>
+        </div>
       </div>
 
       {open ? (
         <div className="userDropdown" role="menu">
           <p className="userDropdownLabel">
             <span className="inline-flex flex-wrap items-center gap-2">
-              <span className="text-slate-200">{profile?.username?.trim() ? `@${profile.username.trim()}` : label}</span>
+              <span className="text-slate-200">{handleLine}</span>
               {showFounderBadge ? <FounderBadge /> : null}
             </span>
           </p>
@@ -204,6 +188,9 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
               <Link href="/closed-beta" role="menuitem" className="userDropdownLink" onClick={close}>
                 Closed Beta
               </Link>
+              <DropdownItem href="/early-access" onClick={close}>
+                Waitlist
+              </DropdownItem>
               <p className="userDropdownNote" role="note">
                 DFS navigation is disabled until your account is approved.
               </p>

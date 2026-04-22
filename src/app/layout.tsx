@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";
 import { DebugOutlineStrip } from "@/components/debug-outline-strip";
-import { ConditionalBetaBanner } from "@/components/conditional-beta-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import SoftLaunchCountdown from "@/components/SoftLaunchCountdown";
@@ -57,7 +56,6 @@ export default function RootLayout({
                 <div className="flex min-h-[100dvh] flex-1 flex-col overflow-visible">
                   <SiteHeader />
                   <SoftLaunchCountdown />
-                  <ConditionalBetaBanner />
                   <main className="mx-auto w-full max-w-[1400px] flex-1 overflow-y-auto px-4 pt-3 pb-10 sm:px-6 sm:pt-4 sm:pb-12">{children}</main>
                   <SiteFooter />
                 </div>
