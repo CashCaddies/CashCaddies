@@ -251,6 +251,12 @@ export function SiteHeader() {
                       <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300/90 md:text-xs">
                         PREMIUM GOLF DFS
                       </span>
+                      <Link
+                        href="/faq"
+                        className="mt-2 inline-flex items-center justify-center rounded-xl border border-amber-500/25 bg-slate-900/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-100/95 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.08)] transition-all duration-200 hover:border-emerald-500/40 hover:bg-slate-900/85 hover:text-emerald-200 hover:shadow-[0_0_18px_rgba(52,211,153,0.15)] md:text-xs"
+                      >
+                        FAQ
+                      </Link>
                     </div>
                   </div>
 
@@ -299,12 +305,6 @@ export function SiteHeader() {
                       >
                         Click to enter CC Portal
                       </div>
-                      <Link
-                        href="/faq"
-                        className="mt-2 inline-flex items-center justify-center rounded-xl border border-amber-500/25 bg-slate-900/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-100/95 shadow-[inset_0_1px_0_0_rgba(234,179,64,0.08)] transition-all duration-200 hover:border-emerald-500/40 hover:bg-slate-900/85 hover:text-emerald-200 hover:shadow-[0_0_18px_rgba(52,211,153,0.15)] md:text-xs"
-                      >
-                        FAQ
-                      </Link>
                     </div>
                   </div>
 
