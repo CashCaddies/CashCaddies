@@ -279,9 +279,9 @@ export function SiteHeader() {
             <div className="w-full border-b border-white/[0.06] bg-[#020617]">
               <div className="relative mx-auto max-w-5xl px-4 py-3 md:py-4">
                 <div className="flex w-full flex-col items-stretch gap-5 md:grid md:grid-cols-3 md:items-start md:gap-4 lg:gap-6">
-                  {/* LEFT — portal */}
+                  {/* LEFT — portal + wallet (when session ready) */}
                   <div className="order-1 flex items-center justify-center md:col-start-1 md:justify-start md:pt-1">
-                    <div className="flex min-w-[140px] flex-shrink-0 flex-col items-center justify-center">
+                    <div className="flex w-full max-w-[16.5rem] min-w-[140px] flex-shrink-0 flex-col items-center justify-center md:max-w-[14.5rem]">
                       <div>
                         <button
                           type="button"
@@ -324,6 +324,33 @@ export function SiteHeader() {
                       >
                         C.C. Clubhouse Portal
                       </div>
+
+                      {sessionUser && isReady ? (
+                        <Link
+                          href="/wallet"
+                          prefetch
+                          className="mt-3 w-full rounded-xl border border-amber-500/20 bg-gradient-to-b from-slate-900/80 to-slate-950 p-2.5 shadow-[inset_0_1px_0_0_rgba(250,204,21,0.05),0_6px_22px_rgba(0,0,0,0.35)] transition-all duration-200 hover:border-amber-400/35 hover:shadow-[0_8px_26px_rgba(250,204,21,0.07)]"
+                          title="Open wallet"
+                          aria-label={`Wallet ${walletDisplay}, Lifetime Protection Contributions ${protectionCreditDisplay}. Open wallet.`}
+                        >
+                          <div className="flex items-baseline justify-between gap-2 border-b border-white/[0.06] pb-2">
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                              Wallet
+                            </span>
+                            <span className="font-semibold tabular-nums text-yellow-200">{walletDisplay}</span>
+                          </div>
+                          <div className="mt-2 space-y-0.5">
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="max-w-[58%] text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-slate-500">
+                                Lifetime Protection Contributions
+                              </span>
+                              <span className="text-right text-sm font-semibold tabular-nums text-emerald-300/95">
+                                {protectionCreditDisplay}
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
 
@@ -508,31 +535,6 @@ export function SiteHeader() {
                             ) : null}
                             {ctx.premiumHeaderTag}
                           </div>
-
-                          <Link
-                            href="/wallet"
-                            prefetch
-                            className="w-full rounded-xl border border-amber-500/20 bg-gradient-to-b from-slate-900/80 to-slate-950 p-2.5 shadow-[inset_0_1px_0_0_rgba(250,204,21,0.05),0_6px_22px_rgba(0,0,0,0.35)] transition-all duration-200 hover:border-amber-400/35 hover:shadow-[0_8px_26px_rgba(250,204,21,0.07)]"
-                            title="Open wallet"
-                            aria-label={`Wallet ${walletDisplay}, Lifetime Protection Contributions ${protectionCreditDisplay}. Open wallet.`}
-                          >
-                            <div className="flex items-baseline justify-between gap-2 border-b border-white/[0.06] pb-2">
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                                Wallet
-                              </span>
-                              <span className="font-semibold tabular-nums text-yellow-200">{walletDisplay}</span>
-                            </div>
-                            <div className="mt-2 space-y-0.5">
-                              <div className="flex items-start justify-between gap-2">
-                                <span className="max-w-[58%] text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-slate-500">
-                                  Lifetime Protection Contributions
-                                </span>
-                                <span className="text-right text-sm font-semibold tabular-nums text-emerald-300/95">
-                                  {protectionCreditDisplay}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
 
                           {profileOpen ? (
                             <div className="absolute left-1/2 top-full z-50 mt-2 w-56 -translate-x-1/2 rounded-md border border-gray-800 bg-black shadow-xl md:left-auto md:right-0 md:translate-x-0">
