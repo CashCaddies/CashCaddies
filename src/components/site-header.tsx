@@ -240,8 +240,8 @@ export function SiteHeader() {
               <div className="relative mx-auto max-w-5xl px-4 py-3 md:py-4">
                 <div className="flex w-full flex-col items-stretch gap-4 md:grid md:grid-cols-3 md:items-center md:gap-4 lg:gap-6">
                   {/* LEFT — brand */}
-                  <div className="flex min-w-0 items-center justify-center md:col-start-2">
-                    <div className="flex flex-col items-center justify-center text-center">
+                  <div className="flex min-w-0 items-center justify-center md:col-start-2 md:self-center">
+                    <div className="flex flex-col items-center justify-center text-center md:translate-y-[6px]">
                       <Link
                         href="/"
                         className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-[2rem] font-semibold tracking-tight text-transparent drop-shadow-[0_0_20px_rgba(52,211,153,0.2)] md:text-[2.35rem]"
