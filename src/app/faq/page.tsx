@@ -68,8 +68,12 @@ const CORE_ITEMS = [
     question: "What is the portal?",
     answer: (
       <p>
-        The portal is your progression hub — unlocked from the homepage golf ball once you qualify. It tracks your
-        standing, unlocks, and path into contests tied to platform rules and your activity.
+        The <strong className="font-semibold text-slate-200">portal</strong> is where we list special portal contests
+        and show your <strong className="font-semibold text-slate-200">Portal Access Tier</strong>. That tier is driven
+        by your <strong className="font-semibold text-slate-200">season contribution</strong> and only gates those
+        contests. Your <strong className="font-semibold text-slate-200">loyalty tier</strong> (Bronze through Platinum,
+        points from entries) is a different track — it lives on your wallet and affects rewards like Safety Coverage
+        perks, not portal access.
       </p>
     ),
   },

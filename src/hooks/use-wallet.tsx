@@ -102,11 +102,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           .eq("id", authUser.id)
           .maybeSingle();
 
-        if (process.env.NODE_ENV === "development" && data) {
-          const raw = data as { role?: unknown };
-          console.log("[use-wallet] PROFILE:", data, "ROLE:", raw.role);
-        }
-
         if (fetchError) {
           if (
             isRelationMissingOrNotExposedError(fetchError) ||

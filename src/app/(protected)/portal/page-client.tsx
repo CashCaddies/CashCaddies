@@ -1,528 +1,285 @@
 "use client";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import golfBall from "../../../../public/golf-ball.png";
-import { calculateSurplus, getOverlayAmount, getUnlockedTiers } from "@/lib/portal-logic";
-import { playPortalSound } from "@/lib/sounds";
-import { getTierFromContribution } from "@/lib/tiers";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { getPortalTierProgress, getTierFromContribution } from "@/lib/tiers";
 import { supabase } from "@/lib/supabase/client";
 
-function formatMoney(value: number | string | null | undefined): string {
-  const n = Number(value ?? 0);
-  if (!Number.isFinite(n)) return "$0";
+function formatUsd(value: number): string {
+  const n = Math.max(0, Number(value) || 0);
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: n >= 100 ? 0 : 2,
   }).format(n);
 }
 
-function portalFundTestMode(): 0 | 1 | 2 {
-  // Change return value to test different states — remove when Supabase supplies fund data
-  return 2;
+type ProfileRow = {
+  season_contribution?: number | string | null;
+};
+
+type ContestRow = Record<string, unknown>;
+
+const FREQUENCY_ORDER = ["weekly", "biweekly", "monthly", "other"] as const;
+
+function frequencyKey(raw: unknown): (typeof FREQUENCY_ORDER)[number] {
+  if (typeof raw !== "string") return "other";
+  const k = raw.toLowerCase();
+  if (k === "weekly" || k === "biweekly" || k === "monthly") return k;
+  return "other";
 }
 
-const TIER_THRESHOLDS = [0, 100, 500, 2000, 10000];
+function frequencyHeading(key: (typeof FREQUENCY_ORDER)[number]): string {
+  if (key === "weekly") return "Weekly";
+  if (key === "biweekly") return "Bi-weekly";
+  if (key === "monthly") return "Monthly";
+  return "Other";
+}
 
 export default function PortalPage() {
-  const router = useRouter();
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [showTierInfo, setShowTierInfo] = useState(false);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [contests, setContests] = useState<ContestRow[]>([]);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingContests, setLoadingContests] = useState(true);
   const [showRules, setShowRules] = useState(false);
-  const [showTierUnlock, setShowTierUnlock] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-  const [contests, setContests] = useState<any[]>([]);
-  const [burstAmount, setBurstAmount] = useState<number | null>(null);
-  const [burstKey, setBurstKey] = useState(0);
-
-  const prevTierRef = useRef<number | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
-      if (!session?.user?.id) return;
-
+      if (!session?.user?.id) {
+        setProfile(null);
+        setLoadingProfile(false);
+        return;
+      }
       const { data } = await supabase
         .from("profiles")
-        .select("*")
+        .select("season_contribution")
         .eq("id", session.user.id)
-        .single();
-
-      if (data) {
-        setProfile(data);
-
-        const hasSeen = localStorage.getItem("cc_portal_welcome_seen");
-
-        if (!hasSeen) {
-          setShowWelcome(true);
-        }
-      }
+        .maybeSingle();
+      setProfile(data ?? null);
+      setLoadingProfile(false);
     };
-
     void loadProfile();
   }, []);
 
   useEffect(() => {
     const loadContests = async () => {
-      const { data } = await supabase.from("contests").select("*").order("created_at", { ascending: false });
-
-      if (data) setContests(data);
+      const { data } = await supabase
+        .from("contests")
+        .select("*")
+        .eq("is_portal", true)
+        .order("created_at", { ascending: false });
+      setContests((data ?? []) as ContestRow[]);
+      setLoadingContests(false);
     };
-
     void loadContests();
   }, []);
 
-  const TEST_MODE = portalFundTestMode();
+  const contribution = Number(profile?.season_contribution ?? 0);
+  const tier = getTierFromContribution(contribution);
+  const progress = useMemo(() => getPortalTierProgress(contribution), [contribution]);
 
-  let totalFund = 0;
-  let requiredBuffer = 3000;
-
-  if (TEST_MODE === 0) {
-    totalFund = 3000; // surplus = 0
-  }
-
-  if (TEST_MODE === 1) {
-    totalFund = 3500; // small surplus → weekly only ($500+)
-  }
-
-  if (TEST_MODE === 2) {
-    totalFund = 13000; // surplus ≥ $10k for monthly (with $3k buffer)
-  }
-
-  const surplus = calculateSurplus(totalFund, requiredBuffer);
-  const unlocked = getUnlockedTiers(surplus);
-
-  const userTier = getTierFromContribution(
-    Number(profile?.season_contribution || 0),
-  );
-
-  const contribution = Number(profile?.season_contribution || 0);
-
-  const prevContributionRef = useRef(contribution);
-
-  useEffect(() => {
-    let t: ReturnType<typeof setTimeout> | undefined;
-    if (contribution > prevContributionRef.current) {
-      const diff = contribution - prevContributionRef.current;
-      setBurstAmount(diff);
-      setBurstKey((k) => k + 1);
-
-      t = setTimeout(() => {
-        setBurstAmount(null);
-      }, 1200);
+  const contestsByFrequency = useMemo(() => {
+    const m = new Map<(typeof FREQUENCY_ORDER)[number], ContestRow[]>();
+    for (const k of FREQUENCY_ORDER) m.set(k, []);
+    for (const c of contests) {
+      const key = frequencyKey(c.portal_frequency);
+      m.get(key)!.push(c);
     }
-
-    prevContributionRef.current = contribution;
-    return () => {
-      if (t) clearTimeout(t);
-    };
-  }, [contribution]);
-
-  const currentThreshold = TIER_THRESHOLDS[userTier - 1];
-  const nextThreshold = TIER_THRESHOLDS[userTier] || null;
-
-  const progressPercent = nextThreshold
-    ? Math.min(
-        100,
-        ((contribution - currentThreshold) / (nextThreshold - currentThreshold)) * 100,
-      )
-    : 100;
-
-  const amountToNext = nextThreshold ? Math.max(0, nextThreshold - contribution) : 0;
-
-  const unlockedContests = contests.filter((c) => userTier >= c.required_tier);
-
-  const lockedContests = contests.filter((c) => userTier < c.required_tier);
-
-  useEffect(() => {
-    // first load — just set baseline
-    if (prevTierRef.current === null) {
-      prevTierRef.current = userTier;
-      return;
-    }
-
-    // only trigger on actual increase
-    if (userTier > prevTierRef.current) {
-      playPortalSound();
-      setShowTierUnlock(true);
-
-      setTimeout(() => {
-        setShowTierUnlock(false);
-      }, 2500);
-    }
-
-    prevTierRef.current = userTier;
-  }, [userTier]);
+    return m;
+  }, [contests]);
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-      {showWelcome && (
-        <div className="mb-6 rounded border border-yellow-500/40 bg-yellow-500/10 p-4">
-          <h2 className="mb-2 text-lg font-semibold">Welcome to the Coveted CashCaddies Contests</h2>
-
-          <p className="mb-2 text-sm text-gray-300">
-            This portal is where long-term CashCaddies users gain access to exclusive contests with real prizes and cash
-            rewards.
+    <div className="pageWrap">
+      <div className="mx-auto max-w-3xl space-y-8 pb-16 pt-8">
+        <header>
+          <h1 className="text-3xl font-black tracking-tight text-white">Portal</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Portal contests and your Portal Access Tier — separate from loyalty rewards on your wallet.
           </p>
+        </header>
 
-          <p className="mb-2 text-sm text-gray-300">
-            Contests are tiered based on your contributions to the Protection Fund. Smaller bankroll players compete for
-            smaller portions, while higher contributors unlock access to larger prize pools generated by the system.
-          </p>
-
-          <p className="mb-3 text-sm text-gray-300">
-            You can also track prize pools growing day by day as we build toward the Tour Championship — the Top Coveted
-            CashCaddies Contest, where the largest added prize money will be available for everyone to compete for.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => {
-              localStorage.setItem("cc_portal_welcome_seen", "true");
-              setShowWelcome(false);
-            }}
-            className="rounded bg-yellow-500 px-4 py-1 text-sm text-black"
-          >
-            Got it
-          </button>
-        </div>
-      )}
-
-      <div className="mb-8 rounded-xl border border-gray-800 bg-black/60 p-5 backdrop-blur-sm">
-        <div className="mb-3 text-xs uppercase tracking-widest text-gray-400">How Portal Access Works</div>
-
-        <div className="space-y-2 text-sm text-gray-300">
-          <p>Enter contests in the Lobby to contribute to the Protection Fund.</p>
-
-          <p>Your total contribution determines your Tier.</p>
-
-          <p>Higher tiers unlock exclusive Portal contests with larger prize pools.</p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => router.push("/lobby")}
-          className="mt-4 text-sm text-green-400 hover:underline"
-        >
-          Go to Lobby →
-        </button>
-      </div>
-
-      <div className="group relative">
-        <div className="relative mb-10 overflow-hidden rounded-xl border border-green-500/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 shadow-lg shadow-green-500/10 transition-all duration-300 hover:-translate-y-[2px] hover:shadow-green-500/20">
-          <div className="pointer-events-none absolute inset-0 animate-pulse rounded-xl bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-20 blur-2xl" />
-          {/* subtle glow */}
-          <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 via-transparent to-green-500 opacity-10 blur-lg" />
-
-          <div className="absolute right-4 top-4 text-sm font-semibold text-green-400">Tier {userTier}</div>
-
-          <div className="relative mb-5">
-            <div className="text-xs uppercase tracking-widest text-gray-400">Tier Status</div>
-          </div>
-
-          <div className="relative flex items-center justify-center gap-4">
-            {[1, 2, 3, 4, 5].map((tier) => (
-              <div
-                key={tier}
-                className={`relative flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-green-500/40 ${
-                  userTier >= tier
-                    ? "scale-105 bg-green-500 text-black shadow-lg shadow-green-500/30"
-                    : "border border-gray-800 bg-gray-900 text-gray-500"
-                }`}
-              >
-                {tier}
-
-                {userTier === tier && (
-                  <div className="absolute inset-0 animate-ping rounded-full opacity-60 ring-2 ring-green-400" />
-                )}
+        {/* 1 — User status */}
+        <section className="goldCard p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Portal Access Tier</p>
+          {loadingProfile ? (
+            <p className="mt-4 text-sm text-slate-500">Loading…</p>
+          ) : (
+            <>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                Your Portal Access Tier comes from season contribution. It only controls access to portal contests — not
+                lobby contests in general.
+              </p>
+              <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Current tier</p>
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-200">{tier}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Season contribution</p>
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-white">{formatUsd(contribution)}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="pointer-events-none absolute left-1/2 top-full z-40 mt-3 max-w-[90vw] w-72 whitespace-normal -translate-x-1/2 opacity-0 transition group-hover:opacity-100">
-          <div className="relative rounded border border-gray-800 bg-black p-3 text-xs leading-relaxed text-gray-300 shadow-lg">
-            <div className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-gray-800 bg-black" />
+              <div className="mt-6">
+                <div className="mb-2 flex justify-between text-xs text-slate-500">
+                  <span>
+                    {progress.nextThreshold != null
+                      ? `${formatUsd(progress.amountToNext)} to Portal Access Tier ${tier + 1}`
+                      : "Maximum Portal Access Tier"}
+                  </span>
+                  <span className="tabular-nums">{formatUsd(contribution)}</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-all duration-500 ease-out"
+                    style={{ width: `${progress.progressPercent}%` }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </section>
 
-            <div className="mb-2 flex items-center gap-2">
-              <Image
-                src={golfBall}
-                alt="tier"
-                width={28}
-                height={28}
-                className="pointer-events-none translate-y-[1px] object-contain drop-shadow-[0_0_9px_rgba(250,204,21,0.34)]"
-              />
-              <div className="font-semibold text-white">Tier System</div>
-            </div>
+        {/* 2 — How it works */}
+        <section className="goldCard p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">How it works</p>
+          <ul className="mt-4 list-inside list-disc space-y-2 text-sm leading-relaxed text-slate-300">
+            <li>Enter contests in the Lobby.</li>
+            <li>Season contribution raises your Portal Access Tier.</li>
+            <li>Higher Portal Access Tiers unlock stronger portal contests when they run.</li>
+          </ul>
+          <Link
+            href="/lobby"
+            className="mt-5 inline-flex rounded-lg border border-emerald-500/45 bg-emerald-950/40 px-4 py-2.5 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-950/55"
+          >
+            Go to Lobby →
+          </Link>
+        </section>
 
-            <p className="mb-2">Your tier is based on total contribution to the protection fund.</p>
-
-            <ul className="space-y-1">
-              <li>Tier 1 — Entry level access</li>
-              <li>Tier 2 — Mid-tier contests unlocked</li>
-              <li>Tier 3 — Higher prize pools</li>
-              <li>Tier 4 — Premium contests</li>
-              <li>Tier 5 — Full access</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-8 rounded-xl border border-gray-800 bg-black/60 p-4 backdrop-blur-sm">
-        <div className="mb-2 flex justify-between text-xs text-gray-400">
-          <span>
-            {nextThreshold
-              ? `$${amountToNext.toLocaleString()} to Tier ${userTier + 1}`
-              : "Max Tier Reached"}
-          </span>
-
-          <span>${contribution.toLocaleString()}</span>
-        </div>
-
-        <div className="relative">
-          {burstAmount && (
-            <div
-              key={burstKey}
-              className="pointer-events-none absolute left-1/2 -top-6 z-10 -translate-x-1/2 animate-burst-float font-semibold text-green-400"
-            >
-              {`+$${Number(burstAmount).toFixed(2)}`}
+        {/* 3 — Portal contests */}
+        <section className="goldCard p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Portal contests</p>
+          {loadingContests ? (
+            <p className="mt-4 text-sm text-slate-500">Loading…</p>
+          ) : contests.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-400">No portal contests right now. Check back after the next drop.</p>
+          ) : (
+            <div className="mt-6 space-y-8">
+              {FREQUENCY_ORDER.map((freq) => {
+                const rows = contestsByFrequency.get(freq) ?? [];
+                if (rows.length === 0) return null;
+                return (
+                  <div key={freq}>
+                    <h2 className="mb-3 text-sm font-bold text-white">{frequencyHeading(freq)}</h2>
+                    <ul className="space-y-3">
+                      {rows.map((c) => {
+                        const id = String(c.id ?? "");
+                        const name = typeof c.name === "string" ? c.name : "Contest";
+                        const status = typeof c.status === "string" ? c.status : "—";
+                        const fee =
+                          typeof c.entry_fee_usd === "number"
+                            ? c.entry_fee_usd
+                            : typeof c.entry_fee === "number"
+                              ? c.entry_fee
+                              : null;
+                        return (
+                          <li key={id || name}>
+                            <Link
+                              href={id ? `/lobby/${encodeURIComponent(id)}` : "/lobby"}
+                              className="block rounded-lg border border-white/[0.08] bg-slate-950/50 px-4 py-3 transition hover:border-emerald-500/35 hover:bg-slate-900/80"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="font-semibold text-white">{name}</span>
+                                {fee != null ? (
+                                  <span className="text-sm tabular-nums text-slate-400">{formatUsd(fee)} entry</span>
+                                ) : null}
+                              </div>
+                              <p className="mt-1 text-xs capitalize text-slate-500">{status}</p>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
           )}
+        </section>
 
-          <div
-            className={`relative overflow-hidden rounded-full transition-transform duration-300 ${
-              burstAmount ? "scale-[1.03]" : "scale-100"
-            }`}
+        {/* 4 — Rules */}
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => setShowRules(true)}
+            className="rounded-lg border border-emerald-500/40 bg-emerald-950/30 px-5 py-2.5 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-950/50"
           >
-            {burstAmount && (
-              <div
-                key={`${burstKey}-glow`}
-                className="animate-burst-glow pointer-events-none absolute inset-0 bg-green-400/20 blur-md"
-              />
-            )}
-            <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-900">
-              <div
-                className="h-full bg-green-500 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
+            View Portal Rules
+          </button>
         </div>
-      </div>
 
-      <div className="mt-2 text-xs text-gray-500">Earn progress by entering contests in the Lobby.</div>
-
-      <div className="mb-6">
-        <h3 className="text-md font-semibold mb-2">Available Contests</h3>
-
-        {unlockedContests.map((c) => (
-          <div key={c.id} className="border border-green-500 p-3 rounded mb-2">
-            <div>{c.name}</div>
-            <div className="text-sm text-gray-400">Tier {c.required_tier}</div>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <h3 className="text-md font-semibold mb-2">Locked Contests</h3>
-
-        {lockedContests.map((c) => (
-          <div key={c.id} className="border border-gray-700 p-3 rounded mb-2 opacity-60">
-            <div>{c.name}</div>
-            <div className="text-sm text-gray-500">Requires Tier {c.required_tier}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="relative my-6 flex flex-col items-center justify-center">
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-green-500/10 blur-xl" />
-
-        <button
-          type="button"
-          title="Click here for portal rules"
-          onClick={() => {
-            playPortalSound();
-            setShowRules(true);
-          }}
-          className="group relative z-10 cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-[1.07] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a1322] float"
-        >
-          <div className="flex items-center justify-center bg-transparent">
-            <Image
-              src={golfBall}
-              alt="portal rules"
-              width={42}
-              height={42}
-              className="pointer-events-none cursor-pointer object-contain drop-shadow-[0_0_10px_rgba(250,204,21,0.35)] transition duration-300 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_0_25px_rgba(250,204,21,0.76)] group-active:scale-[0.95]"
-            />
-          </div>
-        </button>
-        <p className="mt-2 text-xs font-semibold tracking-[0.09em] text-emerald-200/85">
-          View Portal Rules
+        <p className="text-center text-xs leading-relaxed text-slate-600">
+          Loyalty status (Bronze / Silver / Gold / Platinum) is tracked separately — see your{" "}
+          <Link href="/wallet" className="text-emerald-500/90 underline-offset-2 hover:text-emerald-400 hover:underline">
+            wallet
+          </Link>{" "}
+          or dashboard wallet summary.
         </p>
       </div>
 
-      <div className="space-y-6">
-        {/* Fund Display */}
-        <div className="rounded-xl border border-white/10 bg-[#0b1220] p-5 text-center">
-          <p className="text-xs tracking-widest text-gray-400">CURRENT FUND SURPLUS</p>
-          <p className="mt-1 text-2xl font-bold text-white">{formatMoney(surplus)}</p>
-        </div>
-
-        {/* WEEKLY */}
-        <div>
-          <h2 className="mb-2 text-xs tracking-widest text-gray-400">WEEKLY PORTAL</h2>
-
-          <div className="rounded-xl border border-emerald-500/10 bg-[#0b1220] p-5">
-            {unlocked.includes("weekly") ? (
-              <>
-                <p className="text-lg font-semibold text-emerald-400">
-                  +{formatMoney(getOverlayAmount(surplus, "weekly"))}
-                </p>
-                <p className="mt-1 text-sm text-gray-400">Added to prize pool</p>
-              </>
-            ) : (
-              <p className="italic text-gray-500">Locked — awaiting sufficient fund surplus</p>
-            )}
-          </div>
-        </div>
-
-        {/* BI-WEEKLY */}
-        <div>
-          <h2 className="mb-2 text-xs tracking-widest text-gray-400">BI-WEEKLY PORTAL</h2>
-
-          <div className="rounded-xl border border-blue-500/10 bg-[#0b1220] p-5">
-            {unlocked.includes("biweekly") ? (
-              <>
-                <p className="text-lg font-semibold text-blue-400">
-                  +{formatMoney(getOverlayAmount(surplus, "biweekly"))}
-                </p>
-                <p className="mt-1 text-sm text-gray-400">Added to prize pool</p>
-              </>
-            ) : (
-              <p className="italic text-gray-500">Locked — awaiting sufficient fund surplus</p>
-            )}
-          </div>
-        </div>
-
-        {/* MONTHLY */}
-        <div>
-          <h2 className="mb-2 text-xs tracking-widest text-gray-400">MONTHLY PORTAL</h2>
-
-          <div className="rounded-xl border border-yellow-500/20 bg-[#0b1220] p-5">
-            {unlocked.includes("monthly") ? (
-              <>
-                <p className="text-lg font-semibold text-yellow-400">
-                  +{formatMoney(getOverlayAmount(surplus, "monthly"))}
-                </p>
-                <p className="mt-1 text-sm text-gray-400">Premium added prize pool</p>
-              </>
-            ) : (
-              <p className="italic text-gray-500">Locked — premium tier requires strong fund surplus</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {showTierInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="w-full max-w-lg rounded border border-gray-800 bg-black p-6">
-            <h2 className="mb-4 text-xl font-semibold">Tier System</h2>
-
-            <p className="mb-4 text-sm text-gray-300">
-              Your tier is based on total contribution to the protection fund.
-            </p>
-
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li>Tier 1 — Entry level access</li>
-              <li>Tier 2 — Mid-tier contests unlocked</li>
-              <li>Tier 3 — Higher prize pools</li>
-              <li>Tier 4 — Premium contests</li>
-              <li>Tier 5 — Full access</li>
-            </ul>
-
-            <button
-              type="button"
-              onClick={() => setShowTierInfo(false)}
-              className="mt-6 rounded bg-green-500 px-4 py-2 text-black"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showRules && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="w-full max-w-lg rounded border border-gray-800 bg-black p-6">
-            <h2 className="mb-4 text-xl font-semibold">Portal Rules</h2>
-
-            <div className="space-y-4 text-sm text-gray-300">
+      {showRules ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
+          <div className="goldCard max-h-[85vh] w-full max-w-lg overflow-y-auto p-6">
+            <h2 className="text-xl font-bold text-white">Portal Rules</h2>
+            <div className="mt-4 space-y-4 text-sm leading-relaxed text-slate-300">
               <div>
-                <div className="mb-1 text-xs uppercase text-gray-400">Access</div>
-                <p>Portal contests are unlocked based on your total protection fund contribution.</p>
-              </div>
-
-              <div>
-                <div className="mb-1 text-xs uppercase text-gray-400">Tiers</div>
-                <p>Each tier grants access to higher prize contests. Higher tiers = higher upside.</p>
-              </div>
-
-              <div>
-                <div className="mb-1 text-xs uppercase text-gray-400">Contribution Impact</div>
-                <p>A portion of each entry contributes to the protection fund before contests begin.</p>
-              </div>
-
-              <div>
-                <div className="mb-1 text-xs uppercase text-gray-400">Fund Usage</div>
-                <p>
-                  The protection fund is used to cover withdrawals, disqualifications, and unexpected outcomes (WD, DQ,
-                  DNS).
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Access</p>
+                <p className="mt-1">
+                  Portal contests are tied to your activity and platform rules. Enter contests in the Lobby to build your
+                  season contribution.
                 </p>
               </div>
-
               <div>
-                <div className="mb-1 text-xs uppercase text-gray-400">Tier Maintenance</div>
-                <p>
-                  Your tier is based on total contribution. Maintain or increase contribution to retain access.
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Portal Access Tier</p>
+                <p className="mt-1">
+                  Your Portal Access Tier is based on season contribution and only affects portal contests. Loyalty
+                  tier (rewards on entry fees) is separate — check your wallet.
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contribution</p>
+                <p className="mt-1">A portion of eligible contest entry flows into your contribution track.</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Protection fund</p>
+                <p className="mt-1">
+                  The protection fund supports fair outcomes around withdrawals, disqualifications, and unexpected
+                  player events (WD, DQ, DNS). See the FAQ for Safety Coverage details.
                 </p>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowRules(false)}
-              className="mt-6 rounded bg-green-500 px-4 py-2 text-black"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showTierUnlock && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="relative text-center">
-            <div className="mb-2 animate-pulse text-2xl font-semibold text-green-400">Tier Unlocked</div>
-
-            <div className="mb-4 text-4xl font-bold text-white">Tier {userTier}</div>
-
-            <div className="flex justify-center">
-              <Image
-                src={golfBall}
-                alt="unlock"
-                width={80}
-                height={80}
-                className="animate-bounce object-contain drop-shadow-[0_0_20px_rgba(250,204,21,0.65)]"
-              />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setShowRules(false)}
+                className="rounded-lg border border-slate-600 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+              >
+                Close
+              </button>
+              <Link
+                href="/faq#what-is-portal"
+                onClick={() => setShowRules(false)}
+                className="rounded-lg border border-emerald-500/45 bg-emerald-950/40 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-950/60"
+              >
+                FAQ — Portal
+              </Link>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

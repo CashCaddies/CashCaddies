@@ -169,6 +169,13 @@ export function SiteHeader() {
   const rightRailClass =
     sessionUser && isReady ? `${headerRightRailInner} profile-dropdown` : headerRightRailInner;
 
+  const isPublicAuthPage =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname?.startsWith("/login/") === true ||
+    pathname?.startsWith("/signup/") === true;
+  const showFullAppChrome = Boolean(sessionUser && isReady && !isPublicAuthPage);
+
   return (
     <header className="relative w-full">
       {isEntering && (
@@ -184,85 +191,96 @@ export function SiteHeader() {
             <div className="w-full border-b border-white/[0.06] bg-[#020617]">
               <div className="relative mx-auto max-w-5xl px-4 py-3 md:py-4">
                 <div className="flex w-full flex-col items-stretch gap-5 md:grid md:grid-cols-3 md:items-start md:gap-4 lg:gap-6">
-                  {/* LEFT — portal + wallet (when session ready) */}
+                  {/* LEFT — portal + wallet (hidden on login/signup for a simpler public header) */}
                   <div className="order-1 flex items-center justify-center md:col-start-1 md:justify-start md:pt-1">
                     <div className="flex w-full max-w-[16.5rem] min-w-[140px] flex-shrink-0 flex-col items-center justify-center md:max-w-[14.5rem]">
-                      <div>
-                        <button
-                          type="button"
-                          aria-label="Enter CC Portal"
-                          onClick={handlePortalEntry}
-                          className="group relative cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-[1.07] hover:rotate-2 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
+                      {isPublicAuthPage ? (
+                        <Link
+                          href="/"
+                          className="text-sm font-semibold text-slate-400 transition-colors hover:text-emerald-300"
                         >
-                          <div className="relative flex items-center justify-center">
-                            <div
-                              className="
+                          ← Home
+                        </Link>
+                      ) : (
+                        <>
+                          <div>
+                            <button
+                              type="button"
+                              aria-label="Enter CC Portal"
+                              onClick={handlePortalEntry}
+                              className="group relative cursor-pointer transition-transform duration-200 ease-out will-change-transform hover:scale-[1.07] hover:rotate-2 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
+                            >
+                              <div className="relative flex items-center justify-center">
+                                <div
+                                  className="
     pointer-events-none absolute inset-0
     scale-125 rounded-full
     bg-yellow-400/40 blur-2xl
     animate-portal-glow
   "
-                            />
-                            <div
-                              className="
+                                />
+                                <div
+                                  className="
     pointer-events-none absolute inset-0
     scale-110 rounded-full
     bg-yellow-300/30 blur-xl
     animate-portal-glow-inner
   "
-                            />
-                            <div className="relative z-10 flex items-center justify-center bg-transparent">
-                              <Image
-                                src={golfBall}
-                                alt="portal"
-                                width={88}
-                                height={88}
-                                className="pointer-events-none h-[4.5rem] w-[4.5rem] animate-[portalFloat_3s_ease-in-out_infinite] cursor-pointer object-contain drop-shadow-[0_0_11px_rgba(250,204,21,0.36)] transition duration-300 ease-out group-hover:scale-[1.1] group-hover:rotate-3 group-hover:drop-shadow-[0_0_26px_rgba(250,204,21,0.78)] group-active:scale-[0.95] md:h-24 md:w-24"
-                              />
-                            </div>
+                                />
+                                <div className="relative z-10 flex items-center justify-center bg-transparent">
+                                  <Image
+                                    src={golfBall}
+                                    alt="portal"
+                                    width={88}
+                                    height={88}
+                                    className="pointer-events-none h-[4.5rem] w-[4.5rem] animate-[portalFloat_3s_ease-in-out_infinite] cursor-pointer object-contain drop-shadow-[0_0_11px_rgba(250,204,21,0.36)] transition duration-300 ease-out group-hover:scale-[1.1] group-hover:rotate-3 group-hover:drop-shadow-[0_0_26px_rgba(250,204,21,0.78)] group-active:scale-[0.95] md:h-24 md:w-24"
+                                  />
+                                </div>
+                              </div>
+                            </button>
                           </div>
-                        </button>
-                      </div>
-                      <div
-                        onClick={handlePortalEntry}
-                        className="mt-1 cursor-pointer whitespace-nowrap rounded-md px-3 py-1.5 text-center text-base font-semibold leading-tight text-emerald-300 tracking-normal transition-all transition-colors hover:bg-emerald-400/10 hover:text-white"
-                      >
-                        C.C. Clubhouse Portal
-                      </div>
+                          <div
+                            onClick={handlePortalEntry}
+                            className="mt-1 cursor-pointer whitespace-nowrap rounded-md px-3 py-1.5 text-center text-base font-semibold leading-tight text-emerald-300 tracking-normal transition-all transition-colors hover:bg-emerald-400/10 hover:text-white"
+                          >
+                            C.C. Clubhouse Portal
+                          </div>
 
-                      {sessionUser && isReady ? (
-                        <Link
-                          href="/wallet"
-                          prefetch
-                          className="mt-3 w-full rounded-xl border border-amber-500/20 bg-gradient-to-b from-slate-900/80 to-slate-950 p-2.5 shadow-[inset_0_1px_0_0_rgba(250,204,21,0.05),0_6px_22px_rgba(0,0,0,0.35)] transition-all duration-200 hover:border-amber-400/35 hover:shadow-[0_8px_26px_rgba(250,204,21,0.07)]"
-                          title="Open wallet"
-                          aria-label={`Wallet ${walletDisplay}, Lifetime Protection Contributions ${protectionCreditDisplay}. Open wallet.`}
-                        >
-                          <div className="flex items-baseline justify-between gap-2 border-b border-white/[0.06] pb-2">
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                              Wallet
-                            </span>
-                            <span className="font-semibold tabular-nums text-yellow-200">{walletDisplay}</span>
-                          </div>
-                          <div className="mt-2 space-y-0.5">
-                            <div className="flex items-start justify-between gap-2">
-                              <span className="max-w-[58%] text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-slate-500">
-                                Lifetime Protection Contributions
-                              </span>
-                              <span className="text-right text-sm font-semibold tabular-nums text-emerald-300/95">
-                                {protectionCreditDisplay}
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      ) : null}
+                          {showFullAppChrome ? (
+                            <Link
+                              href="/wallet"
+                              prefetch
+                              className="mt-3 w-full rounded-xl border border-amber-500/20 bg-gradient-to-b from-slate-900/80 to-slate-950 p-2.5 shadow-[inset_0_1px_0_0_rgba(250,204,21,0.05),0_6px_22px_rgba(0,0,0,0.35)] transition-all duration-200 hover:border-amber-400/35 hover:shadow-[0_8px_26px_rgba(250,204,21,0.07)]"
+                              title="Open wallet"
+                              aria-label={`Wallet ${walletDisplay}, Lifetime Protection Contributions ${protectionCreditDisplay}. Open wallet.`}
+                            >
+                              <div className="flex items-baseline justify-between gap-2 border-b border-white/[0.06] pb-2">
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                  Wallet
+                                </span>
+                                <span className="font-semibold tabular-nums text-yellow-200">{walletDisplay}</span>
+                              </div>
+                              <div className="mt-2 space-y-0.5">
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="max-w-[58%] text-[9px] font-semibold uppercase leading-tight tracking-[0.12em] text-slate-500">
+                                    Lifetime Protection Contributions
+                                  </span>
+                                  <span className="text-right text-sm font-semibold tabular-nums text-emerald-300/95">
+                                    {protectionCreditDisplay}
+                                  </span>
+                                </div>
+                              </div>
+                            </Link>
+                          ) : null}
+                        </>
+                      )}
                     </div>
                   </div>
 
                   {/* CENTER — brand + primary nav */}
                   <div className="order-2 flex min-w-0 items-center justify-center md:col-start-2 md:pt-0">
                     <div className="flex flex-col items-center justify-center text-center md:translate-y-[6px]">
-                      <HeaderRotatingStatus />
+                      {!isPublicAuthPage ? <HeaderRotatingStatus /> : null}
                       <Link
                         href="/"
                         className="bg-gradient-to-r from-green-400 via-green-300 to-yellow-400 bg-clip-text text-[2rem] font-semibold tracking-tight text-transparent drop-shadow-[0_0_20px_rgba(52,211,153,0.2)] md:text-[2.35rem]"
@@ -278,7 +296,7 @@ export function SiteHeader() {
                       >
                         FAQ
                       </Link>
-                      {sessionUser && isReady ? (
+                      {showFullAppChrome ? (
                         <div className="mt-3 w-full max-w-xl px-1" role="navigation" aria-label="App">
                           <DashboardNav />
                         </div>

@@ -99,16 +99,24 @@ function AccessRequestCard({
   const msg = row.message?.trim();
 
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-slate-950/60 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-sm transition hover:border-white/[0.12]">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1 space-y-3">
+    <article className="rounded-xl border border-white/[0.08] bg-slate-950/60 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-sm transition hover:border-white/[0.12]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 space-y-2.5">
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`inline-flex rounded-full border px-3 py-0.5 text-xs font-bold uppercase tracking-wide ${inAppStatusBadgeClass(row.status)}`}
             >
               {formatStatusLabel(row.status)}
             </span>
-            <span className="text-xs font-medium text-slate-500">{formatDate(row.requested_at)}</span>
+            <span className="text-xs font-medium text-slate-500">
+              Requested {formatDate(row.requested_at)}
+              {!pending && row.reviewed_at ? (
+                <>
+                  {" · "}
+                  <span className="text-slate-600">Reviewed {formatDate(row.reviewed_at)}</span>
+                </>
+              ) : null}
+            </span>
           </div>
           <div>
             <p className="truncate text-base font-semibold tracking-tight text-white">{row.email}</p>

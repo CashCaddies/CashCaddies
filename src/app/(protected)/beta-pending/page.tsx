@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function BetaPendingPage() {
   await requireUser();
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col justify-center px-4">
+    <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col justify-center px-4 py-16">
       <section className="rounded-xl border border-slate-800 bg-slate-900/40 px-6 py-8 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400/90">Private beta</p>
         <h1 className="mt-3 text-xl font-bold tracking-tight text-white sm:text-2xl">Access pending</h1>
@@ -20,9 +20,6 @@ export default async function BetaPendingPage() {
         </p>
         <div className="mt-8 border-t border-white/10 pt-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">In-app access request</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Your account is already in the approval queue. You don&apos;t need to submit another request here.
-          </p>
           <div className="mt-3">
             <JoinWaitlistFlow variant="card" hasPendingRequest />
           </div>

@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/contexts/auth-context";
 import { DashboardHandleGate } from "@/components/dashboard-handle-gate";
-import { DashboardHandleOnboardingBanner } from "@/components/dashboard-handle-onboarding-banner";
 
 export function DashboardShell({
   children,
@@ -30,7 +29,6 @@ export function DashboardShell({
           </p>
         </div>
       </header>
-      <DashboardHandleOnboardingBanner />
       <DashboardHandleGate>{children}</DashboardHandleGate>
     </div>
   );

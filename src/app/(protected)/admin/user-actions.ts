@@ -518,7 +518,6 @@ export async function approveBetaUserAsFounder(userId: string): Promise<BetaAppr
 }
 
 export async function approveBetaUser(userId: string): Promise<ApproveBetaUserResult> {
-  console.log("APPROVE START", userId);
   try {
     const auth = await getAdminClientContext();
     if (!auth.ok) {
@@ -569,11 +568,7 @@ export async function approveBetaUser(userId: string): Promise<ApproveBetaUserRe
       };
     }
 
-    console.log("DB UPDATE SUCCESS");
-
-    console.log("EMAIL START");
     // await sendBetaStatusEmailSafe(admin, targetId, "approved");
-    console.log("EMAIL SUCCESS");
 
     const after = await getBetaCapacitySnapshot(admin);
     revalidatePath("/dashboard/admin/waitlist");

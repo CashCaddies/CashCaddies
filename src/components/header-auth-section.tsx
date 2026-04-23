@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
 import UserMenu from "@/components/UserMenu";
@@ -74,11 +73,6 @@ export function HeaderAuthSection({ render }: Props) {
           founding_tester: wallet?.founding_tester === true,
         }
       : null;
-
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "development" || !menuProfile) return;
-    console.log("PROFILE:", menuProfile, "ROLE:", menuProfile.role);
-  }, [menuProfile]);
 
   let authControls: React.ReactNode;
   if (deciding) {
