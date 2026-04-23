@@ -3,22 +3,15 @@
 import { useAuth } from "@/contexts/auth-context";
 import { DashboardHandleGate } from "@/components/dashboard-handle-gate";
 import { DashboardHandleOnboardingBanner } from "@/components/dashboard-handle-onboarding-banner";
-import { DashboardNav, type DashboardNavMode } from "./dashboard-nav";
 
 export function DashboardShell({
   children,
   title,
   description,
-  /**
-   * `dashboard` = full sub-nav (Lobby … Feedback Inbox). Use only on `/dashboard` overview.
-   * `single` = one highlighted tab for the current page (default).
-   */
-  dashboardNavMode = "single",
 }: {
   children: React.ReactNode;
   title: string;
   description?: string;
-  dashboardNavMode?: DashboardNavMode;
 }) {
   const { user, isReady } = useAuth();
 
@@ -35,9 +28,6 @@ export function DashboardShell({
                 ? `Logged in as ${user.email}`
                 : "Not logged in — sign in to sync lineups."}
           </p>
-        </div>
-        <div className="mt-6">
-          <DashboardNav mode={dashboardNavMode} />
         </div>
       </header>
       <DashboardHandleOnboardingBanner />

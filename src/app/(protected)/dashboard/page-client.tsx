@@ -61,7 +61,6 @@ export default function DashboardOverviewPage() {
     <DashboardShell
       title="Dashboard"
       description="Entered contests, submitted lineups, entry fees, and contest status — synced from your account."
-      dashboardNavMode="dashboard"
     >
       {lineupsLoading && <p className="text-slate-400">Loading…</p>}
       {error && <p className="rounded-lg border border-amber-700/50 bg-amber-950/40 px-4 py-3 text-amber-200">{error}</p>}
@@ -178,15 +177,15 @@ export default function DashboardOverviewPage() {
           {isAdminUser ? (
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-white">Admin Tools</h2>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <article className="goldCard p-5">
-                  <h3 className="text-base font-semibold text-white">Beta Approvals</h3>
-                  <p className="mt-2 text-sm text-slate-400">Approve or review beta users</p>
+                  <h3 className="text-base font-semibold text-white">Access requests</h3>
+                  <p className="mt-2 text-sm text-slate-400">Review and approve in-app waitlist requests</p>
                   <Link
-                    href="/dashboard/beta-users"
+                    href="/dashboard/admin/waitlist"
                     className="mt-4 inline-flex rounded-md border border-emerald-600/60 bg-emerald-900/30 px-3 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-900/45"
                   >
-                    Manage Beta →
+                    Open admin queue →
                   </Link>
                 </article>
 
@@ -198,17 +197,6 @@ export default function DashboardOverviewPage() {
                     className="mt-4 inline-flex rounded-md border border-emerald-600/60 bg-emerald-900/30 px-3 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-900/45"
                   >
                     Create Contest →
-                  </Link>
-                </article>
-
-                <article className="goldCard p-5">
-                  <h3 className="text-base font-semibold text-white">Beta Stats</h3>
-                  <p className="mt-2 text-sm text-slate-400">View beta counts and activity</p>
-                  <Link
-                    href="/closed-beta"
-                    className="mt-4 inline-flex rounded-md border border-emerald-600/60 bg-emerald-900/30 px-3 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-900/45"
-                  >
-                    View Stats →
                   </Link>
                 </article>
               </div>

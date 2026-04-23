@@ -76,7 +76,7 @@ export async function sendBetaStatusEmail(
 
 /**
  * Loads `profiles.email` and sends the beta status email. Logs on failure; never throws.
- * Used from server actions invoked by the beta queue UI.
+ * Used from server actions when admins change a user's beta access (e.g. waitlist approval).
  */
 export async function sendBetaStatusEmailForUserId(
   admin: SupabaseClient,

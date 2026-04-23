@@ -11,7 +11,6 @@ import {
   updateProfileInviteSource,
 } from "@/app/(protected)/admin/user-actions";
 import { FounderBadge } from "@/components/founder-badge";
-import { DashboardNav } from "@/components/dashboard-nav";
 import { useAuth } from "@/contexts/auth-context";
 import { getProfileByUserId } from "@/lib/getProfile";
 import {
@@ -385,10 +384,6 @@ export default function BetaManagementPage() {
           </div>
         </div>
       ) : null}
-
-      <div className="mb-6">
-        <DashboardNav mode="single" />
-      </div>
 
       <div>
         <h2 className="text-2xl font-bold text-white">Beta User Management</h2>

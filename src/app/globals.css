@@ -962,7 +962,6 @@ body {
   color: #f5e6a3;
 }
 
-/* Beta approval queue — dashboard/admin/beta-queue */
 .betaRow {
   display: flex;
   justify-content: space-between;

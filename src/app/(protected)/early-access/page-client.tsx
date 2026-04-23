@@ -90,13 +90,13 @@ export default function EarlyAccessPage() {
           disabled={isPending}
           className="w-full rounded-xl border border-emerald-600/50 bg-emerald-950/50 py-3 text-sm font-bold uppercase tracking-wide text-emerald-100 transition hover:bg-emerald-950/70 disabled:pointer-events-none disabled:opacity-50"
         >
-          {isPending ? "Submitting…" : "Join waitlist"}
+          {isPending ? "Submitting…" : "Request early access"}
         </button>
       </form>
 
       <p className="mt-8 text-center text-sm text-slate-500">
-        <Link href="/closed-beta" className="text-emerald-400/90 underline-offset-2 hover:text-emerald-300 hover:underline">
-          Back to closed beta
+        <Link href="/dashboard" className="text-emerald-400/90 underline-offset-2 hover:text-emerald-300 hover:underline">
+          Back to dashboard
         </Link>
       </p>
     </div>

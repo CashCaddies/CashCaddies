@@ -183,7 +183,7 @@ export async function setProfileBetaPriority(user_id: string, priority: BetaPrio
   }
 
   revalidatePath("/dashboard/beta-management");
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   return { ok: true, message: `Beta priority set to ${priority}.` };
 }
 
@@ -461,7 +461,7 @@ export async function updateMaxBetaUsersCap(
   }
 
   revalidatePath("/dashboard/senior-admin");
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/beta-management");
   return { ok: true, maxBetaUsers: parsed };
@@ -510,7 +510,7 @@ export async function approveBetaUserAsFounder(userId: string): Promise<BetaAppr
   // await sendBetaStatusEmailSafe(admin, targetId, "approved");
 
   const after = await getBetaCapacitySnapshot(admin);
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/beta-management");
   revalidatePath("/dashboard/admin/waitlist");
@@ -576,7 +576,7 @@ export async function approveBetaUser(userId: string): Promise<ApproveBetaUserRe
     console.log("EMAIL SUCCESS");
 
     const after = await getBetaCapacitySnapshot(admin);
-    revalidatePath("/dashboard/admin/beta-queue");
+    revalidatePath("/dashboard/admin/waitlist");
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/beta-management");
     revalidatePath("/dashboard/admin/waitlist");
@@ -632,7 +632,7 @@ export async function rejectBetaUser(userId: string): Promise<BetaApprovalAction
   // await sendBetaStatusEmailSafe(admin, targetId, "rejected");
 
   const after = await getBetaCapacitySnapshot(admin);
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/beta-management");
   revalidatePath("/dashboard/admin/waitlist");
@@ -693,7 +693,7 @@ export async function setBetaWaitlist(userId: string, enabled: boolean): Promise
   }
 
   const after = await getBetaCapacitySnapshot(admin);
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/admin");
   return { ok: true, success: true, approvedCount: after.approvedCount, maxBetaUsers: after.maxBetaUsers };
 }
@@ -791,7 +791,7 @@ export async function bulkUpdateBetaStatus(
     }
 
     const after = await getBetaCapacitySnapshot(admin);
-    revalidatePath("/dashboard/admin/beta-queue");
+    revalidatePath("/dashboard/admin/waitlist");
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/beta-management");
     return { ok: true, processed: eligibleIds.length, approvedCount: after.approvedCount, maxBetaUsers: after.maxBetaUsers };
@@ -835,7 +835,7 @@ export async function bulkUpdateBetaStatus(
   }
 
   const after = await getBetaCapacitySnapshot(admin);
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/beta-management");
   return { ok: true, processed: rejectIds.length, approvedCount: after.approvedCount, maxBetaUsers: after.maxBetaUsers };
@@ -845,7 +845,7 @@ const MAX_BETA_NOTES_CHARS = 8000;
 
 export type UpdateBetaNotesResult = { ok: true } | { ok: false; error: string };
 
-/** Admin or senior_admin (same gate as beta queue). */
+/** Admin or senior_admin (same gate as admin waitlist tools). */
 export async function updateProfileBetaNotes(userId: string, betaNotes: string): Promise<UpdateBetaNotesResult> {
   const auth = await getAdminClientContext();
   if (!auth.ok) return auth;
@@ -877,12 +877,12 @@ export async function updateProfileBetaNotes(userId: string, betaNotes: string):
     return { ok: false, error: uErr.message };
   }
 
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/beta-management");
   return { ok: true };
 }
 
-/** Admin or senior_admin (same gate as beta queue). */
+/** Admin or senior_admin (same gate as admin waitlist tools). */
 export async function updateProfileInviteSource(
   userId: string,
   inviteSource: string,
@@ -913,7 +913,7 @@ export async function updateProfileInviteSource(
     return { ok: false, error: uErr.message };
   }
 
-  revalidatePath("/dashboard/admin/beta-queue");
+  revalidatePath("/dashboard/admin/waitlist");
   revalidatePath("/dashboard/beta-management");
   return { ok: true };
 }

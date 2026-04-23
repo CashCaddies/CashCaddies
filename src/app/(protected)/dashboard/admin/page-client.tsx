@@ -206,7 +206,7 @@ export default function DashboardAdminCommandCenterPage() {
           <div className="flex items-start justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <IconClock className="h-4 w-4 shrink-0 text-sky-400/90" />
-              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Waitlist manager</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Access requests</span>
             </div>
             <IconArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-500/60" />
           </div>
@@ -214,22 +214,18 @@ export default function DashboardAdminCommandCenterPage() {
           <p className="mt-2 text-xs text-muted-foreground">/early-access</p>
         </Link>
 
-        <Link
-          href="/dashboard/admin/beta-queue"
-          className="adminCard block cursor-pointer shadow-[0_0_24px_rgba(234,179,8,0.2)] transition-all duration-200 hover:border-yellow-400/40 hover:bg-black/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500/50"
-        >
+        <div className="adminCard shadow-[0_0_24px_rgba(234,179,8,0.2)] transition-all duration-200 hover:border-yellow-500/40">
           <div className="flex items-start justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <IconClock className="h-4 w-4 shrink-0 text-slate-400" />
               <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Pending Beta</span>
             </div>
-            <IconArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-500/60" />
           </div>
           <p className="mt-3 text-3xl font-bold tabular-nums text-yellow-400">
             {loadingStats ? "â€¦" : (pending ?? "â€”")}
           </p>
-          <p className="mt-2 text-xs text-muted-foreground">Click to review</p>
-        </Link>
+          <p className="mt-2 text-xs text-muted-foreground">Review in admin queue</p>
+        </div>
 
         <div className="adminCard shadow-[0_0_24px_rgba(250,204,21,0.2)] transition-all duration-200 hover:border-yellow-500/40">
           <div className="flex items-center gap-2">
@@ -243,14 +239,11 @@ export default function DashboardAdminCommandCenterPage() {
       </div>
 
       <div className="adminActions">
+        <Link href="/dashboard/admin/waitlist" className="adminAction">
+          Access requests
+        </Link>
         <Link href="/admin/contests" className="adminAction">
           Create Contest
-        </Link>
-        <Link href="/dashboard/admin/beta-queue" className="adminAction">
-          View Beta Queue
-        </Link>
-        <Link href="/dashboard/feedback" className="adminAction">
-          Feedback Inbox
         </Link>
       </div>
 

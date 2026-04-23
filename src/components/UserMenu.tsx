@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { JoinWaitlistFlow } from "@/components/join-waitlist-flow";
 import { FounderBadge } from "@/components/founder-badge";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { hasPermission, isAdmin, isSeniorAdmin } from "@/lib/permissions";
+import { isAdmin, isSeniorAdmin } from "@/lib/permissions";
 
 export type UserMenuProfile = {
   avatar_url?: string | null;
@@ -24,6 +24,8 @@ type Props = {
   /** Paid / admin premium — show crown next to handle. */
   premiumSubscriber?: boolean;
 };
+
+const HREF_PROFILE = "/dashboard/profile";
 
 function DropdownItem({
   href,
@@ -63,11 +65,7 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
 
       if (!user) return;
 
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      const { data: row, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
       if (error) {
         console.error("PROFILE LOAD ERROR:", error);
@@ -75,7 +73,7 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
       }
 
       if (mounted) {
-        setProfile(profile as UserMenuProfile);
+        setProfile(row as UserMenuProfile);
       }
     }
 
@@ -184,85 +182,20 @@ export default function UserMenu({ profile, label, locked, premiumSubscriber }: 
           </p>
 
           {locked ? (
-            <>
-              <Link href="/closed-beta" role="menuitem" className="userDropdownLink" onClick={close}>
-                Closed Beta
-              </Link>
-              <DropdownItem href="/early-access" onClick={close}>
-                Waitlist
-              </DropdownItem>
-              <p className="userDropdownNote" role="note">
-                DFS navigation is disabled until your account is approved.
-              </p>
-              <hr className="userDropdownHr" />
-              <button type="button" role="menuitem" className="userDropdownLogoutFlat" onClick={() => void signOut()}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <DropdownItem href="/dashboard" onClick={close}>
-                Dashboard
-              </DropdownItem>
-              <DropdownItem href="/lineup-builder" onClick={close}>
-                Builder
-              </DropdownItem>
+            <div className="border-b border-white/10 px-1 py-2" onClick={(e) => e.stopPropagation()}>
+              <JoinWaitlistFlow variant="compact" />
+            </div>
+          ) : null}
 
-              <hr className="userDropdownHr" />
+          <DropdownItem href={HREF_PROFILE} onClick={close}>
+            Profile
+          </DropdownItem>
 
-              <DropdownItem href="/profile" onClick={close}>
-                Profile
-              </DropdownItem>
-              <DropdownItem href="/wallet" onClick={close}>
-                Wallet
-              </DropdownItem>
-              <DropdownItem href="/update-password" onClick={close}>
-                Settings
-              </DropdownItem>
+          <hr className="userDropdownHr" />
 
-              {isAdminUser && effectiveRole != null ? (
-                <>
-                  <hr className="userDropdownHr" />
-                  <div
-                    className={`mb-1 flex items-center gap-1.5 text-xs font-semibold ${
-                      isSeniorAdminUser ? "text-amber-400" : "text-yellow-400"
-                    }`}
-                    role="presentation"
-                  >
-                    <Shield className="h-3.5 w-3.5 shrink-0 opacity-90" strokeWidth={2} aria-hidden />
-                    {isSeniorAdminUser ? "Senior Admin" : "Admin"}
-                  </div>
-                  <DropdownItem href="/dashboard/admin" onClick={close}>
-                    Admin Panel
-                  </DropdownItem>
-                  {isSeniorAdminUser ? (
-                    <>
-                      <DropdownItem href="/dashboard/senior-admin" onClick={close}>
-                        Senior Admin
-                      </DropdownItem>
-                      <DropdownItem href="/dashboard/senior-admin/admins" onClick={close}>
-                        Admin Manager
-                      </DropdownItem>
-                      <DropdownItem href="/dashboard/admin/beta-queue" onClick={close}>
-                        Beta Queue
-                      </DropdownItem>
-                    </>
-                  ) : null}
-                  {isSeniorAdminUser && hasPermission(effectiveRole, "system_settings") ? (
-                    <DropdownItem href="/admin/settlement" onClick={close}>
-                      System Controls
-                    </DropdownItem>
-                  ) : null}
-                </>
-              ) : null}
-
-              <hr className="userDropdownHr" />
-
-              <button type="button" role="menuitem" className="userDropdownLogoutFlat" onClick={() => void signOut()}>
-                Logout
-              </button>
-            </>
-          )}
+          <button type="button" role="menuitem" className="userDropdownLogoutFlat" onClick={() => void signOut()}>
+            Logout
+          </button>
         </div>
       ) : null}
     </div>

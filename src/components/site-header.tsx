@@ -5,34 +5,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useWallet } from "@/hooks/use-wallet";
 import { supabase } from "@/lib/supabase/client";
-import { isAdminRole, isSeniorAdminRole } from "@/lib/auth/roles";
+import { isSeniorAdminRole } from "@/lib/auth/roles";
 import { isFounder } from "@/lib/userRoles";
 import { formatMoney } from "@/lib/wallet";
-import { playCupSound, playPortalSound } from "@/lib/sounds";
+import { playPortalSound } from "@/lib/sounds";
 import { HeaderAuthSection } from "@/components/header-auth-section";
 import { HeaderRotatingStatus } from "@/components/header-fund-bar";
-import { hasClosedBetaAppAccess } from "@/lib/closed-beta-access";
+import { DashboardNav } from "@/components/dashboard-nav";
 import golfBall from "../../public/golf-ball.png";
-
-const navItems = [
-  {
-    href: "/lobby",
-    label: "Lobby",
-    isActive: (p: string) => p === "/lobby" || p.startsWith("/lobby/"),
-  },
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-    isActive: (p: string) => p === "/dashboard" || p.startsWith("/dashboard/"),
-  },
-] as const;
-
-const centerNavButtonBase =
-  "rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/30 hover:bg-emerald-950/25 hover:text-emerald-200";
 
 /** Shared inner width/alignment for the header right rail (logged out, loading, or ready). */
 const headerRightRailInner =
@@ -46,22 +30,14 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { isReady, session } = useAuth();
-  const { wallet, loading: walletLoading, fullUser } = useWallet();
+  const { wallet, loading: walletLoading } = useWallet();
   const [profile, setProfile] = useState<any>(null);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifCounts, setNotifCounts] = useState({
-    approvals: 0,
-    support: 0,
-    bugs: 0,
-  });
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [prevTotal, setPrevTotal] = useState(0);
   const [isEntering, setIsEntering] = useState(false);
 
   const founder = isFounder(profile);
-  const isAdmin = isAdminRole(profile?.role);
   const privilegedAdmin = isSeniorAdminRole(profile?.role);
 
   const accountBalanceUsd =
@@ -119,64 +95,9 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
-    const total = notifCounts.approvals + notifCounts.support + notifCounts.bugs;
-
-    if (total > prevTotal && prevTotal !== 0) {
-      void playCupSound();
-    }
-
-    setPrevTotal(total);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- [notifCounts] only; prevTotal/playCupSound per spec
-  }, [notifCounts]);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!isAdmin) return;
-
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      const res = await fetch("/api/admin/notifications", {
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-      });
-
-      if (!res.ok) return;
-
-      const json = await res.json();
-      setNotifCounts(json);
-    } catch (e) {
-      console.error("notif fetch failed");
-    }
-  }, [isAdmin]);
-
-  useEffect(() => {
-    void fetchNotifications();
-  }, [isAdmin, fetchNotifications]);
-
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    const interval = setInterval(() => {
-      void fetchNotifications();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [isAdmin, fetchNotifications]);
-
-  useEffect(() => {
-    if (notifOpen) {
-      void fetchNotifications();
-    }
-  }, [notifOpen, fetchNotifications]);
-
-  useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenuOpen(false);
-        setNotifOpen(false);
         setProfileOpen(false);
       }
     };
@@ -187,14 +108,8 @@ export function SiteHeader() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const t = e.target;
-      if (
-        t instanceof Element &&
-        !t.closest(".profile-dropdown") &&
-        !t.closest(".notif-panel") &&
-        !t.closest(".notif-bell")
-      ) {
+      if (t instanceof Element && !t.closest(".profile-dropdown")) {
         setProfileOpen(false);
-        setNotifOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
@@ -250,16 +165,6 @@ export function SiteHeader() {
     typeof profile?.avatar_url === "string" && profile.avatar_url.trim().length > 0
       ? profile.avatar_url.trim()
       : null;
-
-  const hasBetaAccess =
-    Boolean(sessionUser) &&
-    hasClosedBetaAppAccess(
-      {
-        beta_user: wallet?.beta_user,
-        beta_status: wallet?.beta_status ?? fullUser?.beta_status ?? profile?.beta_status ?? null,
-      },
-      fullUser?.role ?? profile?.role,
-    );
 
   const rightRailClass =
     sessionUser && isReady ? `${headerRightRailInner} profile-dropdown` : headerRightRailInner;
@@ -373,30 +278,11 @@ export function SiteHeader() {
                       >
                         FAQ
                       </Link>
-                      <div
-                        className="mt-3 flex flex-wrap items-center justify-center gap-2"
-                        role="navigation"
-                        aria-label="Primary"
-                      >
-                        {navItems.map((item) => {
-                          const isActive = item.isActive(pathname ?? "");
-                          return (
-                            <button
-                              key={item.href}
-                              type="button"
-                              aria-current={isActive ? "page" : undefined}
-                              onClick={() => void handleProtectedNav(item.href)}
-                              className={`${centerNavButtonBase} ${
-                                isActive
-                                  ? "border-emerald-500/35 bg-emerald-950/35 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.12)]"
-                                  : ""
-                              }`}
-                            >
-                              {item.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      {sessionUser && isReady ? (
+                        <div className="mt-3 w-full max-w-xl px-1" role="navigation" aria-label="App">
+                          <DashboardNav />
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 
@@ -446,7 +332,6 @@ export function SiteHeader() {
                               aria-haspopup="menu"
                               onClick={() => {
                                 setMenuOpen(false);
-                                setNotifOpen(false);
                                 setProfileOpen((o) => !o);
                               }}
                             >
@@ -454,72 +339,6 @@ export function SiteHeader() {
                                 {handleLabel}
                               </span>
                             </button>
-                            {isAdmin ? (
-                              <div className="relative flex shrink-0 items-center">
-                                <button
-                                  type="button"
-                                  className="notif-bell flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-base text-amber-100/95 transition-all duration-200 hover:border-amber-400/35 hover:bg-amber-500/10"
-                                  onClick={() => {
-                                    setNotifOpen((o) => !o);
-                                    setProfileOpen(false);
-                                  }}
-                                  aria-label="Notifications"
-                                >
-                                  🔔
-                                  {notifCounts.approvals + notifCounts.support + notifCounts.bugs > 0 ? (
-                                    <span className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-red-500 px-1 text-center text-[10px] font-bold text-white">
-                                      {notifCounts.approvals + notifCounts.support + notifCounts.bugs}
-                                    </span>
-                                  ) : null}
-                                </button>
-                                {notifOpen ? (
-                                  <div className="notif-panel absolute right-0 top-full z-50 mt-2 w-72 rounded-md border border-gray-800 bg-black shadow-lg">
-                                    <div className="p-3 text-sm text-white">
-                                      <div className="mb-2 font-semibold">Notifications</div>
-                                      <button
-                                        type="button"
-                                        onClick={async () => {
-                                          const {
-                                            data: { session },
-                                          } = await supabase.auth.getSession();
-
-                                          await fetch("/api/admin/notifications/read-all", {
-                                            method: "PATCH",
-                                            headers: {
-                                              Authorization: `Bearer ${session?.access_token}`,
-                                            },
-                                          });
-
-                                          setNotifCounts({
-                                            approvals: 0,
-                                            support: 0,
-                                            bugs: 0,
-                                          });
-                                          setNotifOpen(false);
-                                        }}
-                                        className="mb-2 text-xs text-green-400 transition-colors duration-200 hover:text-emerald-300"
-                                      >
-                                        Mark all as read
-                                      </button>
-                                      <div>Approvals: {notifCounts.approvals}</div>
-                                      <div>Support: {notifCounts.support}</div>
-                                      <div>Bugs: {notifCounts.bugs}</div>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          void handleProtectedNav("/admin/notifications").then((ok) => {
-                                            if (ok) setNotifOpen(false);
-                                          });
-                                        }}
-                                        className="mt-2 text-green-400 transition-colors duration-200 hover:text-emerald-300"
-                                      >
-                                        View All
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : null}
                           </div>
 
                           <div className="flex flex-wrap items-center justify-center gap-1.5 md:justify-end">
@@ -549,81 +368,6 @@ export function SiteHeader() {
                               >
                                 Profile
                               </button>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  void handleProtectedNav("/dashboard").then((ok) => {
-                                    if (ok) setProfileOpen(false);
-                                  });
-                                }}
-                                className="block w-full px-4 py-2 text-left text-sm text-white transition-colors duration-200 hover:bg-gray-800"
-                              >
-                                Dashboard
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  void handleProtectedNav("/wallet").then((ok) => {
-                                    if (ok) setProfileOpen(false);
-                                  });
-                                }}
-                                className="block w-full px-4 py-2 text-left text-sm text-white transition-colors duration-200 hover:bg-gray-800"
-                              >
-                                Wallet
-                              </button>
-
-                              {!hasBetaAccess ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    void handleProtectedNav("/early-access").then((ok) => {
-                                      if (ok) setProfileOpen(false);
-                                    });
-                                  }}
-                                  className="block w-full px-4 py-2 text-left text-sm text-amber-200 transition-colors duration-200 hover:bg-gray-800"
-                                >
-                                  Waitlist
-                                </button>
-                              ) : null}
-
-                              {isAdmin && (
-                                <>
-                                  <div className="my-1 border-t border-gray-800" />
-
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      void handleProtectedNav("/admin").then((ok) => {
-                                        if (ok) setProfileOpen(false);
-                                      });
-                                    }}
-                                    className="block w-full px-4 py-2 text-left text-sm text-yellow-400 transition-colors duration-200 hover:bg-gray-800"
-                                  >
-                                    Admin Tools
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      void handleProtectedNav("/admin/notifications").then((ok) => {
-                                        if (ok) setProfileOpen(false);
-                                      });
-                                    }}
-                                    className="block w-full px-4 py-2 text-left text-sm text-white transition-colors duration-200 hover:bg-gray-800"
-                                  >
-                                    Notifications
-                                    <span className="ml-2 text-xs text-green-400">
-                                      ({notifCounts.approvals + notifCounts.support + notifCounts.bugs})
-                                    </span>
-                                  </button>
-
-                                  <div className="pb-2 pl-4 text-xs text-gray-400">
-                                    {`Approvals (${notifCounts.approvals}) • Support (${notifCounts.support}) • Bugs (${notifCounts.bugs})`}
-                                  </div>
-                                </>
-                              )}
 
                               <button
                                 type="button"
@@ -679,40 +423,14 @@ export function SiteHeader() {
                           <button
                             type="button"
                             onClick={() => {
-                              void handleProtectedNav("/dashboard").then((ok) => {
+                              void handleProtectedNav("/dashboard/profile").then((ok) => {
                                 if (ok) setMenuOpen(false);
                               });
                             }}
                             className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
                           >
-                            Dashboard
+                            Profile
                           </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              void handleProtectedNav("/wallet").then((ok) => {
-                                if (ok) setMenuOpen(false);
-                              });
-                            }}
-                            className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
-                          >
-                            Wallet
-                          </button>
-
-                          {!hasBetaAccess ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                void handleProtectedNav("/early-access").then((ok) => {
-                                  if (ok) setMenuOpen(false);
-                                });
-                              }}
-                              className="rounded-lg px-1 py-1 text-left font-medium text-amber-200 transition-colors duration-200 hover:bg-amber-500/10"
-                            >
-                              Waitlist
-                            </button>
-                          ) : null}
 
                           <button
                             type="button"
@@ -751,18 +469,6 @@ export function SiteHeader() {
                           </button>
                         </>
                       )}
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleProtectedNav("/lobby").then((ok) => {
-                            if (ok) setMenuOpen(false);
-                          });
-                        }}
-                        className="rounded-lg px-1 py-1 text-left text-white transition-colors duration-200 hover:bg-white/5"
-                      >
-                        Lobby
-                      </button>
 
                       <Link
                         href="/faq"

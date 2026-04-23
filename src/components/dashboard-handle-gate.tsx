@@ -15,11 +15,6 @@ export function DashboardHandleGate({ children }: { children: React.ReactNode })
 
   const onProfile =
     pathname === "/dashboard/profile" || pathname?.startsWith("/dashboard/profile/");
-  const onFeedback =
-    pathname === "/feedback" ||
-    pathname?.startsWith("/feedback/") ||
-    pathname === "/dashboard/feedback" ||
-    pathname?.startsWith("/dashboard/feedback/");
   const onBetaManagement =
     pathname === "/dashboard/beta-management" || pathname?.startsWith("/dashboard/beta-management/");
 
@@ -27,7 +22,7 @@ export function DashboardHandleGate({ children }: { children: React.ReactNode })
     return <>{children}</>;
   }
 
-  if (!isPlaceholderUsername(wallet.username) || onProfile || onFeedback || onBetaManagement) {
+  if (!isPlaceholderUsername(wallet.username) || onProfile || onBetaManagement) {
     return <>{children}</>;
   }
 

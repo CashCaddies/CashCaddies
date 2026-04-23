@@ -10,7 +10,7 @@ export type BetaMgmtApproveResult =
 
 export type BetaMgmtActionResult = { ok: true } | { ok: false; error: string };
 
-/** Founding-tester RPC path with the same capacity rules as the admin beta queue (`app_config.max_beta_users`). */
+/** Founding-tester RPC path with the same capacity rules as the admin waitlist (`app_config.max_beta_users`). */
 export async function approveBetaUser(targetId: string): Promise<BetaMgmtApproveResult> {
   const id = typeof targetId === "string" ? targetId.trim() : "";
   if (!id) {

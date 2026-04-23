@@ -9,7 +9,7 @@ type Props = {
   mode: "login" | "signup";
 };
 
-/** Maps DB trigger / Auth API text to closed-beta product copy. */
+/** Maps DB trigger / Auth API text to waitlist / access messaging shown to the user. */
 function formatAuthErrorMessage(
   raw: string,
   mode: "login" | "signup",

@@ -4,7 +4,7 @@ import { isAdmin } from "@/lib/permissions";
 
 /** Shown when signup is blocked by DB allowlist trigger or login gate. */
 export const CLOSED_BETA_ACCESS_MESSAGE =
-  "CashCaddies is currently in a closed beta. If you would like access, email contact@cashcaddies.com";
+  "CashCaddies is onboarding through a waitlist. To request access, email contact@cashcaddies.com";
 
 /** `login?reason=` value when beta program access is denied (canonical: profiles.beta_status). */
 export const BETA_STATUS_DENIED_QUERY = "beta_status";
@@ -27,7 +27,7 @@ export function isBetaProtectedPath(pathname: string): boolean {
   return pathname === "/dashboard" || pathname.startsWith("/dashboard/") || pathname === "/lobby" || pathname.startsWith("/lobby/");
 }
 
-/** Closed beta DFS routes (middleware + server guards). */
+/** Beta-gated DFS routes (middleware + server guards). */
 export function isProfileBetaRequiredPath(pathname: string): boolean {
   if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return true;
   if (pathname === "/lobby" || pathname.startsWith("/lobby/")) return true;

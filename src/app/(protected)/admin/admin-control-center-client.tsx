@@ -117,7 +117,7 @@ export default function AdminControlCenterClient() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Total users" value={formatInt(totalUsers)} href="/admin/users" />
         <StatCard title="Approved beta" value={formatInt(approvedBeta)} />
-        <StatCard title="Pending beta" value={formatInt(pendingBeta)} href="/admin/beta-queue" />
+        <StatCard title="Pending beta" value={formatInt(pendingBeta)} href="/dashboard/admin/waitlist" />
         <StatCard title="Total wallet" value={formatMoney(totalWalletUsd)} />
         <StatCard title="Contests" value={formatInt(contestCount)} href="/admin/contests" />
         <StatCard title="Protection fund" value={formatMoney(protectionFundUsd)} />

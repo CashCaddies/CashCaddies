@@ -102,8 +102,8 @@ const MORE_ITEMS = [
     question: "How do I get help?",
     answer: (
       <p>
-        Use in-app feedback or reach out via the contact options listed on the site. We prioritize clear, fair outcomes
-        for beta players.
+        Reach out via the contact options listed on the site. We prioritize clear, fair outcomes for players in the
+        current access period.
       </p>
     ),
   },

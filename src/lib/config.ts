@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-/** Canonical key for closed-beta user cap (approved `profiles.beta_status`). */
+/** Canonical `app_config` key for max approved beta users (`profiles.beta_status`). */
 export const APP_CONFIG_KEY_MAX_BETA_USERS = "max_beta_users" as const;
 
 /** Fallback when `max_beta_users` is missing or invalid in `app_config`. */

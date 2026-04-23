@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/permissions";
 
 export default async function DashboardAdminLayout({ children }: { children: React.ReactNode }) {
@@ -7,12 +7,13 @@ export default async function DashboardAdminLayout({ children }: { children: Rea
     redirect("/dashboard");
   }
 
+  const supabase = await createClient();
   const {
     data: { user },
     error: authErr,
   } = await supabase.auth.getUser();
   if (authErr || !user) {
-    redirect("/closed-beta");
+    redirect("/login");
   }
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();

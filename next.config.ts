@@ -21,6 +21,63 @@ const nextConfig: NextConfig = {
 
   generateBuildId: async () => Date.now().toString(),
 
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/admin/beta-queue",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/admin/beta-queue/:path*",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/admin/beta",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/admin/beta/:path*",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/admin/beta-queue",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/admin/beta-queue/:path*",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/admin/feedback",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/admin/feedback/:path*",
+        destination: "/dashboard/admin/waitlist",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/feedback",
+        destination: "/dashboard",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/feedback/:path*",
+        destination: "/dashboard",
+        permanent: true,
+      },
+      { source: "/feedback", destination: "/dashboard", permanent: true },
+      { source: "/feedback/:path*", destination: "/dashboard", permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       {

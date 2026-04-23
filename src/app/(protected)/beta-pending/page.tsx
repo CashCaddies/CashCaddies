@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { JoinWaitlistFlow } from "@/components/join-waitlist-flow";
 import { requireUser } from "@/lib/auth/require-user";
 
 export const metadata: Metadata = {
@@ -17,7 +18,17 @@ export default async function BetaPendingPage() {
         <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
           CashCaddies is currently in private beta. Your account is pending approval.
         </p>
-        <p className="mt-6 text-center text-sm text-slate-400">
+        <div className="mt-8 border-t border-white/10 pt-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">In-app access request</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Your account is already in the approval queue. You don&apos;t need to submit another request here.
+          </p>
+          <div className="mt-3">
+            <JoinWaitlistFlow variant="card" hasPendingRequest />
+          </div>
+        </div>
+
+        <p className="mt-8 text-center text-sm text-slate-400">
           <Link href="/" className="font-semibold text-emerald-400 underline decoration-emerald-500/50 underline-offset-2 hover:text-emerald-300">
             Back to home
           </Link>
