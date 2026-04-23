@@ -13,11 +13,6 @@ export type CreateContestInput = {
   startDate: string;
   contestType?: string;
   status?: string;
-  isPortal?: boolean;
-  portalFrequency?: "weekly" | "biweekly" | "monthly";
-  overlayAmount?: number;
-  /** Optional prize pool (USD); stored on `contests.prize_pool` when present. */
-  prizePool?: number;
 };
 
 export type CreateContestResult =
@@ -31,27 +26,10 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
   const startsAt = String(input.startDate ?? "").trim();
   const requesterUserId = String(input.requesterUserId ?? "").trim();
   const contestState = normalizeContestStateForInsert(input.status);
-  const isPortal = Boolean(input.isPortal);
-  const overlayAmount = Number(input.overlayAmount ?? 0);
-  const portalFrequency = isPortal ? input.portalFrequency ?? null : null;
-  const prizePool = input.prizePool != null ? Number(input.prizePool) : NaN;
-  const prizePoolRounded =
-    Number.isFinite(prizePool) && prizePool >= 0 ? Math.round(prizePool * 100) / 100 : null;
 
   if (!name) return { ok: false, error: "Contest name is required." };
   if (!Number.isFinite(entryFee) || entryFee < 0) return { ok: false, error: "Entry fee must be 0 or greater." };
   if (!Number.isFinite(maxEntries) || maxEntries < 1) return { ok: false, error: "Max entries must be at least 1." };
-  if (!Number.isFinite(overlayAmount) || overlayAmount < 0) {
-    return { ok: false, error: "Overlay amount must be 0 or greater." };
-  }
-  if (
-    portalFrequency &&
-    portalFrequency !== "weekly" &&
-    portalFrequency !== "biweekly" &&
-    portalFrequency !== "monthly"
-  ) {
-    return { ok: false, error: "Portal frequency must be weekly, biweekly, or monthly." };
-  }
   if (!startsAt) return { ok: false, error: "Start date is required." };
   if (!requesterUserId) return { ok: false, error: "Missing requester user id." };
 
@@ -68,7 +46,7 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
     return { ok: false, error: "Server role is not configured." };
   }
 
-  // Keep simple: insert only columns that exist across current schema.
+  /** Insert only columns known to exist on production `contests` (no portal/overlay/prize_pool, etc.). */
   const createdAt = new Date().toISOString();
   const contestId = crypto.randomUUID();
   const row: Record<string, unknown> = {
@@ -77,22 +55,13 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
     entry_fee: Math.round(entryFee * 100) / 100,
     entry_fee_usd: Math.round(entryFee * 100) / 100,
     max_entries: maxEntries,
-    entry_count: 0,
     start_time: startsAt,
     status: contestState,
     entries_open_at: createdAt,
-    max_entries_per_user: 1,
     starts_at: startsAt,
     created_by: requesterUserId,
     created_at: createdAt,
-    is_portal: isPortal,
-    portal_frequency: portalFrequency,
-    overlay_amount: Math.round(overlayAmount * 100) / 100,
-    is_featured: isPortal,
   };
-  if (prizePoolRounded != null) {
-    row.prize_pool = prizePoolRounded;
-  }
 
   const { data: inserted, error } = await admin.from("contests").insert(row).select("id").single();
 
@@ -105,6 +74,74 @@ export async function createContestAdmin(input: CreateContestInput): Promise<Cre
   revalidatePath("/lobby");
   revalidatePath("/admin/contests");
   return { ok: true, contestId: id };
+}
+
+/** TEMP / QA only — creates real `contests` rows via `createContestAdmin`. Remove UI + this export when no longer needed. */
+export type SeedTempLobbyTestContestsResult =
+  | { ok: true; created: { id: string; name: string }[] }
+  | { ok: false; error: string };
+
+export async function seedTempLobbyTestContests(requesterUserId: string): Promise<SeedTempLobbyTestContestsResult> {
+  const uid = String(requesterUserId ?? "").trim();
+  if (!uid) {
+    return { ok: false, error: "Missing requester user id." };
+  }
+
+  const gate = await getAdminClientContext();
+  if (!gate.ok) {
+    return { ok: false, error: gate.error };
+  }
+  if (uid !== gate.userId) {
+    return { ok: false, error: "Admin access required." };
+  }
+
+  const start = new Date();
+  start.setUTCDate(start.getUTCDate() + 5);
+  start.setUTCHours(20, 0, 0, 0);
+  const startDate = start.toISOString();
+
+  const batchTag = `[TEMP ${Date.now()}]`;
+
+  const specs: CreateContestInput[] = [
+    {
+      requesterUserId: uid,
+      name: `${batchTag} Lobby · QA A`,
+      entryFee: 5,
+      maxEntries: 100,
+      startDate,
+      status: "filling",
+    },
+    {
+      requesterUserId: uid,
+      name: `${batchTag} Lobby · QA B`,
+      entryFee: 10,
+      maxEntries: 80,
+      startDate,
+      status: "filling",
+    },
+    {
+      requesterUserId: uid,
+      name: `${batchTag} Lobby · QA C`,
+      entryFee: 25,
+      maxEntries: 40,
+      startDate,
+      status: "filling",
+    },
+  ];
+
+  const created: { id: string; name: string }[] = [];
+  for (const input of specs) {
+    const res = await createContestAdmin(input);
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: `Stopped after ${created.length} OK. Last error on "${input.name}": ${res.error}`,
+      };
+    }
+    created.push({ id: res.contestId, name: input.name });
+  }
+
+  return { ok: true, created };
 }
 
 async function getServiceClientForOwnerRequester(

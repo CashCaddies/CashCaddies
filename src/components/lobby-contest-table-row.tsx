@@ -333,11 +333,12 @@ export function LobbyContestTableRow({
       onClick={handleRowActivate}
       onKeyDown={onRowKeyDown}
       className={`
-        border-b border-[#232a33] transition-all duration-300
-        hover:bg-[#161c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3d8bfd]
+        border-b border-[#232a33] transition-colors duration-200
+        hover:bg-[#161c24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-500/60
         ${index % 2 === 0 ? "bg-[#0f1419]" : "bg-[#0c1015]"}
+        border-l-[3px] border-l-transparent
         ${isCreatedContest ? "highlightContest" : ""}
-        ${justEntered ? "scale-[1.02] bg-green-50" : ""}
+        ${justEntered ? "ring-1 ring-emerald-500/40 ring-inset" : ""}
         cursor-pointer
       `}
     >
@@ -357,12 +358,6 @@ export function LobbyContestTableRow({
       <td className="px-3 py-3.5 align-top text-[#c5cdd5]">
         <p className="font-medium">{formatLobbyEntryFeeUsd(entryFeeSource)}</p>
         <dl className="mt-2 space-y-1 text-[10px] leading-snug text-[#8b98a5]">
-          <div className="flex flex-wrap gap-x-1.5 gap-y-0">
-            <dt className="font-semibold uppercase tracking-wide text-[#6b7684]">Entries</dt>
-            <dd className="tabular-nums text-[#c5cdd5]">
-              {current.toLocaleString()} / {max.toLocaleString()}
-            </dd>
-          </div>
           <div className="flex flex-wrap gap-x-1.5 gap-y-0">
             <dt className="font-semibold uppercase tracking-wide text-[#6b7684]">Safety Pool</dt>
             <dd className="tabular-nums text-[#53d769]">{formatLobbyEntryFeeUsd(safetyPoolUsd)}</dd>

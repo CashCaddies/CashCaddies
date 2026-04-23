@@ -1,8 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { LobbyContestPayoutRow, LobbyContestRow } from "@/lib/contest-lobby-shared";
-import { formatLobbyEntryFeeUsd } from "@/lib/contest-lobby-shared";
+import {
+  CONTESTS_MINIMAL_SELECT,
+  entryCountFromContestEntriesRelation,
+  formatLobbyEntryFeeUsd,
+} from "@/lib/contest-lobby-shared";
 import { LobbyAdminActions } from "@/components/lobby-admin-actions";
 import { LobbyContestTableRow } from "@/components/lobby-contest-table-row";
 import { getProfile } from "@/lib/getProfile";
@@ -37,7 +42,10 @@ function normalizeLobbyRows(raw: unknown[]): LobbyContestRow[] {
         : typeof ecRaw === "string" && ecRaw.trim() !== ""
           ? Number(ecRaw)
           : NaN;
-    const entry_count = Number.isFinite(entryCount) ? Math.max(0, Math.floor(entryCount)) : 0;
+    const fromEmbed = entryCountFromContestEntriesRelation(r);
+    const entry_count = Number.isFinite(entryCount)
+      ? Math.max(0, Math.floor(entryCount))
+      : fromEmbed;
 
     const curCol = r.current_entries;
     const current_entries =
@@ -47,13 +55,19 @@ function normalizeLobbyRows(raw: unknown[]): LobbyContestRow[] {
           ? Number(curCol)
           : undefined;
 
+    const mpuRaw = r.max_entries_per_user;
+    const max_entries_per_user =
+      mpuRaw != null && Number.isFinite(Number(mpuRaw)) && Number(mpuRaw) > 0
+        ? Math.floor(Number(mpuRaw))
+        : 1;
+
     out.push({
       id,
       name,
       entry_fee_usd: entryFee,
       entry_fee: entryFee,
       max_entries: Math.floor(maxEntries),
-      max_entries_per_user: r.max_entries_per_user != null ? Number(r.max_entries_per_user) : 1,
+      max_entries_per_user,
       entry_count,
       current_entries: Number.isFinite(current_entries ?? NaN) ? current_entries : undefined,
       starts_at: startsAt,
@@ -70,6 +84,57 @@ function normalizeLobbyRows(raw: unknown[]): LobbyContestRow[] {
     });
   }
   return out;
+}
+
+type LobbyContestTableProps = {
+  contests: LobbyContestRow[];
+  indexOffset: number;
+  profile: { role: string | null } | null;
+  patchContest: (contestId: string, patch: Partial<LobbyContestRow>) => void;
+  removeContest: (contestId: string) => void;
+  loadContests: (opts?: { initial?: boolean }) => Promise<void>;
+  setSelectedContest: (c: LobbyContestRow) => void;
+};
+
+function LobbyContestTable({
+  contests,
+  indexOffset,
+  profile,
+  patchContest,
+  removeContest,
+  loadContests,
+  setSelectedContest,
+}: LobbyContestTableProps) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-slate-800/90 bg-slate-950/40">
+      <table className="w-full min-w-[920px] table-fixed border-collapse text-left text-sm">
+        <thead>
+          <tr className="border-b border-slate-800/90 bg-slate-900/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <th className="w-[26%] px-4 py-3 pl-5 sm:px-5">Contest name</th>
+            <th className="w-[16%] px-3 py-3">Entry fee</th>
+            <th className="w-[12%] px-3 py-3 text-right">Max entries</th>
+            <th className="w-[14%] px-3 py-3 text-right">Current entries</th>
+            <th className="w-[16%] px-3 py-3">Start date</th>
+            <th className="w-[16%] px-4 py-3 pr-5 text-right sm:px-5" />
+          </tr>
+        </thead>
+        <tbody className="text-slate-100">
+          {contests.map((contest, i) => (
+            <LobbyContestTableRow
+              key={contest.id}
+              contest={contest}
+              index={indexOffset + i}
+              viewerRole={profile?.role ?? null}
+              onContestPatched={patchContest}
+              onContestRemoved={removeContest}
+              onRefresh={loadContests}
+              onRowClick={() => setSelectedContest(contest)}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export function LobbyPageContent() {
@@ -103,7 +168,7 @@ export function LobbyPageContent() {
 
     const { data, error: fetchError } = await supabase
       .from("contests")
-      .select("*")
+      .select(CONTESTS_MINIMAL_SELECT)
       .order("created_at", { ascending: false });
 
     if (fetchError) {
@@ -155,100 +220,124 @@ export function LobbyPageContent() {
       : null;
 
   if (loading) {
-    return <div className="p-4">Loading contests...</div>;
+    return (
+      <div className="pageWrap py-16">
+        <p className="text-center text-sm text-slate-400">Loading contests…</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return (
+      <div className="pageWrap py-16">
+        <p className="mx-auto max-w-md rounded-lg border border-red-500/35 bg-red-950/30 px-4 py-3 text-center text-sm text-red-100">
+          {error}
+        </p>
+      </div>
+    );
   }
 
   if (contests.length === 0) {
-    return <div className="p-4">No contests available</div>;
+    return (
+      <div className="pageWrap py-16">
+        <p className="text-center text-sm text-slate-400">No contests are open right now.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-0">
-      <div className="border-b border-[#2a3039] bg-[#141920] px-4 py-5 sm:px-6">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-base font-semibold text-slate-100 sm:text-lg">Daily Fantasy Golf</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-white sm:text-4xl">Lobby</h1>
-            <p className="mt-1 text-sm text-[#c5cdd5]">
-              Guaranteed prize pools · Pick 6 · $50K salary cap
-            </p>
+    <div className="pageWrap pb-14 pt-8">
+      <div className="mx-auto max-w-6xl space-y-10">
+        <header className="goldCard goldCardStatic p-6 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/90">Lobby</p>
+              <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">Contests</h1>
+              <p className="max-w-2xl text-sm leading-relaxed text-slate-400">
+                Open contests from the database. Your{" "}
+                <Link href="/portal" className="font-semibold text-emerald-400 underline-offset-2 hover:underline">
+                  Portal Access Tier
+                </Link>{" "}
+                (season contribution) is separate from lobby contests. Loyalty rewards (Bronze–Platinum) are on your{" "}
+                <Link href="/wallet" className="font-semibold text-emerald-400 underline-offset-2 hover:underline">
+                  wallet
+                </Link>
+                .
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-slate-600 bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => void loadContests({ initial: false })}
+                disabled={refreshing}
+              >
+                {refreshing ? "Refreshing…" : "Refresh"}
+              </button>
+              <LobbyAdminActions viewerIsAdmin={admin} />
+            </div>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-0">
-            <button
-              type="button"
-              className="rounded border border-amber-600/50 bg-[#1c2128] px-3 py-1 text-xs font-semibold text-amber-100 hover:bg-[#252b33] disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() => void loadContests({ initial: false })}
-              disabled={refreshing}
-            >
-              {refreshing ? "Refreshing…" : "FORCE REFRESH"}
-            </button>
-            <span className="rounded border border-[#2f3640] bg-[#1c2128] px-3 py-1 text-xs font-semibold text-[#c5cdd5]">
-              Classic
-            </span>
-            <span className="rounded border border-[#2f3640] bg-[#1c2128] px-3 py-1 text-xs font-semibold text-[#6b7684]">
-              Showdown
-            </span>
-            <LobbyAdminActions viewerIsAdmin={admin} />
+        </header>
+
+        <section className="space-y-3" aria-labelledby="lobby-contests-heading">
+          <div className="flex flex-col gap-1 border-b border-slate-800 pb-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 id="lobby-contests-heading" className="text-lg font-bold text-white">
+                Contests
+              </h2>
+              <p className="mt-1 text-xs text-slate-500">All open contests in the lobby.</p>
+            </div>
           </div>
-        </div>
-      </div>
+          <LobbyContestTable
+            contests={contests}
+            indexOffset={0}
+            profile={profile}
+            patchContest={patchContest}
+            removeContest={removeContest}
+            loadContests={loadContests}
+            setSelectedContest={setSelectedContest}
+          />
+        </section>
 
-      <div className="overflow-x-auto border-x border-b border-[#2a3039] bg-[#0f1419]">
-        <table className="w-full min-w-[920px] table-fixed border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-[#2a3039] bg-[#1a1f26] text-[11px] font-bold uppercase tracking-wider text-[#8b98a5]">
-              <th className="w-[26%] px-4 py-3 pl-5 sm:px-5">Contest name</th>
-              <th className="w-[16%] px-3 py-3">Entry fee</th>
-              <th className="w-[12%] px-3 py-3 text-right">Max entries</th>
-              <th className="w-[14%] px-3 py-3 text-right">Current entries</th>
-              <th className="w-[16%] px-3 py-3">Start date</th>
-              <th className="w-[16%] px-4 py-3 pr-5 text-right sm:px-5" />
-            </tr>
-          </thead>
-          <tbody className="text-[#e8ecf0]">
-            {contests?.map((contest, index) => (
-              <LobbyContestTableRow
-                key={contest.id}
-                contest={contest}
-                index={index}
-                viewerRole={profile?.role ?? null}
-                onContestPatched={patchContest}
-                onContestRemoved={removeContest}
-                onRefresh={loadContests}
-                onRowClick={() => setSelectedContest(contest)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+        <p className="text-center text-xs leading-relaxed text-slate-600">
+          Data from Supabase · Current entries and caps are shown per contest · Safety pool and protected % come from
+          contest stats when available.
+        </p>
 
-      <p className="border-x border-b border-[#2a3039] bg-[#141920] px-5 py-3 text-center text-xs text-[#6b7684]">
-        Contests load from Supabase · Entry counts are paid entries · Safety Pool = platform pool balance ·
-        Protected % = entries with a protected golfer ÷ total entries · Prize pool = entry fee × entries
-      </p>
+        <p className="text-center text-xs text-slate-600">
+          Loyalty tier and perks are tracked on your{" "}
+          <Link href="/wallet" className="text-emerald-500/90 underline-offset-2 hover:text-emerald-400 hover:underline">
+            wallet
+          </Link>{" "}
+          — separate from Portal Access Tier.
+        </p>
+      </div>
 
       {modalContest ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
           onClick={() => setSelectedContest(null)}
           role="presentation"
         >
           <div
-            className="w-full max-w-md rounded-lg bg-white p-6 text-slate-900 shadow-xl"
+            className="goldCard goldCardStatic w-full max-w-md p-6 text-slate-100 shadow-xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-labelledby="contest-details-title"
           >
-            <h2 id="contest-details-title" className="mb-4 text-xl font-bold">
+            <h2 id="contest-details-title" className="mb-1 text-xl font-bold text-white">
               {modalContest.name}
             </h2>
+            <p className="mb-4 text-xs text-slate-500">
+              See{" "}
+              <Link href="/portal" className="font-semibold text-emerald-400 underline-offset-2 hover:underline">
+                /portal
+              </Link>{" "}
+              for your Portal Access Tier (separate from this contest list).
+            </p>
 
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-sm text-slate-300">
               <div>
                 Entry Fee:{" "}
                 {formatLobbyEntryFeeUsd(modalContest.entry_fee ?? modalContest.entry_fee_usd)}
@@ -302,9 +391,7 @@ export function LobbyPageContent() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-2 text-sm text-gray-500">
-                  Payouts will be shown before contest starts.
-                </div>
+                <div className="mt-2 text-sm text-slate-500">No payout rows loaded for this contest.</div>
               )}
 
               <div>Status: {modalContest.status ?? "—"}</div>
@@ -313,7 +400,7 @@ export function LobbyPageContent() {
             <button
               type="button"
               onClick={() => setSelectedContest(null)}
-              className="mt-4 w-full rounded bg-gray-800 py-2 text-white"
+              className="mt-5 w-full rounded-lg border border-slate-600 bg-slate-900 py-2.5 text-sm font-semibold text-slate-100 hover:bg-slate-800"
             >
               Close
             </button>

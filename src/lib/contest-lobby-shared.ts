@@ -1,3 +1,22 @@
+/**
+ * PostgREST `select()` fragment for `contests` aligned to columns present on typical live DBs
+ * (excludes portal/overlay/featured and other optional columns that may not exist).
+ * Includes `contest_entries(id)` for entry counts when `entry_count` / `current_entries` are absent.
+ */
+export const CONTESTS_MINIMAL_SELECT = [
+  "id",
+  "name",
+  "entry_fee",
+  "entry_fee_usd",
+  "max_entries",
+  "start_time",
+  "starts_at",
+  "status",
+  "created_at",
+  "entries_open_at",
+  "contest_entries(id)",
+].join(",");
+
 /** One row from `contest_payouts` (rank → % of prize pool). Loaded with lobby contests. */
 export type LobbyContestPayoutRow = {
   rank_place: number;

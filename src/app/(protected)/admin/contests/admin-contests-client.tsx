@@ -5,9 +5,9 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { contestStatusBadgeClassName, contestStatusBadgeLabel } from "@/lib/contest-admin-state";
-import { entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
+import { CONTESTS_MINIMAL_SELECT, entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { supabase } from "@/lib/supabase/client";
-import { createContestAdmin, updateContestAdmin } from "./actions";
+import { createContestAdmin, seedTempLobbyTestContests, updateContestAdmin } from "./actions";
 
 type ContestRow = {
   id: string;
@@ -42,10 +42,10 @@ export default function AdminContestsPageClient() {
   const [pending, startTransition] = useTransition();
   const [listNotice, setListNotice] = useState<{ text: string; ok: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tempSeedBusy, setTempSeedBusy] = useState(false);
 
   const [name, setName] = useState("");
   const [entryFee, setEntryFee] = useState("5");
-  const [prizePool, setPrizePool] = useState("");
   const [maxEntries, setMaxEntries] = useState("100");
   const [startDate, setStartDate] = useState("");
   const [templateName, setTemplateName] = useState("");
@@ -60,13 +60,13 @@ export default function AdminContestsPageClient() {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from("contests")
-      .select("id,name,entry_fee_usd,starts_at,start_time,status,created_at,created_by, contest_entries ( id )")
+      .select(CONTESTS_MINIMAL_SELECT)
       .order("created_at", { ascending: false });
     if (error) {
       console.error("Contest fetch error:", error);
       return [];
     }
-    return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+    return ((data ?? []) as unknown as Array<Record<string, unknown>>).map((row) => ({
       id: String(row.id ?? ""),
       name: String(row.name ?? ""),
       entry_fee_usd: (row.entry_fee_usd as number | string | null) ?? null,
@@ -74,7 +74,10 @@ export default function AdminContestsPageClient() {
       starts_at: typeof row.starts_at === "string" ? row.starts_at : null,
       start_time: typeof row.start_time === "string" ? row.start_time : null,
       status: row.status != null ? String(row.status) : null,
-      created_by: typeof row.created_by === "string" ? row.created_by : null,
+      created_by:
+        typeof (row as { created_by?: unknown }).created_by === "string"
+          ? String((row as { created_by?: string }).created_by)
+          : null,
     }));
   }
 
@@ -216,6 +219,28 @@ export default function AdminContestsPageClient() {
     setRows(contests);
   };
 
+  const handleSeedTempLobbyTests = () => {
+    if (!user?.id) return;
+    setTempSeedBusy(true);
+    void (async () => {
+      try {
+        const res = await seedTempLobbyTestContests(user.id);
+        if (!res.ok) {
+          setListNotice({ text: res.error, ok: false });
+          return;
+        }
+        const contests = await fetchContestsSafe();
+        setRows(contests);
+        setListNotice({
+          text: `TEMP seed OK (${res.created.length}): ${res.created.map((c) => c.name).join(" · ")}`,
+          ok: true,
+        });
+      } finally {
+        setTempSeedBusy(false);
+      }
+    })();
+  };
+
   const makeFounder = async (email: string) => {
     if (!supabase) {
       alert("Supabase client is not available.");
@@ -258,6 +283,26 @@ export default function AdminContestsPageClient() {
           {listNotice.text}
         </div>
       ) : null}
+
+      <div className="rounded-xl border-2 border-amber-500/50 bg-amber-950/25 p-5 shadow-inner shadow-black/20">
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-200/95">Temp · admin only · remove later</p>
+        <h2 className="mt-2 text-lg font-bold text-white">Lobby QA — seed test contests</h2>
+        <p className="mt-2 text-sm leading-relaxed text-amber-100/90">
+          Creates <strong className="font-semibold text-white">three real rows</strong> in <code className="text-amber-50/95">public.contests</code>{" "}
+          (all standard lobby contests) using the same path as &quot;Create Contest&quot;. Names include{" "}
+          <code className="text-amber-50/95">[TEMP …]</code> so you can delete them from this list when done. Safe to
+          click multiple times — each run uses a new timestamp in the name.
+        </p>
+        <button
+          type="button"
+          disabled={tempSeedBusy || !user?.id}
+          onClick={handleSeedTempLobbyTests}
+          className="mt-4 inline-flex items-center justify-center rounded-lg border border-amber-400/60 bg-amber-600/90 px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-slate-950 shadow hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {tempSeedBusy ? "Creating…" : "Create TEMP lobby test contests (3)"}
+        </button>
+      </div>
+
       <div className="goldCard p-6">
         <h2 className="text-lg font-semibold text-white">Founder access</h2>
         <p className="mt-1 text-sm text-slate-400">Set <code className="text-slate-300">is_founder</code> on a profile by email.</p>
@@ -374,7 +419,6 @@ export default function AdminContestsPageClient() {
                 }
 
                 const parsedEntryFee = Number(entryFee) || 0;
-                const parsedPrizePool = Number(prizePool) || 0;
                 const parsedMaxEntries = Number(maxEntries) || 0;
 
                 const created = await createContestAdmin({
@@ -384,7 +428,6 @@ export default function AdminContestsPageClient() {
                   maxEntries: parsedMaxEntries,
                   startDate: new Date(startDate).toISOString(),
                   status: "locked",
-                  prizePool: parsedPrizePool,
                 });
 
                 if (!created.ok) {
@@ -426,19 +469,6 @@ export default function AdminContestsPageClient() {
               value={entryFee}
               onChange={(e) => setEntryFee(e.target.value)}
               required
-            />
-          </label>
-
-          <label className="space-y-1">
-            <span className="text-sm text-slate-300">Prize pool</span>
-            <input
-              value={prizePool}
-              onChange={(e) => setPrizePool(e.target.value)}
-              placeholder="Prize Pool"
-              type="number"
-              min="0"
-              step="0.01"
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
             />
           </label>
 

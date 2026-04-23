@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import {
+  CONTESTS_MINIMAL_SELECT,
   entryCountFromContestEntriesRelation,
   type LobbyContestPayoutRow,
   type LobbyContestRow,
@@ -19,20 +20,8 @@ export {
 /** @deprecated Use `LobbyContestPayoutRow` from `@/lib/contest-lobby-shared`. */
 export type ContestPayoutRow = LobbyContestPayoutRow;
 
-const CONTEST_CARD_SELECT = `
-  id,
-  name,
-  entry_fee,
-  entry_fee_usd,
-  max_entries,
-  start_time,
-  starts_at,
-  status,
-  created_at,
-  entries_open_at,
-  late_swap_enabled,
-  contest_entries ( id )
-`;
+/** Same as `CONTESTS_MINIMAL_SELECT` — used for contest card / detail fetches. */
+const CONTEST_CARD_SELECT = CONTESTS_MINIMAL_SELECT;
 
 /** Raw row shape after DB fetch (before contest_id normalization). */
 type ContestPayoutDbRow = {
@@ -90,14 +79,7 @@ function toLobbyPayoutRows(rows: NormalizedPayoutRow[]): LobbyContestPayoutRow[]
 function payoutsForContest(normalizedPayouts: NormalizedPayoutRow[], contestIdRaw: string): LobbyContestPayoutRow[] {
   const normalizedContestId = String(contestIdRaw).trim().toLowerCase();
   const matched = normalizedPayouts.filter((p) => p.contest_id === normalizedContestId);
-  const contestPayouts = toLobbyPayoutRows(matched);
-
-  console.log("MATCH TEST →", {
-    contestId: normalizedContestId,
-    matched: contestPayouts,
-  });
-
-  return contestPayouts;
+  return toLobbyPayoutRows(matched);
 }
 
 export async function fetchLobbyContests(): Promise<{
@@ -151,13 +133,21 @@ export async function fetchLobbyContests(): Promise<{
         const entryFee = Number(row.entry_fee ?? row.entry_fee_usd ?? 0);
         const createdAt = row.created_at != null ? String(row.created_at) : undefined;
         const payouts = payoutsForContest(normalizedPayouts, id);
+        const mpuRaw = (row as { max_entries_per_user?: unknown }).max_entries_per_user;
+        const mpu =
+          typeof mpuRaw === "number" && Number.isFinite(mpuRaw) && mpuRaw > 0
+            ? Math.floor(mpuRaw)
+            : typeof mpuRaw === "string" && mpuRaw.trim() !== "" && Number.isFinite(Number(mpuRaw))
+              ? Math.max(1, Math.floor(Number(mpuRaw)))
+              : 1;
+
         const mapped: LobbyContestRow = {
           id,
           name: String(row.name ?? "Contest"),
           entry_fee_usd: Number.isFinite(entryFee) ? entryFee : 0,
           entry_fee: Number.isFinite(entryFee) ? entryFee : 0,
           max_entries: maxEntries,
-          max_entries_per_user: 1,
+          max_entries_per_user: mpu,
           entry_count: entryCount,
           starts_at: startsAt,
           start_time: startsAt,
@@ -168,16 +158,15 @@ export async function fetchLobbyContests(): Promise<{
           protected_entries_count: 0,
           safety_pool_usd: safetyPoolFinite,
           late_swap_enabled:
-            row.late_swap_enabled === undefined || row.late_swap_enabled === null
+            (row as { late_swap_enabled?: boolean | null }).late_swap_enabled === undefined ||
+            (row as { late_swap_enabled?: boolean | null }).late_swap_enabled === null
               ? true
-              : Boolean(row.late_swap_enabled),
+              : Boolean((row as { late_swap_enabled?: boolean | null }).late_swap_enabled),
           payouts,
         };
         return mapped;
       })
       .filter((row): row is LobbyContestRow => row != null);
-
-    console.log("LOBBY DATA:", contests);
 
     return { contests, error: null };
   } catch (e) {
@@ -205,36 +194,43 @@ export async function fetchLobbyContestById(contestId: string): Promise<LobbyCon
     if (error || !data) {
       return null;
     }
+    const row = data as unknown as Record<string, unknown>;
     const { data: st } = await supabase.from("contest_settlements").select("contest_id").eq("contest_id", id).maybeSingle();
-    const maxEntries = Math.max(1, Number(data.max_entries ?? 100));
-    const entryCount = entryCountFromContestEntriesRelation(data as Record<string, unknown>);
-    const rawStatusStr = String(data.status ?? "filling");
-    const startsAt = String(data.start_time ?? data.starts_at ?? data.created_at ?? new Date().toISOString());
-    const entryFee = Number(data.entry_fee ?? data.entry_fee_usd ?? 0);
-    const createdAt = data.created_at != null ? String(data.created_at) : undefined;
+    const maxEntries = Math.max(1, Number(row.max_entries ?? 100));
+    const mpuRaw = row.max_entries_per_user;
+    const mpu =
+      typeof mpuRaw === "number" && Number.isFinite(mpuRaw) && mpuRaw > 0
+        ? Math.floor(mpuRaw)
+        : typeof mpuRaw === "string" && String(mpuRaw).trim() !== "" && Number.isFinite(Number(mpuRaw))
+          ? Math.max(1, Math.floor(Number(mpuRaw)))
+          : 1;
+    const entryCount = entryCountFromContestEntriesRelation(row);
+    const rawStatusStr = String(row.status ?? "filling");
+    const startsAt = String(row.start_time ?? row.starts_at ?? row.created_at ?? new Date().toISOString());
+    const entryFee = Number(row.entry_fee ?? row.entry_fee_usd ?? 0);
+    const createdAt = row.created_at != null ? String(row.created_at) : undefined;
 
     const rawPayouts = await fetchAllContestPayoutRows(supabase);
     const normalizedPayouts = normalizePayoutRows(rawPayouts);
-    const payouts = payoutsForContest(normalizedPayouts, String(data.id));
+    const payouts = payoutsForContest(normalizedPayouts, String(row.id));
 
     return {
-      id: String(data.id),
-      name: String(data.name),
+      id: String(row.id),
+      name: String(row.name),
       entry_fee_usd: Number.isFinite(entryFee) ? entryFee : 0,
       entry_fee: Number.isFinite(entryFee) ? entryFee : 0,
       max_entries: maxEntries,
-      max_entries_per_user: 1,
+      max_entries_per_user: mpu,
       entry_count: entryCount,
       starts_at: startsAt,
       start_time: startsAt,
       status: rawStatusStr,
-      entries_open_at: data.entries_open_at != null ? String(data.entries_open_at) : null,
+      entries_open_at: row.entries_open_at != null ? String(row.entries_open_at) : null,
       created_at: createdAt,
       has_settlement: Boolean(st?.contest_id),
       protected_entries_count: 0,
       safety_pool_usd: 0,
-      late_swap_enabled:
-        (data as { late_swap_enabled?: boolean | null }).late_swap_enabled !== false,
+      late_swap_enabled: (row.late_swap_enabled as boolean | null | undefined) !== false,
       payouts,
     };
   } catch {

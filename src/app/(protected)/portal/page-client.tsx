@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { CONTESTS_MINIMAL_SELECT } from "@/lib/contest-lobby-shared";
 import { getPortalTierProgress, getTierFromContribution } from "@/lib/tiers";
 import { supabase } from "@/lib/supabase/client";
 
@@ -20,28 +21,13 @@ type ProfileRow = {
 
 type ContestRow = Record<string, unknown>;
 
-const FREQUENCY_ORDER = ["weekly", "biweekly", "monthly", "other"] as const;
-
-function frequencyKey(raw: unknown): (typeof FREQUENCY_ORDER)[number] {
-  if (typeof raw !== "string") return "other";
-  const k = raw.toLowerCase();
-  if (k === "weekly" || k === "biweekly" || k === "monthly") return k;
-  return "other";
-}
-
-function frequencyHeading(key: (typeof FREQUENCY_ORDER)[number]): string {
-  if (key === "weekly") return "Weekly";
-  if (key === "biweekly") return "Bi-weekly";
-  if (key === "monthly") return "Monthly";
-  return "Other";
-}
-
 export default function PortalPage() {
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [contests, setContests] = useState<ContestRow[]>([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingContests, setLoadingContests] = useState(true);
   const [showRules, setShowRules] = useState(false);
+  const [contestsError, setContestsError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -66,12 +52,17 @@ export default function PortalPage() {
 
   useEffect(() => {
     const loadContests = async () => {
-      const { data } = await supabase
+      setContestsError(null);
+      const { data, error } = await supabase
         .from("contests")
-        .select("*")
-        .eq("is_portal", true)
+        .select(CONTESTS_MINIMAL_SELECT)
         .order("created_at", { ascending: false });
-      setContests((data ?? []) as ContestRow[]);
+      if (error) {
+        setContestsError(error.message);
+        setContests([]);
+      } else {
+        setContests((data ?? []) as unknown as ContestRow[]);
+      }
       setLoadingContests(false);
     };
     void loadContests();
@@ -80,16 +71,6 @@ export default function PortalPage() {
   const contribution = Number(profile?.season_contribution ?? 0);
   const tier = getTierFromContribution(contribution);
   const progress = useMemo(() => getPortalTierProgress(contribution), [contribution]);
-
-  const contestsByFrequency = useMemo(() => {
-    const m = new Map<(typeof FREQUENCY_ORDER)[number], ContestRow[]>();
-    for (const k of FREQUENCY_ORDER) m.set(k, []);
-    for (const c of contests) {
-      const key = frequencyKey(c.portal_frequency);
-      m.get(key)!.push(c);
-    }
-    return m;
-  }, [contests]);
 
   return (
     <div className="pageWrap">
@@ -159,54 +140,49 @@ export default function PortalPage() {
           </Link>
         </section>
 
-        {/* 3 — Portal contests */}
+        {/* 3 — Open contests (same safe columns as lobby; portal-only filtering disabled until DB supports it) */}
         <section className="goldCard p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Portal contests</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Open contests</p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            Shown with the same fields as the lobby. Dedicated portal contest filters return when those columns exist in
+            production.
+          </p>
           {loadingContests ? (
             <p className="mt-4 text-sm text-slate-500">Loading…</p>
+          ) : contestsError ? (
+            <p className="mt-4 text-sm text-amber-200/95">{contestsError}</p>
           ) : contests.length === 0 ? (
-            <p className="mt-4 text-sm text-slate-400">No portal contests right now. Check back after the next drop.</p>
+            <p className="mt-4 text-sm text-slate-400">No contests to show right now.</p>
           ) : (
-            <div className="mt-6 space-y-8">
-              {FREQUENCY_ORDER.map((freq) => {
-                const rows = contestsByFrequency.get(freq) ?? [];
-                if (rows.length === 0) return null;
+            <ul className="mt-6 space-y-3">
+              {contests.map((c) => {
+                const id = String(c.id ?? "");
+                const name = typeof c.name === "string" ? c.name : "Contest";
+                const status = typeof c.status === "string" ? c.status : "—";
+                const fee =
+                  typeof c.entry_fee_usd === "number"
+                    ? c.entry_fee_usd
+                    : typeof c.entry_fee === "number"
+                      ? c.entry_fee
+                      : null;
                 return (
-                  <div key={freq}>
-                    <h2 className="mb-3 text-sm font-bold text-white">{frequencyHeading(freq)}</h2>
-                    <ul className="space-y-3">
-                      {rows.map((c) => {
-                        const id = String(c.id ?? "");
-                        const name = typeof c.name === "string" ? c.name : "Contest";
-                        const status = typeof c.status === "string" ? c.status : "—";
-                        const fee =
-                          typeof c.entry_fee_usd === "number"
-                            ? c.entry_fee_usd
-                            : typeof c.entry_fee === "number"
-                              ? c.entry_fee
-                              : null;
-                        return (
-                          <li key={id || name}>
-                            <Link
-                              href={id ? `/lobby/${encodeURIComponent(id)}` : "/lobby"}
-                              className="block rounded-lg border border-white/[0.08] bg-slate-950/50 px-4 py-3 transition hover:border-emerald-500/35 hover:bg-slate-900/80"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <span className="font-semibold text-white">{name}</span>
-                                {fee != null ? (
-                                  <span className="text-sm tabular-nums text-slate-400">{formatUsd(fee)} entry</span>
-                                ) : null}
-                              </div>
-                              <p className="mt-1 text-xs capitalize text-slate-500">{status}</p>
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
+                  <li key={id || name}>
+                    <Link
+                      href={id ? `/contest/${encodeURIComponent(id)}` : "/lobby"}
+                      className="block rounded-lg border border-white/[0.08] bg-slate-950/50 px-4 py-3 transition hover:border-emerald-500/35 hover:bg-slate-900/80"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-semibold text-white">{name}</span>
+                        {fee != null ? (
+                          <span className="text-sm tabular-nums text-slate-400">{formatUsd(fee)} entry</span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-xs capitalize text-slate-500">{status}</p>
+                    </Link>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </section>
 
