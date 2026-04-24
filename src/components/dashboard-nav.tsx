@@ -91,7 +91,7 @@ function DashboardMyMenu({ pathname }: { pathname: string }) {
 
       {open ? (
         <div
-          className="absolute left-0 top-full z-50 mt-1 min-w-[12rem] rounded-md border border-slate-700 bg-slate-900 py-1 shadow-lg ring-1 ring-black/40"
+          className="absolute left-0 top-full z-[90] mt-1 min-w-[12rem] rounded-md border border-slate-700/90 bg-slate-950 py-1 shadow-[0_18px_45px_rgba(0,0,0,0.55)] ring-1 ring-black/60"
           role="menu"
           aria-label="Dashboard navigation"
         >
@@ -160,7 +160,7 @@ function DashboardStaffMenu({ pathname }: DashboardStaffMenuProps) {
 
       {open ? (
         <div
-          className="absolute left-0 top-full z-50 mt-1 min-w-[14rem] rounded-md border border-slate-700 bg-slate-900 py-1 shadow-lg ring-1 ring-black/40"
+          className="absolute left-0 top-full z-[90] mt-1 min-w-[14rem] rounded-md border border-slate-700/90 bg-slate-950 py-1 shadow-[0_18px_45px_rgba(0,0,0,0.55)] ring-1 ring-black/60"
           role="menu"
           aria-label="Admin navigation"
         >
@@ -180,7 +180,7 @@ function DashboardStaffMenu({ pathname }: DashboardStaffMenuProps) {
             aria-current={createContestActive ? "page" : undefined}
             onClick={() => setOpen(false)}
           >
-            Create Contest
+            Contest Admin
           </Link>
         </div>
       ) : null}
@@ -207,7 +207,7 @@ export function DashboardNav({ mode: _mode = "single" }: DashboardNavProps) {
   const showStaffMenu = !loading && isAdmin(profileRole);
 
   return (
-    <nav className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4" aria-label="Dashboard">
+    <nav className="relative z-30 flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4" aria-label="Dashboard">
       <DashboardMyMenu pathname={pathname} />
       {showStaffMenu ? <DashboardStaffMenu pathname={pathname} /> : null}
     </nav>

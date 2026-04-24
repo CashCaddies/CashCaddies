@@ -7,7 +7,13 @@ import { useAuth } from "@/contexts/auth-context";
 import { contestStatusBadgeClassName, contestStatusBadgeLabel } from "@/lib/contest-admin-state";
 import { CONTESTS_MINIMAL_SELECT, entryCountFromContestEntriesRelation } from "@/lib/contest-lobby-shared";
 import { supabase } from "@/lib/supabase/client";
-import { createContestAdmin, seedTempLobbyTestContests, updateContestAdmin } from "./actions";
+import {
+  adminCompleteContest,
+  adminLockContest,
+  adminStartContest,
+  adminSettleContest,
+} from "@/app/(protected)/admin/contest-lifecycle/actions";
+import { createContestAdmin, deleteContestAdmin, seedTempLobbyTestContests, updateContestAdmin } from "./actions";
 
 type ContestRow = {
   id: string;
@@ -20,10 +26,32 @@ type ContestRow = {
   created_by?: string | null;
 };
 
+function rowStatusNorm(row: ContestRow): string {
+  return String(row.status ?? "").trim().toLowerCase();
+}
+
 /** Show Publish when contest is `locked` (not yet open for lobby entries). */
 function canShowPublishForRow(row: ContestRow): boolean {
-  const cs = String(row.status ?? "").trim().toLowerCase();
-  return cs === "locked";
+  return rowStatusNorm(row) === "locked";
+}
+
+function canShowLockForRow(row: ContestRow): boolean {
+  const s = rowStatusNorm(row);
+  return s === "filling" || s === "full";
+}
+
+function canShowStartForRow(row: ContestRow): boolean {
+  const s = rowStatusNorm(row);
+  if (s === "live" || s === "complete" || s === "settled" || s === "cancelled" || s === "canceled") return false;
+  return s === "locked" || s === "filling" || s === "full";
+}
+
+function canShowCompleteForRow(row: ContestRow): boolean {
+  return rowStatusNorm(row) === "live";
+}
+
+function canShowSettleForRow(row: ContestRow): boolean {
+  return rowStatusNorm(row) === "complete";
 }
 
 function formatMoney(n: number | string | null): string {
@@ -42,6 +70,8 @@ export default function AdminContestsPageClient() {
   const [pending, startTransition] = useTransition();
   const [listNotice, setListNotice] = useState<{ text: string; ok: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
+  /** Row id while a lifecycle/delete action runs (Publish still uses `loading`). */
+  const [busyRowId, setBusyRowId] = useState<string | null>(null);
   const [tempSeedBusy, setTempSeedBusy] = useState(false);
 
   const [name, setName] = useState("");
@@ -158,6 +188,55 @@ export default function AdminContestsPageClient() {
       setLoading(false);
     }
   };
+
+  const refreshRowsAfterAction = async (notice: { text: string; ok: boolean }) => {
+    const contests = await fetchContestsSafe();
+    setRows(contests);
+    setListNotice(notice);
+  };
+
+  const runLifecycle = async (row: ContestRow, key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => {
+    setBusyRowId(row.id);
+    try {
+      const result = await fn();
+      if (!result.ok) {
+        alert(result.error ?? `${key} failed`);
+        return;
+      }
+      const notice =
+        key === "locked"
+          ? "Contest locked"
+          : key === "live"
+            ? "Contest started (live)"
+            : key === "complete"
+              ? "Contest marked complete"
+              : key === "settled"
+                ? "Contest settled"
+                : "Updated";
+      await refreshRowsAfterAction({ text: notice, ok: true });
+    } finally {
+      setBusyRowId(null);
+    }
+  };
+
+  const handleDeleteRow = async (row: ContestRow) => {
+    if (!user?.id) return;
+    if (!window.confirm(`Delete contest "${row.name}"? This cannot be undone.`)) return;
+    setBusyRowId(row.id);
+    try {
+      const result = await deleteContestAdmin(user.id, row.id);
+      if (!result.ok) {
+        alert(result.error || "Delete failed");
+        return;
+      }
+      await refreshRowsAfterAction({ text: "Contest deleted", ok: true });
+    } finally {
+      setBusyRowId(null);
+    }
+  };
+
+  const actionBtnClass =
+    "inline-flex rounded border border-slate-600 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50";
 
   const handleCreateTemplate = async () => {
     if (!supabase) {
@@ -514,7 +593,7 @@ export default function AdminContestsPageClient() {
       <div className="goldCard p-6">
         <h2 className="text-lg font-bold text-white">Existing contests</h2>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[960px] text-left text-sm">
             <thead>
               <tr className="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
                 <th className="px-3 py-2.5">Name</th>
@@ -545,16 +624,72 @@ export default function AdminContestsPageClient() {
                     <div className="mt-1 text-xs text-slate-500">Created by: {row.created_by || "unknown"}</div>
                   </td>
                   <td className="px-3 py-3 text-slate-200">
-                    {canShowPublishForRow(row) ? (
+                    <div className="flex max-w-[22rem] flex-wrap gap-1">
+                      <Link
+                        href={`/contest/${encodeURIComponent(row.id)}`}
+                        className={`${actionBtnClass} border-emerald-600/50 text-emerald-200 hover:bg-emerald-950/50`}
+                      >
+                        View
+                      </Link>
                       <button
                         type="button"
-                        disabled={loading}
-                        onClick={() => void handlePublish(row)}
-                        className="inline-flex rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 disabled:opacity-60"
+                        disabled={busyRowId === row.id}
+                        onClick={() => void handleDeleteRow(row)}
+                        className={`${actionBtnClass} border-red-900/60 text-red-200 hover:bg-red-950/40`}
                       >
-                        {loading ? "Publishing..." : "Publish"}
+                        {busyRowId === row.id ? "…" : "Delete"}
                       </button>
-                    ) : null}
+                      {canShowPublishForRow(row) ? (
+                        <button
+                          type="button"
+                          disabled={loading || busyRowId === row.id}
+                          onClick={() => void handlePublish(row)}
+                          className="inline-flex rounded-md bg-emerald-500 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-950 disabled:opacity-60"
+                        >
+                          {loading ? "…" : "Publish"}
+                        </button>
+                      ) : null}
+                      {canShowLockForRow(row) ? (
+                        <button
+                          type="button"
+                          disabled={busyRowId === row.id}
+                          onClick={() => void runLifecycle(row, "locked", () => adminLockContest(row.id))}
+                          className={actionBtnClass}
+                        >
+                          {busyRowId === row.id ? "…" : "Lock"}
+                        </button>
+                      ) : null}
+                      {canShowStartForRow(row) ? (
+                        <button
+                          type="button"
+                          disabled={busyRowId === row.id}
+                          onClick={() => void runLifecycle(row, "live", () => adminStartContest(row.id))}
+                          className={actionBtnClass}
+                        >
+                          {busyRowId === row.id ? "…" : "Start"}
+                        </button>
+                      ) : null}
+                      {canShowCompleteForRow(row) ? (
+                        <button
+                          type="button"
+                          disabled={busyRowId === row.id}
+                          onClick={() => void runLifecycle(row, "complete", () => adminCompleteContest(row.id))}
+                          className={actionBtnClass}
+                        >
+                          {busyRowId === row.id ? "…" : "Complete"}
+                        </button>
+                      ) : null}
+                      {canShowSettleForRow(row) ? (
+                        <button
+                          type="button"
+                          disabled={busyRowId === row.id}
+                          onClick={() => void runLifecycle(row, "settled", () => adminSettleContest(row.id))}
+                          className={actionBtnClass}
+                        >
+                          {busyRowId === row.id ? "…" : "Settle"}
+                        </button>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))}

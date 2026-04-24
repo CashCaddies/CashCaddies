@@ -279,7 +279,7 @@ export function SiteHeader() {
 
                   {/* CENTER — brand + primary nav */}
                   <div className="order-2 flex min-w-0 items-center justify-center md:col-start-2 md:pt-0">
-                    <div className="flex flex-col items-center justify-center text-center md:translate-y-[6px]">
+                    <div className="relative z-40 flex flex-col items-center justify-center text-center md:translate-y-[6px]">
                       {!isPublicAuthPage ? <HeaderRotatingStatus /> : null}
                       <Link
                         href="/"
@@ -416,7 +416,7 @@ export function SiteHeader() {
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-white/[0.07] pt-3 md:mt-5 md:pt-3.5">
+                <div className="relative z-10 mt-4 border-t border-white/[0.07] pt-3 md:mt-5 md:pt-3.5">
                   <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:justify-center sm:gap-3">
                     <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:text-[11px]">
                       <span className="hidden h-px w-8 bg-gradient-to-r from-transparent to-white/15 sm:block" aria-hidden />
